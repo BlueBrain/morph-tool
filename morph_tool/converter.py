@@ -1,11 +1,11 @@
 '''A morphology converter that tries to keep the soma surface equal'''
 import os
 
-from morphio import MorphologyVersion, SomaType
-from morphio.mut import Morphology
-
 import numpy as np
 from numpy.linalg import eig, norm
+
+from morphio import MorphologyVersion, SomaType
+from morphio.mut import Morphology
 
 np.set_printoptions(precision=19)
 
@@ -132,10 +132,8 @@ def from_swc(neuron, output_ext):
         orthogonal /= np.linalg.norm(orthogonal)
         orthogonal = np.repeat(
             orthogonal[np.newaxis, :], len(neuron.soma.points), axis=0)
-        contour_side1 = neuron.soma.points + \
-            (orthogonal.T * neuron.soma.diameters / 2.).T
-        contour_side2 = neuron.soma.points - \
-            (orthogonal.T * neuron.soma.diameters / 2.).T
+        contour_side1 = neuron.soma.points + (orthogonal.T * neuron.soma.diameters / 2.).T
+        contour_side2 = neuron.soma.points - (orthogonal.T * neuron.soma.diameters / 2.).T
         contour_side2 = contour_side2[::-1]
 
         neuron.soma.points = np.vstack((contour_side1, contour_side2))
@@ -144,7 +142,7 @@ def from_swc(neuron, output_ext):
     elif not neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
         if output_ext in ('asc', 'h5'):
             # We convert the cylinder into a disk of same surface
-            # To preserve surface we need the disk radius must be twice the cylinder radius
+            # To preserve surface the disk radius must be twice the cylinder radius
             radius = neuron.soma.diameters[0]
             N = 20
             points = np.zeros((N, 3))
