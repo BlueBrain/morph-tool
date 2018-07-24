@@ -24,6 +24,7 @@ setup(
     install_requires=['numpy>=1.14.1',
                       'nose>=1.3.0',
                       'click==6.7',
+                      'bluepyopt>=1.6.45',
                       'morphio>=1.0.3'],
     packages=find_packages(),
     classifiers=[

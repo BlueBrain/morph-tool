@@ -6,44 +6,23 @@ from nose.tools import assert_equal
 from numpy.testing import assert_allclose, assert_array_almost_equal
 from tqdm import tqdm
 
+from bluepyopt.ephys import simulators, morphologies, models
+
 from morph_tool.converter import (contour2centroid, contourcenter, get_sides,
-                                  make_convex, run)
+                                  make_convex, run, get_NEURON_surface)
 
 _path = os.path.dirname(os.path.abspath(__file__))
 
-
-def _get_NEURON_surface(path):
-    '''Return the soma surface computed by the NEURON simulator'''
-    try:
-        from bluepyopt.ephys import simulators, morphologies, models
-        SIM = simulators.NrnSimulator()
-        HOC = SIM.neuron.h
-
-        icell = models.CellModel('model', path, [], [])
-        morph = morphologies.NrnFileMorphology(
-            path, do_replace_axon=False, do_set_nseg=True)
-        morph.instantiate(SIM, icell)
-
-        surface = sum(HOC.area(0.5, sec=soma_sec) for soma_sec in icell.soma)
-        return surface
-    except ImportError:
-        surfaces = {
-            'circle_contour.asc': 12.1686322046,
-            'tmp.asc': 12.2901386679,
-            'real_neuron.asc': 807.845767844,
-            'real_neuron2.asc': 807.845767844
-        }
-        name = path.split('/')[-1]
-        return surfaces[name]
 
 
 def _get_surface(filename, extension):
     if extension == 'h5':
         raise NotImplementedError
     if extension == 'asc':
-        return _get_NEURON_surface(filename)
+        return get_NEURON_surface(filename)
     if extension == 'swc':
-        return Morphology(filename).soma.surface
+        return get_NEURON_surface(filename)
+    raise NotImplementedError
 
 
 def _walk(folder, filter=None):
@@ -56,8 +35,9 @@ def _walk(folder, filter=None):
 
 def assert_conversion_works(input_file):
     ext_in = input_file.lower().split('.')[-1]
+    name = os.path.basename(input_file).split('.')[0]
     for ext_out in ['asc', 'h5', 'swc']:
-        output_file = os.path.join(_path, 'tmp.' + ext_out)
+        output_file = os.path.join('/tmp', name + '.' + ext_out)
         run(input_file, output_file)
         output = Morphology(output_file)
         assert_equal(Morphology(input_file),
@@ -79,8 +59,7 @@ def assert_conversion_works(input_file):
 
 def test_run_converter():
     for ext_in in ['asc', 'swc', 'h5']:
-        assert_conversion_works(os.path.join(
-            _path, 'circle_contour.' + ext_in))
+        assert_conversion_works(os.path.join(_path, 'circle_contour.' + ext_in))
 
     # # real_neuron.asc prints a lot of warning that we do not care about
     set_maximum_warnings(0)
@@ -269,6 +248,13 @@ def test_full():
     assert_allclose(xyz, expected_xyzd[:, [0, 1, 2]], rtol=1e-2)
     assert_allclose(diameters, expected_xyzd[:, 3], rtol=4e-2)
 
+def test_3pts_cylinder_to_asc():
+    input_file = os.path.join(_path, 'soma_three_points_cylinder.swc')
+    output_file = os.path.join(_path, 'test_3pts.asc')
+    run(input_file, output_file)
+    # assert_allclose(_get_surface(input_file, 'swc'),
+    #                 _get_surface(output_file, 'asc'),
+    #                 rtol=0.1)
 
 def _test_run_converter_on_repository(repository):
     '''This is actually not being run in the unit tests but can be used in local

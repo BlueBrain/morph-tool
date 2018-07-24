@@ -1,14 +1,17 @@
 '''A morphology converter that tries to keep the soma surface equal'''
+import logging
 import os
-
-import numpy as np
-from numpy.linalg import eig, norm
 
 from morphio import MorphologyVersion, SomaType
 from morphio.mut import Morphology
+import numpy as np
+from numpy.linalg import eig, norm
+
+from morph_tool.neuron_surface import get_NEURON_surface
 
 np.set_printoptions(precision=19)
 
+logger = logging.getLogger('morph_tool')
 
 XYZ = slice(3)
 X, Y, Z, R = 0, 1, 2, 3
@@ -16,8 +19,7 @@ cX, cY, cXY = np.s_[:, X], np.s_[:, Y], np.s_[:, :Z]
 
 
 def contourcenter(xyz):
-    '''python implementation of NEURON code: lib/hoc/import3d/import3d_sec.hoc
-    '''
+    '''python implementation of NEURON code: lib/hoc/import3d/import3d_sec.hoc '''
     POINTS = 101
 
     points = np.vstack((np.diff(xyz[:, [X, Y]], axis=0), (0, 0)))
@@ -85,6 +87,8 @@ def contour2centroid(mean, points):
        most of the comments are from there, so if you want to follow along, it should
        break up the function the same way
     '''
+    logger.info('Converting soma contour into a stack of cylinders')
+
     # find the major axis of the ellipsoid that best fits the shape
     # assuming (falsely in general) that the center is the mean
 
@@ -119,12 +123,28 @@ def contour2centroid(mean, points):
     return points, diameters
 
 
+def cylinder_to_sphere(neuron):
+    '''We convert the cylinder into a sphere of same surface'''
+    logger.info('Converting 3 point soma to sperical soma with same surface')
+    radius = neuron.soma.diameters[0] / 2.
+    N = 20
+    points = np.zeros((N, 3))
+    phase = 2 * np.pi / (N - 1) * np.arange(N)
+    points[:, 0] = radius * np.cos(phase)
+    points[:, 1] = radius * np.sin(phase)
+    points += neuron.soma.points[0]
+    neuron.soma.points = points
+    neuron.soma.diameters = np.repeat(radius, N)
+
+
 def from_swc(neuron, output_ext):
     '''Convert to SWC'''
     if output_ext == 'swc':
         return neuron
 
     if neuron.soma_type == SomaType.SOMA_CYLINDERS:
+        logger.info('Converting soma stack of cylinders into a contour in the XY plane')
+
         direction = neuron.soma.points[-1] - neuron.soma.points[0]
 
         # 90 degree rotation along Z axis
@@ -139,19 +159,9 @@ def from_swc(neuron, output_ext):
         neuron.soma.points = np.vstack((contour_side1, contour_side2))
         neuron.soma.diameters = [0] * len(neuron.soma.points)
 
-    elif not neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
+    elif neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
         if output_ext in ('asc', 'h5'):
-            # We convert the cylinder into a disk of same surface
-            # To preserve surface the disk radius must be twice the cylinder radius
-            radius = neuron.soma.diameters[0]
-            N = 20
-            points = np.zeros((N, 3))
-            phase = 2 * np.pi / (N - 1) * np.arange(N)
-            points[:, 0] = radius * np.cos(phase)
-            points[:, 1] = radius * np.sin(phase)
-            points += neuron.soma.points[0]
-            neuron.soma.points = points
-            neuron.soma.diameters = np.repeat(radius, N)
+            cylinder_to_sphere(neuron)
     else:
         raise Exception(
             'A SWC morphology is not supposed to have a soma of type: {}'.format(
@@ -161,7 +171,9 @@ def from_swc(neuron, output_ext):
 
 
 def from_h5_or_asc(neuron, output_ext):
-    '''Convert to ASC/H5'''
+    '''Convert from ASC/H5
+
+    Only the conversion to SWC requires a special treatment for the soma conversion'''
     if neuron.soma_type != SomaType.SOMA_SIMPLE_CONTOUR:
         raise Exception(
             'A H5 file morphology is not supposed to have a soma of type: {}'.format(
@@ -198,4 +210,13 @@ def run(input_file, outputfile):
         raise Exception(
             'No converter for morphology type: {}'.format(neuron.version))
 
+    logger.info('Original soma type: %s', neuron.soma_type)
     converter(neuron, output_ext).write(outputfile)
+
+    try:
+        logger.info('Soma surface as computed by NEURON:\nbefore conversion: %s'
+                    '\nafter conversion: %s',
+                    get_NEURON_surface(input_file),
+                    get_NEURON_surface(outputfile))
+    except:  # noqa pylint: disable=bare-except
+        pass
