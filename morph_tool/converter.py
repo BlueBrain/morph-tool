@@ -123,9 +123,9 @@ def contour2centroid(mean, points):
     return points, diameters
 
 
-def cylinder_to_sphere(neuron):
-    '''We convert the cylinder into a sphere of same surface'''
-    logger.info('Converting 3 point soma to sperical soma with same surface')
+def _to_sphere(neuron):
+    '''Convert a 3-pts cylinder or a 1-pt sphere into a circular
+    contour that represents the same sphere'''
     radius = neuron.soma.diameters[0] / 2.
     N = 20
     points = np.zeros((N, 3))
@@ -135,6 +135,20 @@ def cylinder_to_sphere(neuron):
     points += neuron.soma.points[0]
     neuron.soma.points = points
     neuron.soma.diameters = np.repeat(radius, N)
+
+
+def cylinder_to_cylindrical_contour(neuron):
+    '''We convert the cylinder into a circular contour that represents the same sphere'''
+    logger.info('Converting 3 point soma to sperical soma with same surface')
+    _to_sphere(neuron)
+
+
+def single_point_sphere_to_circular_contour(neuron):
+    '''Transform a single point soma that represents a sphere
+    into a circular contour that represents the same sphere'''
+    logger.info('Converting 1-point soma (sperical soma) to circular contour '
+                'representing the same sphere')
+    _to_sphere(neuron)
 
 
 def from_swc(neuron, output_ext):
@@ -160,8 +174,10 @@ def from_swc(neuron, output_ext):
         neuron.soma.diameters = [0] * len(neuron.soma.points)
 
     elif neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
-        if output_ext in ('asc', 'h5'):
-            cylinder_to_sphere(neuron)
+        cylinder_to_cylindrical_contour(neuron)
+    elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
+        if output_ext == 'asc':
+            single_point_sphere_to_circular_contour(neuron)
     else:
         raise Exception(
             'A SWC morphology is not supposed to have a soma of type: {}'.format(
@@ -174,25 +190,27 @@ def from_h5_or_asc(neuron, output_ext):
     '''Convert from ASC/H5
 
     Only the conversion to SWC requires a special treatment for the soma conversion'''
-    if neuron.soma_type != SomaType.SOMA_SIMPLE_CONTOUR:
+
+    if neuron.soma_type not in {SomaType.SOMA_SINGLE_POINT, SomaType.SOMA_SIMPLE_CONTOUR}:
         raise Exception(
             'A H5 file morphology is not supposed to have a soma of type: {}'.format(
                 neuron.soma_type))
 
-    if output_ext == 'swc':
-        mean, new_xyz = contourcenter(neuron.soma.points)
-        neuron.soma.points, neuron.soma.diameters = contour2centroid(
-            mean, new_xyz)
+    if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
+        if output_ext == 'asc':
+            single_point_sphere_to_circular_contour(neuron)
+    elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
+        if output_ext == 'swc':
+            mean, new_xyz = contourcenter(neuron.soma.points)
+            neuron.soma.points, neuron.soma.diameters = contour2centroid(
+                mean, new_xyz)
+
     return neuron
 
 
 def run(input_file, outputfile):
     '''Run the appropriate converter'''
     neuron = Morphology(input_file)
-
-    if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
-        neuron.write(outputfile)
-        return
 
     output_ext = os.path.splitext(outputfile)[1]
     if output_ext not in ('.swc', '.asc', '.h5'):

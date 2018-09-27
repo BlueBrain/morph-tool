@@ -4,8 +4,10 @@ MorphTool
 A toolbox for morphology editing. It aims at providing small programs
 that perform simple tasks.
 
-Currently MorphTool provides: - A file converter: to convert morphology
-files from/to the following formats: SWC, ASC, H5
+Currently MorphTool provides:
+
+- A file converter: to convert morphology files from/to the following formats: SWC, ASC, H5
+- A soma surface as calculator (as computed by NEURON, requires the NEURON python module)
 
 Installation
 ============
@@ -69,6 +71,34 @@ XY plane from a H5 file to a SWC soma which is represented as a cylinder
 along Y.
 
 As a result, it has been choosen to take the soma surface as an
-invariant.
+invariant. This means soma surfaces of the input and output morphologies, as computed by NEURON, should be the preserved.
 
-.. note:: This means soma surfaces of the input and output morphologies, as computed by NRN, should be the preserved.
+Here are the possible cases for the soma conversion:
+
+SWC input file:
+- SWC output file -> no conversion
+- H5 or ASC output file:
+  Depending on the original soma type:
+  - Soma stack of cylinders:
+    The soma is converted to a contour in the XY plane.
+    The points of the new contour are the outline of the soma stack projected in the XY plane.
+  - Soma three point cylinder:
+    The soma becomes a sphere of same surface. The contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
+  - Soma sphere (soma represented by a single point represeting the center of a sphere and its radius): the contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
+  - other:
+    Not in SWC spec -> not supported
+
+H5 or ASC input file:
+- H5 output file -> no conversion needed
+- ASC output file.
+  Depending on soma type:
+  - Soma single point sphere (soma represented by a single point represeting the center of a sphere and its radius): the contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
+  - Soma contour: no conversion needed
+  - other: not in H5/ASC specs -> not supported
+- SWC:
+  Depending on soma format:
+  - Soma single point sphere: no conversion needed
+  - Soma contour: A soma stack of cylinder is generated.
+    Each cylinder of the stack has its center and its axis along the principal direction of the contour.
+    The radius of each stack is choosen such that it minimises the distance between the cylinder and the contour.
+  - other: not in H5/ASC specs -> not supported

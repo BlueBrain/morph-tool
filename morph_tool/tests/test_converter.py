@@ -248,6 +248,15 @@ def test_full():
     assert_allclose(xyz, expected_xyzd[:, [0, 1, 2]], rtol=1e-2)
     assert_allclose(diameters, expected_xyzd[:, 3], rtol=4e-2)
 
+def test_swc_1pt_soma_to_asc():
+    input_file = os.path.join(_path, 'single-point-soma.swc')
+    output_file = os.path.join(_path, 'tmp.asc')
+    run(input_file, output_file)
+    assert_allclose(_get_surface(input_file, 'swc'),
+                    _get_surface(output_file, 'asc'),
+                    rtol=0.1)
+
+
 def test_3pts_cylinder_to_asc():
     input_file = os.path.join(_path, 'soma_three_points_cylinder.swc')
     output_file = os.path.join(_path, 'test_3pts.asc')
