@@ -10,6 +10,7 @@ if sys.version_info < (2, 7):
 
 VERSION = imp.load_source("", "morph_tool/version.py").__version__
 
+
 setup(
     name="morph-tool",
     author="BlueBrain NSE",
@@ -21,11 +22,16 @@ setup(
     entry_points={
         'console_scripts': ['morph-tool=morph_tool.__main__:cli']},
     license="BBP-internal-confidential",
-    install_requires=['numpy>=1.14.1',
-                      'nose>=1.3.0',
-                      'click==6.7',
-                      'bluepyopt>=1.6.45',
-                      'morphio>=1.0.3'],
+    install_requires=[
+        'numpy>=1.14',
+        'click>=6.7',
+        'morphio>=2.0',
+    ],
+    extras_require={
+        'all': [
+            'bluepyopt>=1.6',
+        ]
+    },
     packages=find_packages(),
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
