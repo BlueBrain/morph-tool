@@ -23,9 +23,10 @@ setup(
         'console_scripts': ['morph-tool=morph_tool.__main__:cli']},
     license="BBP-internal-confidential",
     install_requires=[
-        'numpy>=1.14',
         'click>=6.7',
+        'functools32>=3.2;python_version<"3.0"',
         'morphio>=2.0',
+        'numpy>=1.14',
     ],
     extras_require={
         'all': [
