@@ -11,7 +11,6 @@ logger.setLevel(logging.INFO)
 @click.group()
 def cli():
     '''The CLI entry point'''
-    pass
 
 
 @cli.command(short_help='Get soma surface as computed by NEURON')
