@@ -47,17 +47,13 @@ def test_graft():
                         [-5. , -4. ,  1. ]])
 
 
+def test_self_graft():
+    '''Grafting a neuron with its own neuron'''
+    filename = os.path.join(_path, 'neuron.asc')
+    new_axon = find_axon(ImmutMorphology(filename))
 
-# def test_real_graft():
-#     m = Morphology(os.path.join(_path, 'tkb061126a4_ch0_cc2_h_zk_60x_1.h5'))
-#     new_axon = find_axon(m)
+    neuron = Morphology(filename)
+    graft_axon(neuron, new_axon)
 
-#     neuron = Morphology(os.path.join(_path, 'tkb061126a4_ch0_cc2_h_zk_60x_1.h5'))
-#     graft_axon(neuron, new_axon)
-#     neuron.write(os.path.join(_path, 'new.asc'))
-
-#     filename = os.path.join(_path, 'tkb061126a4_ch0_cc2_h_zk_60x_1.h5')
-#     expected = Morphology(filename)
-#     expected.write(os.path.join(_path, 'old.asc'))
-#     actual = ImmutMorphology('test.asc', Option.nrn_order)
-    # assert_equal(expected, actual)
+    expected = Morphology(filename)
+    assert_equal(expected, neuron)
