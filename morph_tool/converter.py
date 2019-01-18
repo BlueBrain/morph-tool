@@ -2,10 +2,10 @@
 import logging
 import os
 
-from morphio import MorphologyVersion, SomaType
-from morphio.mut import Morphology
 import numpy as np
 from numpy.linalg import eig, norm
+from morphio import MorphologyVersion, SomaType
+from morphio.mut import Morphology
 
 from morph_tool.neuron_surface import get_NEURON_surface
 
@@ -45,8 +45,9 @@ def get_sides(points, major, minor):
     major_coord, minor_coord = np.dot(points, major), np.dot(points, minor)
 
     imax = np.argmax(major_coord)
-    major_coord, minor_coord = np.roll(
-        major_coord, -imax), np.roll(minor_coord, -imax)
+    # pylint: disable=invalid-unary-operand-type
+    major_coord, minor_coord = (np.roll(major_coord, -imax),
+                                np.roll(minor_coord, -imax))
 
     imin = np.argmin(major_coord)
 

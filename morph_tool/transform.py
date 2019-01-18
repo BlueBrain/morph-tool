@@ -20,6 +20,8 @@ def transform(obj, A):
         obj: Morphology / Section
         A: rotation matrix (4 x 4 NumPy array)
     """
+    if A is None:
+        return
     A = np.asarray(A)
     if A.shape != (4, 4):
         raise ValueError(
@@ -38,6 +40,8 @@ def rotate(obj, A):
         obj: Morphology / Section
         A: rotation matrix (3 x 3 NumPy array)
     """
+    if A is None:
+        return
     A = np.asarray(A)
     if A.shape != (3, 3):
         raise ValueError(
@@ -56,6 +60,8 @@ def translate(obj, shift):
         obj: Morphology / Section
         shift: shift vector ((x, y, z) NumPy array)
     """
+    if shift is None:
+        return
     shift = np.asarray(shift)
     if shift.shape != (3,):
         raise ValueError(

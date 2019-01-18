@@ -10,7 +10,6 @@ if sys.version_info < (2, 7):
 
 VERSION = imp.load_source("", "morph_tool/version.py").__version__
 
-
 setup(
     name="morph-tool",
     author="BlueBrain NSE",
