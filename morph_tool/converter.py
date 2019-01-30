@@ -7,8 +7,6 @@ from numpy.linalg import eig, norm
 from morphio import MorphologyVersion, SomaType
 from morphio.mut import Morphology
 
-from morph_tool.neuron_surface import get_NEURON_surface
-
 np.set_printoptions(precision=19)
 
 logger = logging.getLogger('morph_tool')
@@ -233,9 +231,11 @@ def run(input_file, outputfile):
     converter(neuron, output_ext).write(outputfile)
 
     try:
+        from morph_tool.neuron_surface import get_NEURON_surface
         logger.info('Soma surface as computed by NEURON:\nbefore conversion: %s'
                     '\nafter conversion: %s',
                     get_NEURON_surface(input_file),
                     get_NEURON_surface(outputfile))
     except:  # noqa pylint: disable=bare-except
-        pass
+        logger.info('Final NEURON soma surface check was skipped probably because BluePyOpt'
+                    ' or NEURON is not installed')
