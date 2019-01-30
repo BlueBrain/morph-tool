@@ -15,9 +15,13 @@ def cli():
 
 @cli.command(short_help='Get soma surface as computed by NEURON')
 @click.argument('input_file')
-def soma_surface(input_file):
+@click.option('--quiet/--no-quiet', default=False)
+def soma_surface(input_file, quiet):
     '''Get soma surface as computed by NEURON'''
     from morph_tool.neuron_surface import get_NEURON_surface
+    if quiet:
+        logger.setLevel(logging.WARNING)
+
     try:
         click.echo('Soma surface: {}'.format(get_NEURON_surface(input_file)))
     except ImportError:
@@ -29,7 +33,8 @@ def soma_surface(input_file):
 @cli.command(short_help='Convert files from/to the following formats: ASC, SWC, H5')
 @click.argument('input_file')
 @click.argument('output_file')
-def convert(input_file, output_file):
+@click.option('--quiet/--no-quiet', default=False)
+def convert(input_file, output_file, quiet):
     '''Convert a file format between its different representation.
 
     A special care has to be given to the soma conversion as each file format
@@ -39,4 +44,6 @@ def convert(input_file, output_file):
     More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458'''
     from morph_tool.converter import run
 
+    if quiet:
+        logger.setLevel(logging.WARNING)
     run(input_file, output_file)
