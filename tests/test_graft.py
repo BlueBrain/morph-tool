@@ -4,6 +4,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 from nose.tools import assert_raises, assert_equal, assert_almost_equal
 
 from morph_tool.graft import graft_axon, find_axon, _dendrites_mean_direction, _axon_dendrites_angle, _random_direction, _rotation_matrix
+import morph_tool.graft as graft
 from morph_tool import MorphToolException, NoAxonException
 
 from morphio.mut import Morphology
@@ -106,3 +107,17 @@ def test_rotation_matrix():
 
     r = _rotation_matrix(u, v)
     assert_array_almost_equal(r.dot(u), v)
+
+def test_hotfix_h5_duplicate():
+    class Section:
+        def __init__(self, points):
+            self.points = np.array(points)
+
+    # normal case
+    assert_array_equal(graft._section_initial_direction(Section([[1, 2, 3], [4, 5, 6]])),
+                       [3, 3, 3])
+    # duplicate case
+    assert_array_equal(graft._section_initial_direction(Section([[1, 2, 3],
+                                                                 [1, 2, 3],
+                                                                 [4, 5, 6]])),
+                       [3, 3, 3])

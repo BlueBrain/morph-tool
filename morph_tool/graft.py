@@ -88,7 +88,7 @@ def _rotation_matrix(A, B):
 
     axis = np.cross(A, B)
 
-    if np.isnan(axis).all():
+    if np.isnan(axis).all() or (axis == 0).all():
         return np.identity(3)
 
     angle = angle3D(A, B)
@@ -110,7 +110,12 @@ def _random_direction(axis, angle):
 
 def _section_initial_direction(section):
     '''Returns the section initial direction'''
-    return section.points[1] - section.points[0]
+    direction = section.points[1] - section.points[0]
+
+    # In case of duplicate points, we skip first point
+    if np.linalg.norm(direction) < 1e-8:
+        return section.points[2] - section.points[1]
+    return direction
 
 
 def _soma_mean_radius(neuron, soma_center):
