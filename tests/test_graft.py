@@ -3,12 +3,12 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from nose.tools import assert_raises, assert_equal, assert_almost_equal
 
-from morph_tool.graft import graft_axon, find_axon, _dendrites_mean_direction, _axon_dendrites_angle, _random_direction, _rotation_matrix
+from morph_tool.graft import graft_axon, find_axon, _dendrites_mean_direction, _axon_dendrites_angle, _random_direction, _soma_mean_radius
 import morph_tool.graft as graft
 from morph_tool import MorphToolException, NoAxonException
 
 from morphio.mut import Morphology
-from morphio import Morphology as ImmutMorphology, Option
+from morphio import PointLevel, SomaType, SectionType, Morphology as ImmutMorphology, Option
 
 _path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 SIMPLE = Morphology(os.path.join(_path, 'simple.swc'))
@@ -17,6 +17,10 @@ def test_find_axon():
     axon = find_axon(SIMPLE)
     assert_array_equal(axon.points,
                        [[0, 0, 0], [0, -4, 0]])
+
+    with assert_raises(MorphToolException) as obj:
+        dendrite = SIMPLE.root_sections[0]
+        find_axon(dendrite)
 
 
     with assert_raises(MorphToolException) as obj:
@@ -39,15 +43,13 @@ def test_graft():
     points = np.vstack([section.points for section in grafted_axon.iter()])
 
     assert_array_equal(points,
-                       np.array([[ 0.0000000e+00,  0.0000000e+00,  0.0000000e+00],
-                                 [-2.4447479e-07, -2.2360680e+00,  0.0000000e+00],
-                                 [-2.4447479e-07, -2.2360680e+00,  0.0000000e+00],
-                                 [-6.7082095e-01, -5.3665628e+00,  0.0000000e+00],
-                                 [-2.4447479e-07, -2.2360680e+00,  0.0000000e+00],
-                                 [ 2.6832821e+00,  5.8137765e+00,  0.0000000e+00],
-                                 [ 2.6832821e+00,  5.8137765e+00,  1.0000000e+00]],
-                                dtype=np.float32))
-
+                       np.array([[ 0. ,  0. ,  0. ],
+                                 [ 1. ,  2. ,  0. ],
+                                 [ 1. ,  2. ,  0. ],
+                                 [ 3. ,  4.5,  0. ],
+                                 [ 1. ,  2. ,  0. ],
+                                 [-5. , -4. ,  0. ],
+                                 [-5. , -4. ,  1. ]], dtype=np.float32))
 
 
 def test_random_direction():
@@ -59,11 +61,23 @@ def test_random_direction():
     direction = _random_direction(axis2, 2.3)
     assert_almost_equal(np.arccos(direction.dot(axis2) / np.linalg.norm(direction) / np.linalg.norm(axis2)), 2.3)
 
+
 def test_dendrites_mean_direction():
     donor_neuron = Morphology(os.path.join(_path, 'simple3.asc'))
     assert_array_equal(_dendrites_mean_direction(donor_neuron),
                        np.array([0.6666667, 4.6666665, 3.       ],
                                 dtype=np.float32))
+
+    no_dendrite = Morphology()
+    no_dendrite.append_root_section(PointLevel([[0,0,0], [1,1,1]], [1, 1]), SectionType.axon)
+    with assert_raises(MorphToolException) as obj:
+        _dendrites_mean_direction(no_dendrite)
+
+def test_soma_mean_radius():
+    m = Morphology()
+    m.soma.points = [[0,0,0], [1,0,0], [1,1,0], [0,1,0]]
+    assert_equal(_soma_mean_radius(m, [0.5, 0.5, 0]),
+                 0.7071067811865476)
 
 
 def test_axon_dendrites_angle():
@@ -80,8 +94,8 @@ def test_graft_axon_on_synthesized_cell():
     graft_axon(synthesized_cell, donor_neuron)
     axon = find_axon(synthesized_cell)
     assert_array_almost_equal(axon.points,
-                              [[5.110419 , 5.486378 , 4.9647303],
-                               [5.9937673, 9.377404 , 4.6825743]])
+                              [[5.110419, 5.486378, 4.9647303],
+                               [5.110419, 1.486378, 4.9647303]])
 
 def test_self_graft():
     '''Grafting a neuron with its own neuron'''
@@ -94,19 +108,6 @@ def test_self_graft():
     expected = Morphology(filename)
     assert_equal(expected, neuron)
 
-
-def test_rotation_matrix():
-    r = _rotation_matrix([1, 0, 0], [0, 1, 0])
-    assert_array_almost_equal(r.dot([1,0,0]),
-                              [0, 1, 0])
-
-    u = [1, 2, 4]
-    v = [3, 0, 8]
-    u /= np.linalg.norm(u)
-    v /= np.linalg.norm(v)
-
-    r = _rotation_matrix(u, v)
-    assert_array_almost_equal(r.dot(u), v)
 
 def test_hotfix_h5_duplicate():
     class Section:
