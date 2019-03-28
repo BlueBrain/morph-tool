@@ -26,6 +26,7 @@ setup(
         'functools32>=3.2;python_version<"3.0"',
         'morphio>=2.1.5',
         'numpy>=1.14',
+        'neurom>=1.4.13',
     ],
     extras_require={
         'all': [

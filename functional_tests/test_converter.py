@@ -2,14 +2,15 @@ import os
 
 import numpy as np
 from morphio import Morphology, RawDataError, set_maximum_warnings
-from nose.tools import assert_equal
+from nose.tools import assert_equal, ok_
 from numpy.testing import assert_allclose, assert_array_almost_equal
 from tqdm import tqdm
 
 from bluepyopt.ephys import simulators, morphologies, models
 
-from morph_tool.converter import (contour2centroid, contourcenter, get_sides,
-                                  make_convex, run, get_NEURON_surface)
+from morph_tool.converter import (contour2centroid, contourcenter, get_sides, make_convex, run)
+from morph_tool.neuron_surface import get_NEURON_surface
+from morph_tool import diff
 
 _path = os.path.dirname(os.path.abspath(__file__))
 
@@ -39,9 +40,11 @@ def assert_conversion_works(input_file):
     for ext_out in ['asc', 'h5', 'swc']:
         output_file = os.path.join('/tmp', name + '.' + ext_out)
         run(input_file, output_file)
+        input = Morphology(input_file)
         output = Morphology(output_file)
-        assert_equal(Morphology(input_file),
-                     output)
+        diff_result = diff(input, output)
+        ok_(not diff_result,
+            'Difference between {} and {}: {}'.format(input_file, output_file, diff_result.info))
         try:
             if ext_in == ext_out or {ext_in, ext_out} == {'asc', 'h5'}:
                 assert_array_almost_equal(Morphology(input_file).soma.points,
