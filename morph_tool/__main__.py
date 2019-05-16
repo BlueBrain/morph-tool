@@ -1,5 +1,6 @@
 '''The morph-tool command line launcher'''
 import logging
+import sys
 
 import click
 
@@ -47,3 +48,23 @@ def convert(input_file, output_file, quiet):
     if quiet:
         logger.setLevel(logging.WARNING)
     run(input_file, output_file)
+
+
+@cli.command()
+@click.argument('file1')
+@click.argument('file2')
+def diff(file1, file2):
+    '''
+    Compare two morphology files.
+
+    Return exit code 0 if morphology objects stored in `file1` and `file2`
+    are deemed identical by MorphIO; and exit code 1 otherwise.
+
+    Morphologies can be stored in different formats.
+    '''
+    from morphio import Morphology
+    morph1 = Morphology(file1)
+    morph2 = Morphology(file2)
+    if morph1 != morph2:
+        logger.info("Morphologies not identical")
+        sys.exit(1)
