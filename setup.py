@@ -19,7 +19,7 @@ setup(
     url="https://bbpteam.epfl.ch/project/issues/projects/NSETM/issues",
     download_url="ssh://bbpcode.epfl.ch/nse/morph-tool",
     entry_points={
-        'console_scripts': ['morph-tool=morph_tool.__main__:cli']},
+        'console_scripts': ['morph-tool=morph_tool.cli:cli']},
     license="BBP-internal-confidential",
     install_requires=[
         'click>=6.7',

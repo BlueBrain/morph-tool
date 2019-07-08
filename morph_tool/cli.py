@@ -2,6 +2,8 @@
 import logging
 import sys
 
+from morphio import LogLevel
+
 import click
 
 logging.basicConfig()
@@ -51,20 +53,22 @@ def convert(input_file, output_file, quiet):
 
 
 @cli.command()
-@click.argument('file1')
-@click.argument('file2')
-def diff(file1, file2):
+@click.argument('morph1')
+@click.argument('morph2')
+@click.option('--quiet/--no-quiet', default=False)
+def diff(morph1, morph2, quiet):
     '''
     Compare two morphology files.
 
     Return exit code 0 if morphology objects stored in `file1` and `file2`
     are deemed identical by MorphIO; and exit code 1 otherwise.
 
-    Morphologies can be stored in different formats.
+    Morphologies with different formats can be compared.
+
+    MORPH1 and MORPH2 can be either filenames or morphio.Morpholgy objects
     '''
-    from morphio import Morphology
-    morph1 = Morphology(file1)
-    morph2 = Morphology(file2)
-    if morph1 != morph2:
+    from morph_tool import diff as diff_
+    level = LogLevel.error if quiet else LogLevel.info
+    if diff_(morph1, morph2, level):
         logger.info("Morphologies not identical")
         sys.exit(1)
