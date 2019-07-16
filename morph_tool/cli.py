@@ -2,9 +2,9 @@
 import logging
 import sys
 
-from morphio import LogLevel
-
 import click
+
+import morph_tool
 
 logging.basicConfig()
 logger = logging.getLogger('morph_tool')
@@ -67,8 +67,11 @@ def diff(morph1, morph2, quiet):
 
     MORPH1 and MORPH2 can be either filenames or morphio.Morpholgy objects
     '''
-    from morph_tool import diff as diff_
-    level = LogLevel.error if quiet else LogLevel.info
-    if diff_(morph1, morph2, level):
+    if quiet:
+        logger.setLevel(logging.WARNING)
+
+    result = morph_tool.diff(morph1, morph2)
+    if result:
         logger.info("Morphologies not identical")
+        logger.info(result.info)
         sys.exit(1)

@@ -24,7 +24,7 @@ setup(
     install_requires=[
         'click>=6.7',
         'functools32>=3.2;python_version<"3.0"',
-        'morphio>=2.0',
+        'morphio>=2.1.5',
         'numpy>=1.14',
     ],
     extras_require={
