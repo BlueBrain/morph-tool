@@ -138,3 +138,60 @@ Here are the possible cases for the soma conversion:
       Each cylinder of the stack has its center and its axis along the principal direction of the contour.
       The radius of each stack is choosen such that it minimises the distance between the cylinder and the contour.
     - other: not in H5/ASC specs -> not supported
+
+NRN simulator compartment coordinates
+=====================================
+
+The NRN simulator splits each section into chunks of equal length (equal only among a given section).
+These compartments do not really exist in the physical world but we can remap them to paths
+along the section. Each compartment can be associated to a path (a list of 3D points) such
+that the path and the compartment have the same pathlength.
+
+The following function can be used to access the mapping NeuroM section ID -> list of paths for the section:
+
+.. code:: python
+
+          morph_tool.nrnhines.NeuroM_section_to_NRN_compartment_paths
+
+
+Example (in 2D) for one section:
+
+.. code::
+
+                   (1, 2) ------ (2, 2)
+                      |
+                      |
+                      |
+                      |
+                      |
+                      |
+                      |
+                      |
+                      |
+    (0, 0) ------- (1, 0)
+
+
+Splitting this section into 3 compartments would results in the following paths:
+
+1.
+
+.. code::
+
+    [[0.        , 0.        ],
+     [1.        , 0.        ],
+     [1.        , 0.33333333]]
+
+2.
+
+.. code::
+
+   [[1.        , 0.33333333],
+    [1.        , 1.66666667]]
+
+3.
+
+.. code::
+
+   [[1.        , 1.66666667],
+    [1.        , 2.        ],
+    [2.        , 2.        ]]

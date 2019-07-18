@@ -26,7 +26,7 @@ setup(
         'functools32>=3.2;python_version<"3.0"',
         'morphio>=2.1.5',
         'numpy>=1.14',
-        'neurom>=1.4.13',
+        'neurom>=1.4.14',
     ],
     extras_require={
         'all': [
@@ -35,11 +35,11 @@ setup(
     },
     packages=find_packages(),
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 )
