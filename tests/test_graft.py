@@ -1,11 +1,11 @@
 import os
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-from nose.tools import assert_raises, assert_equal, assert_almost_equal
+from nose.tools import assert_raises, assert_equal, assert_almost_equal, ok_
 
 from morph_tool.graft import graft_axon, find_axon, _dendrites_mean_direction, _axon_dendrites_angle, _random_direction, _soma_mean_radius
 import morph_tool.graft as graft
-from morph_tool import MorphToolException, NoAxonException
+from morph_tool import MorphToolException, NoAxonException, diff
 
 from morphio.mut import Morphology
 from morphio import PointLevel, SomaType, SectionType, Morphology as ImmutMorphology, Option
@@ -106,7 +106,7 @@ def test_self_graft():
     graft_axon(neuron, new_axon)
 
     expected = Morphology(filename)
-    assert_equal(expected, neuron)
+    ok_(not diff(expected, neuron))
 
 
 def test_hotfix_h5_duplicate():
