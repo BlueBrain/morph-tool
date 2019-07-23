@@ -15,7 +15,7 @@ setup(
     author="BlueBrain NSE",
     author_email="bbp-ou-nse@groupes.epfl.ch",
     version=VERSION,
-    description="",
+    description="A collection of CLIs and python function related to morphology handling",
     url="https://bbpteam.epfl.ch/project/issues/projects/NSETM/issues",
     download_url="ssh://bbpcode.epfl.ch/nse/morph-tool",
     entry_points={
