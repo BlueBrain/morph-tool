@@ -95,6 +95,25 @@ class TestTransform:
             [-4., 5., 0.]
         )
 
+    def test_rotate_recenter_section(self):
+        """ Rotate whole morphology inplace. """
+        A = [[0, 1, 0], [-1, 0, 0], [0, 0, 1]]  # rotate around Z by 90 degrees
+
+        test_module.rotate(self.morph, A, recenter_section=True)
+        npt.assert_almost_equal(
+            self.morph.soma.points[0],
+            [0., 0., 0.]
+        )
+        npt.assert_almost_equal(
+            self.morph.sections[0].points[-1],
+            [5., 0., 0.]
+        )
+        npt.assert_almost_equal(
+            self.morph.sections[5].points,
+            [[0., -4., 0.],
+             [0., 1., 0.]]
+        )
+
     def test_rotate_2(self):
         """ Check rotation matrix shape. """
         nt.assert_raises(
