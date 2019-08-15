@@ -5,14 +5,13 @@ Tools for morphology geometric transformations (translation, rotation, etc).
 import numpy as np
 
 
-def _apply_recursively(func, obj, recenter=False):
+def _apply_recursively(func, obj, origin=(0, 0, 0)):
+    origin = np.array(origin)
+
     if hasattr(obj, 'soma'):
-        obj.soma.points = func(obj.soma.points)
+        obj.soma.points = origin + func(obj.soma.points - origin)
     for s in obj.iter():
-        if recenter:
-            s.points = s.points[0] + func(s.points - s.points[0])
-        else:
-            s.points = func(s.points)
+        s.points = origin + func(s.points - origin)
 
 
 def transform(obj, A):
@@ -35,17 +34,14 @@ def transform(obj, A):
     _apply_recursively(func, obj)
 
 
-def rotate(obj, A, recenter_section=False):
+def rotate(obj, A, origin=(0, 0, 0)):
     """
     Apply rotation matrix `A` to a given morphology object.
 
     Args:
         obj: Morphology / Section
         A: rotation matrix (3 x 3 NumPy array)
-        recenter_section (bool): recenter section before performing the rotation
-            If False, the rotation is performed along the axis going through the origin
-            If True, the rotation is performed along the axis going through the first point
-                of each section
+        origin (3D point): the origin of the rotation
     """
     if A is None:
         return
@@ -56,7 +52,7 @@ def rotate(obj, A, recenter_section=False):
         )
     A = A.transpose()
     func = lambda p: np.dot(p, A)
-    _apply_recursively(func, obj, recenter=recenter_section)
+    _apply_recursively(func, obj, origin)
 
 
 def translate(obj, shift):
