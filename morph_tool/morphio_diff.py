@@ -33,7 +33,7 @@ class DiffResult:
         return self.__bool__()
 
 
-def diff(morph1, morph2):
+def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
     '''
     Returns a DiffResult object that is equivalent to True when morphologies differ
     Additional information about why they differ is stored in DiffResult.info
@@ -53,6 +53,8 @@ def diff(morph1, morph2):
     Args:
         morph1 (str|morphio.Morphology|morphio.mut.Morphology): a morphology
         morph2 (str|morphio.Morphology|morphio.mut.Morphology): a morphology
+        rtol (float): the relative tolerance used for comparing points (see numpy.allclose help)
+        atol (float): the absolute tolerance used for comparing points (see numpy.allclose help)
     '''
 
     if not isinstance(morph1, Morphology):
@@ -72,7 +74,7 @@ def diff(morph1, morph2):
                                   'Attributes Section.{} of:\n'
                                   '{}\n{}\nhave different shapes: {} vs {}'.format(
                                       attrib, section1, section2, val1.shape, val2.shape))
-            if not allclose(val1, val2):
+            if not allclose(val1, val2, rtol=rtol, atol=atol):
                 return DiffResult(True,
                                   'Attributes Section.{} of:\n'
                                   '{}\n{}\nhave the same shape but different values'.format(
