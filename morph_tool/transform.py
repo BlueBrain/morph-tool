@@ -4,6 +4,10 @@ Tools for morphology geometric transformations (translation, rotation, etc).
 
 import numpy as np
 
+from scipy.spatial.transform import Rotation
+
+from neurom.morphmath import angle_between_vectors
+
 
 def _apply_recursively(func, obj, origin=(0, 0, 0)):
     origin = np.array(origin)
@@ -72,3 +76,25 @@ def translate(obj, shift):
         )
     func = lambda p: p + shift
     _apply_recursively(func, obj)
+
+
+def align(section, direction):
+    '''Rotate a section (and all its descendents) so that its initial segment is oriented along
+    "direction"'''
+    section_dir = section.points[1] - section.points[0]
+    alpha = angle_between_vectors(section_dir, direction)
+    if alpha < 1e-8:
+        return
+
+    if abs(alpha - np.pi) < 1e-8:
+        axis = np.cross(section_dir, [1, 0, 0])
+
+        # Case where X axis and section_dir are colinear
+        if np.linalg.norm(axis) < 1e-8:
+            axis = np.cross(section_dir, [0, 1, 0])
+    else:
+        axis = np.cross(section_dir, direction)
+    axis /= np.linalg.norm(axis)
+    matrix = Rotation.from_rotvec(alpha * axis).as_dcm()
+
+    rotate(section, matrix, origin=section.points[0])

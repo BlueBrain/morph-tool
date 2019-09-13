@@ -145,3 +145,28 @@ class TestTransform:
             ValueError,
             test_module.transform, self.morph, np.identity(3)
         )
+
+
+    def test_align(self):
+        section = self.morph.section(0)
+        test_module.align(section, [-1, -1, 0])
+
+        npt.assert_almost_equal(section.points,
+                                [[0., 0., 0.], [-3.535534, -3.535534, 0.]])
+
+        child = section.children[0]
+        npt.assert_almost_equal(child.points,
+                                [[-3.535534, -3.535534, 0.], [0, -7.071068, 0]],
+                                decimal=5)
+
+    def test_align_already_aligned(self):
+        section = self.morph.section(1)
+        test_module.align(section, [-1, 0, 0])
+
+        npt.assert_almost_equal(section.points, [[0., 5., 0.], [-5, 5, 0]])
+
+    def test_align_pi_angle(self):
+        section = self.morph.section(1)
+        test_module.align(section, [+1, 0, 0])
+
+        npt.assert_almost_equal(section.points, [[0., 5., 0.], [+5, 5, 0]])
