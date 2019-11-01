@@ -10,6 +10,12 @@ if sys.version_info < (2, 7):
 
 VERSION = imp.load_source("", "morph_tool/version.py").__version__
 
+PLOTLY_EXTRAS = [
+    'plotly>=4.1.0',
+    'pandas>=0.24',
+    'bluepy>=0.14',
+]
+
 setup(
     name="morph-tool",
     author="BlueBrain NSE",
@@ -26,12 +32,11 @@ setup(
         'functools32>=3.2;python_version<"3.0"',
         'morphio>=2.1.5',
         'numpy>=1.14',
-        'neurom>=1.4.14',
+        'neurom>=1.4.15',
     ],
     extras_require={
-        'all': [
-            'bluepyopt>=1.6',
-        ]
+        'all': ['bluepyopt>=1.6'] + PLOTLY_EXTRAS,
+        'plotly': PLOTLY_EXTRAS,
     },
     packages=find_packages(),
     classifiers=[

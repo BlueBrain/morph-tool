@@ -11,6 +11,7 @@ L = logging.getLogger('morph_tool')
 def _get_NRN_cell(filename):
     """Returns a NRN cell"""
     try:
+        # pylint: disable=import-outside-toplevel
         import bluepyopt.ephys as ephys
     except ImportError:
         raise Exception('_get_NRN_cell requires the extra: all. '

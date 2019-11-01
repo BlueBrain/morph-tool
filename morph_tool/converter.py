@@ -231,6 +231,7 @@ def run(input_file, outputfile):
     converter(neuron, output_ext).write(outputfile)
 
     try:
+        # pylint: disable=import-outside-toplevel
         from morph_tool.neuron_surface import get_NEURON_surface
         logger.info('Soma surface as computed by NEURON:\nbefore conversion: %s'
                     '\nafter conversion: %s',
