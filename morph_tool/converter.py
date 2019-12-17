@@ -6,6 +6,7 @@ import numpy as np
 from numpy.linalg import eig, norm
 from morphio import MorphologyVersion, SomaType
 from morphio.mut import Morphology
+from morph_tool import transform
 
 np.set_printoptions(precision=19)
 
@@ -207,12 +208,12 @@ def from_h5_or_asc(neuron, output_ext):
     return neuron
 
 
-def run(input_file, outputfile):
+def run(input_file, outputfile, recenter=False):
     '''Run the appropriate converter'''
     neuron = Morphology(input_file)
 
     output_ext = os.path.splitext(outputfile)[1]
-    if output_ext not in ('.swc', '.asc', '.h5'):
+    if output_ext.lower() not in ('.swc', '.asc', '.h5', ):
         raise Exception('Output file format should be one swc, asc or h5')
     output_ext = output_ext[1:]  # Remove the dot
 
@@ -228,7 +229,12 @@ def run(input_file, outputfile):
             'No converter for morphology type: {}'.format(neuron.version))
 
     logger.info('Original soma type: %s', neuron.soma_type)
-    converter(neuron, output_ext).write(outputfile)
+    new = converter(neuron, output_ext)
+
+    if recenter:
+        transform.translate(new, -1 * new.soma.center)
+
+    new.write(outputfile)
 
     try:
         # pylint: disable=import-outside-toplevel

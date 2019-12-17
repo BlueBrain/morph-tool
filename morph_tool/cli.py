@@ -40,7 +40,8 @@ def soma_surface(input_file, quiet):
 @click.argument('input_file', type=REQUIRED_PATH)
 @click.argument('output_file')
 @click.option('--quiet/--no-quiet', default=False)
-def convert(input_file, output_file, quiet):
+@click.option('--recenter', is_flag=True)
+def convert(input_file, output_file, quiet, recenter):
     '''Convert a file format between its different representation.
 
     A special care has to be given to the soma conversion as each file format
@@ -53,7 +54,7 @@ def convert(input_file, output_file, quiet):
 
     if quiet:
         logger.setLevel(logging.WARNING)
-    run(input_file, output_file)
+    run(input_file, output_file, recenter)
 
 
 @cli.command()
