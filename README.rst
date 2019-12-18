@@ -97,8 +97,8 @@ not possible to have an accurate conversion from a soma contour in the
 XY plane from a H5 file to a SWC soma which is represented as a cylinder
 along Y.
 
-As a result, it has been choosen to take the soma surface as an
-invariant. This means soma surfaces of the input and output morphologies, as computed by NEURON, should be the preserved.
+As a result, it has been chosen to take the soma surface as an
+invariant. This means soma surfaces of the input and output morphologies, as computed by NEURON, should be preserved.
 
 Here are the possible cases for the soma conversion:
 
