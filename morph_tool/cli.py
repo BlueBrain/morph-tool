@@ -40,8 +40,11 @@ def soma_surface(input_file, quiet):
 @click.argument('input_file', type=REQUIRED_PATH)
 @click.argument('output_file')
 @click.option('--quiet/--no-quiet', default=False)
-@click.option('--recenter', is_flag=True)
-def convert(input_file, output_file, quiet, recenter):
+@click.option('--recenter', is_flag=True,
+              help='recenter the morphology based on the center of gravity of the soma')
+@click.option('--nrn-order', is_flag=True,
+              help='whether to traverse the neuron in the NEURON fashion')
+def convert(input_file, output_file, quiet, recenter, nrn_order):
     '''Convert a file format between its different representation.
 
     A special care has to be given to the soma conversion as each file format
@@ -50,11 +53,12 @@ def convert(input_file, output_file, quiet, recenter):
 
     More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458'''
     # pylint: disable=import-outside-toplevel
-    from morph_tool.converter import run
+    from morph_tool import converter
 
     if quiet:
         logger.setLevel(logging.WARNING)
-    run(input_file, output_file, recenter)
+
+    converter.convert(input_file, output_file, recenter, nrn_order)
 
 
 @cli.command()

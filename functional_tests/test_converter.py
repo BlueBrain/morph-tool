@@ -12,7 +12,7 @@ from morphio import Morphology, Option, RawDataError, set_maximum_warnings
 
 from morph_tool import diff
 from morph_tool.converter import (contour2centroid, contourcenter, get_sides,
-                                  make_convex, run)
+                                  make_convex, convert)
 from morph_tool.neuron_surface import get_NEURON_surface
 
 _path = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,7 @@ def assert_conversion_works(input_file):
     name = os.path.basename(input_file).split('.')[0]
     for ext_out in ['asc', 'h5', 'swc']:
         output_file = os.path.join('/tmp', name + '.' + ext_out)
-        run(input_file, output_file)
+        convert(input_file, output_file)
         input = Morphology(input_file)
         output = Morphology(output_file)
         diff_result = diff(input, output)
@@ -306,7 +306,7 @@ def test_full():
 def test_swc_1pt_soma_to_asc():
     input_file = os.path.join(_path, 'single-point-soma.swc')
     output_file = os.path.join(_path, 'tmp.asc')
-    run(input_file, output_file)
+    convert(input_file, output_file)
     assert_allclose(_get_surface(input_file, 'swc'),
                     _get_surface(output_file, 'asc'),
                     rtol=0.1)
@@ -315,7 +315,7 @@ def test_swc_1pt_soma_to_asc():
 def test_3pts_cylinder_to_asc():
     input_file = os.path.join(_path, 'soma_three_points_cylinder.swc')
     output_file = os.path.join(_path, 'test_3pts.asc')
-    run(input_file, output_file)
+    convert(input_file, output_file)
 
 
 def test_same_conversion_as_asciitoh5():
@@ -334,7 +334,7 @@ def test_same_conversion_as_asciitoh5():
         sanitized = Path(repo_base, '02-morphology-repository-sanitized')
         for path in tqdm(list(_walk(sanitized))):
             morphio_morph = Path(folder, path.stem + '.h5')
-            run(path, str(morphio_morph))
+            convert(path, str(morphio_morph))
             asciitoh5_morph = Path(repo_base, '03-morphology-repository-sanitized-asciitoh5ed', path.stem + '.h5')
             diff_result = diff(Morphology(morphio_morph, Option.nrn_order),
                                asciitoh5_morph)

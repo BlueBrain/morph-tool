@@ -4,11 +4,9 @@ import os
 
 import numpy as np
 from numpy.linalg import eig, norm
-from morphio import MorphologyVersion, SomaType
+from morphio import MorphologyVersion, SomaType, Option
 from morphio.mut import Morphology
 from morph_tool import transform
-
-np.set_printoptions(precision=19)
 
 logger = logging.getLogger('morph_tool')
 
@@ -208,9 +206,21 @@ def from_h5_or_asc(neuron, output_ext):
     return neuron
 
 
-def run(input_file, outputfile, recenter=False):
-    '''Run the appropriate converter'''
-    neuron = Morphology(input_file)
+def convert(input_file, outputfile, recenter=False, nrn_order=False):
+    '''Run the appropriate converter
+
+    Args:
+        input_file(str): path to input file
+        outputfile(str): path to output file
+        recenter(bool): whether to recenter the morphology based on the
+        center of gravity of the soma
+        nrn_order(bool): whether to traverse the neuron in the NEURON fashion
+    '''
+    kwargs = {}
+    if nrn_order:
+        kwargs['options'] = Option.nrn_order
+
+    neuron = Morphology(input_file, **kwargs)
 
     output_ext = os.path.splitext(outputfile)[1]
     if output_ext.lower() not in ('.swc', '.asc', '.h5', ):
@@ -239,8 +249,9 @@ def run(input_file, outputfile, recenter=False):
     try:
         # pylint: disable=import-outside-toplevel
         from morph_tool.neuron_surface import get_NEURON_surface
-        logger.info('Soma surface as computed by NEURON:\nbefore conversion: %s'
-                    '\nafter conversion: %s',
+        logger.info('Soma surface as computed by NEURON:\n'
+                    'before conversion: %s\n'
+                    'after conversion: %s',
                     get_NEURON_surface(input_file),
                     get_NEURON_surface(outputfile))
     except:  # noqa pylint: disable=bare-except

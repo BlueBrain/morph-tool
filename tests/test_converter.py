@@ -7,7 +7,7 @@ from nose.tools import ok_
 
 import morphio
 from morph_tool import diff
-from morph_tool.converter import run
+from morph_tool.converter import convert
 from utils import setup_tempdir
 
 PATH = os.path.join(os.path.dirname(__file__), 'data')
@@ -19,13 +19,13 @@ def test_convert():
             # A simple morphology
             inname = os.path.join(PATH, 'simple.' + in_ext)
             outname = os.path.join(tmp_dir, 'test.' + out_ext)
-            run(inname, outname)
+            convert(inname, outname)
             ok_(not diff(inname, outname))
 
             # A more complex one
             inname = os.path.join(PATH, 'tkb061126a4_ch0_cc2_h_zk_60x_1.' + in_ext)
             outname = os.path.join(tmp_dir, 'test.' + out_ext)
-            run(inname, outname)
+            convert(inname, outname)
             diff_result = diff(inname, outname, rtol=1e-5, atol=1e-5)
             ok_(not bool(diff_result), diff_result.info)
 
@@ -34,7 +34,7 @@ def test_convert_recenter():
     with setup_tempdir('test-convert_recenter') as tmp_dir:
         simple = os.path.join(PATH, 'simple.swc')
         outname = os.path.join(tmp_dir, 'test.swc')
-        run(simple, outname, recenter=True)
+        convert(simple, outname, recenter=True)
         ok_(not diff(simple, outname))  #simple.swc is already centered
 
         mut = morphio.Morphology(simple).as_mutable()
@@ -42,7 +42,7 @@ def test_convert_recenter():
         inname = os.path.join(tmp_dir, 'moved.swc')
         mut.write(inname)
 
-        run(inname, outname, recenter=True)
+        convert(inname, outname, recenter=True)
         simple = morphio.Morphology(simple)
         centered_morph = morphio.Morphology(outname)
         ok_(np.all((simple.points - centered_morph.points) == 1))
