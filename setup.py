@@ -30,7 +30,7 @@ setup(
     install_requires=[
         'click>=6.7',
         'functools32>=3.2;python_version<"3.0"',
-        'morphio>=2.1.5',
+        'morphio>=2.3.4',
         'numpy>=1.14',
         'neurom>=1.4.15',
         'pathlib2>=2.3.5',

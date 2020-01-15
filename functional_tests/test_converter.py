@@ -1,19 +1,21 @@
 import os
+import tempfile
+from itertools import chain
+from pathlib import Path
 
+from nose.tools import ok_
 import numpy as np
-from morphio import Morphology, RawDataError, set_maximum_warnings
-from nose.tools import assert_equal, ok_
 from numpy.testing import assert_allclose, assert_array_almost_equal
 from tqdm import tqdm
 
-from bluepyopt.ephys import simulators, morphologies, models
+from morphio import Morphology, Option, RawDataError, set_maximum_warnings
 
-from morph_tool.converter import contour2centroid, contourcenter, get_sides, make_convex, run
-from morph_tool.neuron_surface import get_NEURON_surface
 from morph_tool import diff
+from morph_tool.converter import (contour2centroid, contourcenter, get_sides,
+                                  make_convex, run)
+from morph_tool.neuron_surface import get_NEURON_surface
 
 _path = os.path.dirname(os.path.abspath(__file__))
-
 
 
 def _get_surface(filename, extension):
@@ -26,12 +28,9 @@ def _get_surface(filename, extension):
     raise NotImplementedError
 
 
-def _walk(folder, filter=None):
-    for root, _, files in os.walk(folder):
-        for file in files:
-            path = os.path.join(root, file)
-            if(filter == None or filter(path)):
-                yield path
+def _walk(folder):
+    path = Path(folder)
+    return chain(path.rglob('*.asc'), path.rglob('*.ASC'))
 
 
 def assert_conversion_works(input_file):
@@ -317,31 +316,26 @@ def test_3pts_cylinder_to_asc():
     input_file = os.path.join(_path, 'soma_three_points_cylinder.swc')
     output_file = os.path.join(_path, 'test_3pts.asc')
     run(input_file, output_file)
-    # assert_allclose(_get_surface(input_file, 'swc'),
-    #                 _get_surface(output_file, 'asc'),
-    #                 rtol=0.1)
 
 
-def _test_run_converter_on_repository(repository):
-    '''This is actually not being run in the unit tests but can be used in local
-    to compare all results on files from the repository '''
-    set_maximum_warnings(0)
+def test_same_conversion_as_asciitoh5():
+    '''Check that the morph-tool conversion to produces the same h5 files as asciitoh5 converter.
 
-    asc_files = list(_walk(repository,
-                           filter=lambda f: f.lower().endswith('.asc')))
+    repo_base/02-morphology-repository-sanitized contains valid morphologies under ASC format
+    repo_base/03-morphology-repository-sanitized-asciitoh5ed
+        contains the expected conversion output
 
-    errors = list()
-    new_ok = list()
-    for asc_file in tqdm(asc_files):
-        try:
-            assert_conversion_works(asc_file)
-            new_ok.append(asc_file)
-        except RawDataError:
-            pass
-        except Exception as e:
-            print("asc_file: {}".format(asc_file))
-            print("ok: {}".format(new_ok))
-            raise
-            errors.append((asc_file, str(e)))
-    print('Files in errors:')
-    print(errors)
+    Note: asciitoh5 also reorder the neurites but not 'morph-tool convert'
+          so we compare the reordered files
+    '''
+    repo_base = '/gpfs/bbp.cscs.ch/project/proj30/jenkins/morph-tool/converter'
+
+    with tempfile.TemporaryDirectory() as folder:
+        sanitized = Path(repo_base, '02-morphology-repository-sanitized')
+        for path in tqdm(list(_walk(sanitized))):
+            morphio_morph = Path(folder, path.stem + '.h5')
+            run(path, str(morphio_morph))
+            asciitoh5_morph = Path(repo_base, '03-morphology-repository-sanitized-asciitoh5ed', path.stem + '.h5')
+            diff_result = diff(Morphology(morphio_morph, Option.nrn_order),
+                               asciitoh5_morph)
+            ok_(not diff_result, 'mismatch:\n{}\n{}\n{}'.format(path, asciitoh5_morph, diff_result.info))
