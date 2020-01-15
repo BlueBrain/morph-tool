@@ -23,7 +23,7 @@ def test_mapping_NeuroM_section_to_NRN():
 
     for f in tqdm(files):
         try:
-            NeuroM_section_to_NRN_section(f)
+            NeuroM_section_to_NRN_section(str(f))
         except (RawDataError,
                 RuntimeError  # raised by neuron if 2 somas
         ):

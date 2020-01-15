@@ -33,6 +33,7 @@ setup(
         'morphio>=2.1.5',
         'numpy>=1.14',
         'neurom>=1.4.15',
+        'pathlib2>=2.3.5',
     ],
     extras_require={
         'all': ['bluepyopt>=1.6'] + PLOTLY_EXTRAS,

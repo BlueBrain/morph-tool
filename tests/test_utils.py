@@ -1,7 +1,10 @@
+from pathlib2 import Path
 from mock import patch
 from nose.tools import ok_, assert_equal
 
 from morph_tool.utils import is_morphology, iter_morphology_files
+
+PATH = Path(__file__).resolve().parent / 'data'
 
 def test_is_morphology():
     ok_(is_morphology('a.swc'))
@@ -11,10 +14,25 @@ def test_is_morphology():
     ok_(is_morphology('a.blah', extensions={'blah'}))
 
 
-@patch('morph_tool.utils.os.listdir', return_value=['a.h5', 'b.swc', 'c.blah', 'd'])
-@patch('morph_tool.utils.os.walk', return_value=[('folder', 'subfolders', ['a.h5', 'c.blah']),
-                                                 ('folder/subfolder', 'subfolders', ['b.swc'])])
-def test_iter_morphology_files(_, __):
-    assert_equal(list(iter_morphology_files('folder')), ['folder/a.h5', 'folder/b.swc'])
-    assert_equal(list(iter_morphology_files('folder', recursive=True)),
-                 ['folder/a.h5', 'folder/subfolder/b.swc'])
+def test_iter_morphology_files():
+    assert_equal(set(iter_morphology_files(PATH / 'folder')),
+                 {PATH / 'folder' / 'a.h5',
+                  PATH / 'folder' / 'b.swc'})
+
+    assert_equal(set(iter_morphology_files(str(PATH / 'folder'))),
+                 {PATH / 'folder' / 'a.h5',
+                  PATH / 'folder' / 'b.swc'})
+
+    assert_equal(set(iter_morphology_files(PATH / 'folder', recursive=True)),
+                 {PATH / 'folder' / 'a.h5',
+                  PATH / 'folder' / 'b.swc',
+                  PATH / 'folder' / 'subfolder' / 'g.SWC',
+                  PATH / 'folder' / 'subfolder' / 'e.h5',
+})
+
+    assert_equal(set(iter_morphology_files(str(PATH / 'folder'), recursive=True)),
+                 {PATH / 'folder' / 'a.h5',
+                  PATH / 'folder' / 'b.swc',
+                  PATH / 'folder' / 'subfolder' / 'g.SWC',
+                  PATH / 'folder' / 'subfolder' / 'e.h5',
+})
