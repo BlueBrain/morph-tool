@@ -1,6 +1,6 @@
 '''Utils'''
 from functools import partial
-from pathlib2 import Path
+from pathlib import Path
 
 
 def is_morphology(filename, extensions=None):

@@ -1,7 +1,7 @@
 '''A morphology converter that tries to keep the soma surface equal'''
 import logging
-import os
 
+from pathlib import Path
 import numpy as np
 from numpy.linalg import eig, norm
 from morphio import MorphologyVersion, SomaType, Option
@@ -222,7 +222,7 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False):
 
     neuron = Morphology(input_file, **kwargs)
 
-    output_ext = os.path.splitext(outputfile)[1]
+    output_ext = Path(outputfile).suffix
     if output_ext.lower() not in ('.swc', '.asc', '.h5', ):
         raise Exception('Output file format should be one swc, asc or h5')
     output_ext = output_ext[1:]  # Remove the dot

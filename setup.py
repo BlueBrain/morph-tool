@@ -5,9 +5,6 @@ import sys
 
 from setuptools import setup, find_packages
 
-if sys.version_info < (2, 7):
-    sys.exit("Sorry, Python < 2.7 is not supported")
-
 VERSION = imp.load_source("", "morph_tool/version.py").__version__
 
 PLOTLY_EXTRAS = [
@@ -33,12 +30,12 @@ setup(
         'morphio>=2.3.4',
         'numpy>=1.14',
         'neurom>=1.4.15',
-        'pathlib2>=2.3.5',
     ],
     extras_require={
         'all': ['bluepyopt>=1.6'] + PLOTLY_EXTRAS,
         'plotly': PLOTLY_EXTRAS,
     },
+    python_requires='>=3.6',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 5 - Production/Stable',

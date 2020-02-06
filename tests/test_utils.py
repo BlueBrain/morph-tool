@@ -1,4 +1,4 @@
-from pathlib2 import Path
+from pathlib import Path
 from mock import patch
 from nose.tools import ok_, assert_equal
 

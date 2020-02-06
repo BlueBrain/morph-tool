@@ -1,14 +1,16 @@
 '''The morph-tool command line launcher'''
 import logging
 import sys
+from pathlib import Path
 
 import click
 
 import morph_tool
+from morph_tool.utils import iter_morphology_files
 
 logging.basicConfig()
-logger = logging.getLogger('morph_tool')
-logger.setLevel(logging.INFO)
+L = logging.getLogger('morph_tool')
+L.setLevel(logging.INFO)
 
 REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_path=True)
 
@@ -16,6 +18,18 @@ REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_p
 @click.group()
 def cli():
     '''The CLI entry point'''
+
+
+@cli.group()
+def convert():
+    '''Convert a file format between its different representation.
+
+    A special care has been given to the soma conversion as each file format
+    has its own representation of the soma.
+    While the soma shape cannot be preserved during the conversion,
+    the soma surface should be.
+
+    More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458'''
 
 
 @cli.command(short_help='Get soma surface as computed by NEURON')
@@ -26,7 +40,7 @@ def soma_surface(input_file, quiet):
     # pylint: disable=import-outside-toplevel
     from morph_tool.neuron_surface import get_NEURON_surface
     if quiet:
-        logger.setLevel(logging.WARNING)
+        L.setLevel(logging.WARNING)
 
     try:
         click.echo('Soma surface: {}'.format(get_NEURON_surface(input_file)))
@@ -36,7 +50,7 @@ def soma_surface(input_file, quiet):
         - otherwise, get it here: https://github.com/neuronsimulator/nrn and compile it...''')
 
 
-@cli.command(short_help='Convert files from/to the following formats: ASC, SWC, H5')
+@convert.command(short_help='Convert a single morphology')
 @click.argument('input_file', type=REQUIRED_PATH)
 @click.argument('output_file')
 @click.option('--quiet/--no-quiet', default=False)
@@ -44,21 +58,46 @@ def soma_surface(input_file, quiet):
               help='recenter the morphology based on the center of gravity of the soma')
 @click.option('--nrn-order', is_flag=True,
               help='whether to traverse the neuron in the NEURON fashion')
-def convert(input_file, output_file, quiet, recenter, nrn_order):
-    '''Convert a file format between its different representation.
-
-    A special care has to be given to the soma conversion as each file format
-    as its own representation of the soma.
-    While the soma shape cannot be preserved, the soma surface should be.
-
-    More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458'''
+def file(input_file, output_file, quiet, recenter, nrn_order):
+    '''Convert a single morphology from/to the following formats: ASC, SWC, H5'''
     # pylint: disable=import-outside-toplevel
     from morph_tool import converter
 
     if quiet:
-        logger.setLevel(logging.WARNING)
+        L.setLevel(logging.WARNING)
 
     converter.convert(input_file, output_file, recenter, nrn_order)
+
+
+@convert.command(short_help='Convert all morphologies in a folder')
+@click.argument('input_dir')
+@click.argument('output_dir', type=click.Path(exists=True, file_okay=False, writable=True))
+@click.option('-ext', '--extension', type=click.Choice(['h5', 'swc', 'asc', 'H5', 'SWC', 'ASC']),
+              help='The output file format')
+@click.option('--quiet/--no-quiet', default=False)
+@click.option('--recenter', is_flag=True,
+              help='recenter the morphology based on the center of gravity of the soma')
+@click.option('--nrn-order', is_flag=True,
+              help='whether to traverse the neuron in the NEURON fashion')
+def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order):
+    '''Convert all morphologies in the folder and its subfolders'''
+    # pylint: disable=import-outside-toplevel
+    from morph_tool import converter
+
+    if quiet:
+        L.setLevel(logging.WARNING)
+
+    failed_conversions = list()
+    for path in iter_morphology_files(input_dir):
+        try:
+            converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
+                              recenter, nrn_order)
+        except:  # noqa, pylint: disable=bare-except
+            failed_conversions.append(str(path))
+
+    if failed_conversions:
+        L.warning('The following morphologies could not be converted: %s',
+                  failed_conversions)
 
 
 @cli.command()
@@ -77,10 +116,10 @@ def diff(morph1, morph2, quiet):
     MORPH1 and MORPH2 can be either filenames or morphio.Morpholgy objects
     '''
     if quiet:
-        logger.setLevel(logging.WARNING)
+        L.setLevel(logging.WARNING)
 
     result = morph_tool.diff(morph1, morph2)
     if result:
-        logger.info("Morphologies not identical")
-        logger.info(result.info)
+        L.info("Morphologies not identical")
+        L.info(result.info)
         sys.exit(1)
