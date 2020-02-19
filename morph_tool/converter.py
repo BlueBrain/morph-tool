@@ -19,7 +19,7 @@ def contourcenter(xyz):
     '''python implementation of NEURON code: lib/hoc/import3d/import3d_sec.hoc '''
     POINTS = 101
 
-    points = np.vstack((np.diff(xyz[:, [X, Y]], axis=0), (0, 0)))
+    points = np.vstack((np.diff(xyz[:, [X, Y]], axis=0), xyz[0, [X, Y]]))
     perim = np.cumsum(np.hstack(((0, ), norm(points, axis=1))))[:-1]
 
     d = np.linspace(0, perim[-1], POINTS)
