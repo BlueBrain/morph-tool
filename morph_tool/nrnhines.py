@@ -1,5 +1,8 @@
 """Utils related to the NRN simulator"""
 import logging
+from pathlib import Path
+from typing import List, Union
+
 import numpy as np
 from numpy.testing import assert_almost_equal
 from neurom import COLS, iter_sections, load_neuron, NeuriteType
@@ -8,7 +11,7 @@ from neurom.core import NeuriteIter
 L = logging.getLogger('morph_tool')
 
 
-def _get_NRN_cell(filename):
+def _get_NRN_cell(filename: Path):
     """Returns a NRN cell"""
     try:
         # pylint: disable=import-outside-toplevel
@@ -17,7 +20,7 @@ def _get_NRN_cell(filename):
         raise Exception('_get_NRN_cell requires the extra: all. '
                         'Please install it by doing: pip install morph-tool[all]')
 
-    m = ephys.morphologies.NrnFileMorphology(filename)
+    m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
     cell = ephys.models.CellModel('test', morph=m, mechs=[])
     cell.instantiate(sim=sim)
@@ -67,7 +70,7 @@ def _validate_section_mapping(NeuroM_cell, NRN_cell, mapping):
         _validate_section(NRN_cell, NeuroM_cell, nrm_idx, nrn_idx)
 
 
-def NeuroM_section_to_NRN_section(filename):
+def NeuroM_section_to_NRN_section(filename: Path):
     """Returns a mapping from NeuroM section IDs to NRN ones"""
     NeuroM_cell = load_neuron(filename)
     NRN_cell = _get_NRN_cell(filename)
@@ -183,14 +186,14 @@ def _compartment_paths(points, n_compartments):
     return _interpolate_compartments(points, boundaries_segment_ids, boundaries_positions)
 
 
-def NeuroM_section_to_NRN_compartment_paths(morph_path):
+def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
     """Returns a dictionary NeuroM section id -> path of each compartment for the section
 
     Path are formed by following the section points until the pathlength of the compartment is
     reached.
 
     Args:
-        morph_path (str): the morphology path
+        morph_path: the morphology path
 
 
     1) Compute the cumulative pathlength along the section segments_directions
@@ -238,3 +241,28 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path):
             section.points[:, COLS.XYZ], NRN_section.nseg)
 
     return NeuroM_to_compartment_position_mapping
+
+
+def point_to_section_end(filename: Path,
+                         point: List[float],
+                         epsilon: float = 1E-8) -> Union[None, int]:
+    '''Returns the ID of the first found section whose end is at a distance less than
+    EPSILON from POINT. If no section satisfies this requirement, returns None
+
+    The iteration order is given by the section index.
+
+    Args:
+        filename: path to a morphology
+        point: the points's 3D coordinates
+        epsilon: the distance below which a section is considered sufficiently close to point
+    '''
+    point = np.asarray(point)
+    neuron = _get_NRN_cell(filename)
+    for index, section in enumerate(neuron.icell.all):
+        last_index = section.n3d() - 1
+        last_section_point = [section.x3d(last_index),
+                              section.y3d(last_index),
+                              section.z3d(last_index)]
+        if np.linalg.norm(point - last_section_point) < epsilon:
+            return index
+    return None

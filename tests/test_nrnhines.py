@@ -1,10 +1,11 @@
+from pathlib import Path
 import numpy as np
-import os
 from numpy.testing import assert_array_almost_equal, assert_equal
 
-from morph_tool.nrnhines import NeuroM_section_to_NRN_compartment_paths, _compartment_paths
+import morph_tool.nrnhines as test_module
 
-PATH = os.path.join(os.path.dirname(__file__), 'data')
+PATH = Path(__file__).parent / 'data'
+SIMPLE = PATH / 'simple2.asc'
 
 
 def test_interpolate_compartments():
@@ -12,7 +13,7 @@ def test_interpolate_compartments():
                        [1, 0, 0],
                        [1, 2, 0],
                        [2, 2, 0]])
-    paths = _compartment_paths(points, 3)
+    paths = test_module._compartment_paths(points, 3)
     assert_equal(len(paths), 3)
 
     assert_array_almost_equal(paths[0],
@@ -31,11 +32,18 @@ def test_interpolate_compartments():
 
 
 def test_NeuroM_section_to_NRN_compartment_paths():
-    filename = os.path.join(PATH, 'simple2.asc')
-    mapping = NeuroM_section_to_NRN_compartment_paths(filename)
+    mapping = test_module.NeuroM_section_to_NRN_compartment_paths(SIMPLE)
 
     assert_array_almost_equal(mapping[1], [[[0., 0., 0.],
                                             [0., 5., 0.]]])
     assert_array_almost_equal(mapping[2], [[[0., 5., 0.],
                                             [-5., 5., 0.],
                                             [-6., 5., 0.]]])
+
+
+def test_point_to_section_end():
+    assert_equal(test_module.point_to_section_end(SIMPLE, [-8, 10, 0]),
+                 6)
+
+    assert_equal(test_module.point_to_section_end(SIMPLE, [-8, 10, 10000]),
+                 None)
