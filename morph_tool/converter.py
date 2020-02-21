@@ -152,6 +152,19 @@ def single_point_sphere_to_circular_contour(neuron):
     _to_sphere(neuron)
 
 
+def soma_to_single_point(soma):
+    logger.info('Converting a cylindrical to a single point sphere')
+    assert soma.type == SomaType.SOMA_SIMPLE_CONTOUR
+    r0 = 0.5 * soma.diameters[:-1]
+    r1 = 0.5 * soma.diameters[1:]
+    h2 = np.sum((soma.points[:-1] - soma.points[1:]) ** 2., axis=1)
+
+    surface_area = np.sum(np.pi * (r0 + r1) * np.sqrt((r0 - r1) ** 2 + h2))
+    soma.points = np.mean(soma.points, axis=0)[None, :]
+    soma.diameters = [float((surface_area / np.pi) ** 0.5)]
+    return
+
+
 def from_swc(neuron, output_ext):
     '''Convert to SWC'''
     if output_ext == 'swc':
@@ -209,7 +222,7 @@ def from_h5_or_asc(neuron, output_ext):
     return neuron
 
 
-def convert(input_file, outputfile, recenter=False, nrn_order=False):
+def convert(input_file, outputfile, recenter=False, nrn_order=False, single_point_soma=False):
     '''Run the appropriate converter
 
     Args:
@@ -218,6 +231,7 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False):
         recenter(bool): whether to recenter the morphology based on the
         center of gravity of the soma
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
+        single_point_soma(bool):For SWC only
     '''
     kwargs = {}
     if nrn_order:
@@ -226,8 +240,13 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False):
     neuron = Morphology(input_file, **kwargs)
 
     output_ext = Path(outputfile).suffix
+
+    if single_point_soma and output_ext.lower() != '.swc':
+        raise Exception('Single point soma is only applicable for swc output')
+
     if output_ext.lower() not in ('.swc', '.asc', '.h5', ):
         raise Exception('Output file format should be one swc, asc or h5')
+
     output_ext = output_ext[1:]  # Remove the dot
 
     try:
@@ -243,6 +262,9 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False):
 
     logger.info('Original soma type: %s', neuron.soma_type)
     new = converter(neuron, output_ext)
+
+    if single_point_soma:
+        soma_to_single_point(new.soma)
 
     if recenter:
         transform.translate(new, -1 * new.soma.center)
