@@ -1,24 +1,28 @@
 """Utils related to the NRN simulator"""
 import logging
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Sequence
 
 import numpy as np
 from numpy.testing import assert_almost_equal
 from neurom import COLS, iter_sections, load_neuron, NeuriteType
 from neurom.core import NeuriteIter
 
+
+try:
+    # pylint: disable=import-outside-toplevel
+    import bluepyopt.ephys as ephys
+    import neuron
+except ImportError:
+    raise Exception('morph_tool.nrnhines requires the extra: all. '
+                    'Please install it by doing: pip install morph-tool[all]')
+
+
 L = logging.getLogger('morph_tool')
 
 
-def _get_NRN_cell(filename: Path):
+def get_NRN_cell(filename: Path):
     """Returns a NRN cell"""
-    try:
-        # pylint: disable=import-outside-toplevel
-        import bluepyopt.ephys as ephys
-    except ImportError:
-        raise Exception('_get_NRN_cell requires the extra: all. '
-                        'Please install it by doing: pip install morph-tool[all]')
 
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
@@ -73,7 +77,7 @@ def _validate_section_mapping(NeuroM_cell, NRN_cell, mapping):
 def NeuroM_section_to_NRN_section(filename: Path):
     """Returns a mapping from NeuroM section IDs to NRN ones"""
     NeuroM_cell = load_neuron(filename)
-    NRN_cell = _get_NRN_cell(filename)
+    NRN_cell = get_NRN_cell(filename)
 
     mapping = dict()
 
@@ -224,7 +228,7 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
     """
 
     NeuroM_cell = load_neuron(morph_path)
-    NRN_neuron = _get_NRN_cell(morph_path)
+    NRN_neuron = get_NRN_cell(morph_path)
     NRN_sections = list(NRN_neuron.icell.all)
 
     mapping = NeuroM_section_to_NRN_section(morph_path)
@@ -243,26 +247,29 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
     return NeuroM_to_compartment_position_mapping
 
 
-def point_to_section_end(filename: Path,
+def point_to_section_end(sections: Sequence[neuron.nrn.Section],
                          point: List[float],
-                         epsilon: float = 1E-8) -> Union[None, int]:
-    '''Returns the ID of the first found section whose end is at a distance less than
+                         atol: float = 1e-05,
+                         rtol: float = 1e-08) -> Union[None, int]:
+    '''Returns the index of the first found section whose end is at a distance less than
     EPSILON from POINT. If no section satisfies this requirement, returns None
 
     The iteration order is given by the section index.
 
     Args:
-        filename: path to a morphology
+        sections: a sequence of sections
         point: the points's 3D coordinates
-        epsilon: the distance below which a section is considered sufficiently close to point
+        atol: absolute tolerance
+        rtol: relative tolerance
     '''
     point = np.asarray(point)
-    neuron = _get_NRN_cell(filename)
-    for index, section in enumerate(neuron.icell.all):
+
+    for index, section in enumerate(sections):
         last_index = section.n3d() - 1
         last_section_point = [section.x3d(last_index),
                               section.y3d(last_index),
                               section.z3d(last_index)]
-        if np.linalg.norm(point - last_section_point) < epsilon:
+
+        if np.isclose(point, last_section_point, atol=atol, rtol=rtol).all():
             return index
     return None

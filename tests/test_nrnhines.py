@@ -42,8 +42,13 @@ def test_NeuroM_section_to_NRN_compartment_paths():
 
 
 def test_point_to_section_end():
-    assert_equal(test_module.point_to_section_end(SIMPLE, [-8, 10, 0]),
+    cell = test_module.get_NRN_cell(SIMPLE)
+    assert_equal(test_module.point_to_section_end(cell.icell.all, [-8, 10, 0]),
                  6)
 
-    assert_equal(test_module.point_to_section_end(SIMPLE, [-8, 10, 10000]),
+    assert_equal(test_module.point_to_section_end(cell.icell.all, [-8, 10, 2]),
                  None)
+
+    assert_equal(test_module.point_to_section_end(cell.icell.all, [-8, 10, 2],
+                                                  atol=10),
+                 3)
