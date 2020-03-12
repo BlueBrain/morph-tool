@@ -230,3 +230,16 @@ Usage example:
 
 The above code should open your web browser with a dendrogram drawing. The drawing is made by
 plotly, so you can expect all plotly features to work.
+
+
+Contributing
+============
+
+If you want to improve the project or you see any issue, every contribution is welcome.
+Please check the `contribution guidelines <CONTRIBUTING.md>`__ for more information.
+
+License
+=======
+
+morph-tool is licensed under the terms of the GNU Lesser General Public License version 3.
+Refer to COPYING.LESSER and COPYING for details.
