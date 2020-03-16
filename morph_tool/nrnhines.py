@@ -249,8 +249,8 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
 
 def point_to_section_end(sections: Sequence[neuron.nrn.Section],
                          point: List[float],
-                         atol: float = 1e-05,
-                         rtol: float = 1e-08) -> Union[None, int]:
+                         atol: float = 1e-08,
+                         rtol: float = 1e-05) -> Union[None, int]:
     '''Returns the index of the first found section whose end is at a distance less than
     EPSILON from POINT. If no section satisfies this requirement, returns None
 
