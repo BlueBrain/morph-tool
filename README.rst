@@ -63,7 +63,16 @@ The same functionality is also avalaible through the python API:
 .. code:: python
 
    from morph_tool import diff
+
+   # The result can be used as a boolean:
+   if diff(filename1, filename2):
+       print('morphologies differ')
+
+   # And also contains information about how morphologies differ
    result = diff(filename1, filename2)
+   print(result.info)
+
+
 
 Converter
 =========
@@ -138,6 +147,17 @@ Here are the possible cases for the soma conversion:
       Each cylinder of the stack has its center and its axis along the principal direction of the contour.
       The radius of each stack is choosen such that it minimises the distance between the cylinder and the contour.
     - other: not in H5/ASC specs -> not supported
+
+Example:
+
+.. code:: python
+
+   from morph_tool import convert
+   convert(inputfile, outputfile)
+
+   # Additionally the morphology can be recentered or written according to the NEURON neurite order during the conversion
+   convert(inputfile, outputfile, recenter=True, nrn_order=True)
+
 
 NRN simulator compartment coordinates
 =====================================
