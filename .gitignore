@@ -5,3 +5,5 @@ coverage.xml
 .coverage
 doc/build
 .tox
+build/
+dist/
