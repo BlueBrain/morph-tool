@@ -2,6 +2,7 @@
 
 import imp
 import sys
+from pathlib import Path
 
 from setuptools import setup, find_packages
 
@@ -13,16 +14,23 @@ PLOTLY_EXTRAS = [
     'bluepy>=0.14',
 ]
 
+# read the contents of the README file
+readme_path = Path(__file__).resolve().parent / "README.rst"
+with open(readme_path, encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(
     name="morph-tool",
     author="BlueBrain NSE",
     author_email="bbp-ou-nse@groupes.epfl.ch",
     version=VERSION,
     description="A collection of CLIs and python function related to morphology handling",
+    long_description=long_description,
+    long_description_content_type="text/x-rst",
     url="https://github.com/bluebrain/morph-tool",
     entry_points={
         'console_scripts': ['morph-tool=morph_tool.cli:cli']},
-    license="BBP-internal-confidential",
+    license="LGPLv3",
     install_requires=[
         'click>=6.7',
         'functools32>=3.2;python_version<"3.0"',
@@ -39,8 +47,6 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
