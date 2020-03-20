@@ -11,7 +11,6 @@ VERSION = imp.load_source("", "morph_tool/version.py").__version__
 PLOTLY_EXTRAS = [
     'plotly>=4.1.0',
     'pandas>=0.24',
-    'bluepy>=0.14',
 ]
 
 # read the contents of the README file
