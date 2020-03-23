@@ -216,42 +216,6 @@ Splitting this section into 3 compartments would results in the following paths:
     [1.        , 2.        ],
     [2.        , 2.        ]]
 
-Dendrogram with synapses
-========================
-
-Draw NeuroM dendrogram with synapses on it. Synapses must be represented as a DataFrame from bluepy.
-This option is available only when the package is installed with **plotly** or **all** extras:
-
-.. code:: bash
-
-    pip install morph-tool[plotly]
-
-Usage example:
-
-.. code:: python
-
-    preGID = 1
-    postGID = 10
-    c = Circuit('/home/circuit/CircuitConfig')
-    synapse_properties = [
-        Synapse.PRE_GID, Synapse.POST_GID,
-        Synapse.POST_SECTION_ID, Synapse.POST_SECTION_DISTANCE,
-        Synapse.PRE_SECTION_ID, Synapse.PRE_SECTION_DISTANCE,
-        Synapse.U_SYN, Synapse.D_SYN, Synapse.F_SYN, Synapse.G_SYNX,
-    ]
-    synapses1 = c.connectome.pair_synapses(preGID, postGID, synapse_properties)
-    synapses2 = c.connectome.pair_synapses(postGID, preGID, synapse_properties)
-    synapses = pd.concat([synapses1, synapses2])
-    neurom_morph = c.morph.get_filepath(postGID)
-    neuron = nm.load_neuron(neurom_morph)
-
-    fig = draw(neuron, synapses, postGID)
-    fig.show()
-
-The above code should open your web browser with a dendrogram drawing. The drawing is made by
-plotly, so you can expect all plotly features to work.
-
-
 Contributing
 ============
 
