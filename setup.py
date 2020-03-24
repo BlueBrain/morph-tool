@@ -15,8 +15,7 @@ with open(readme_path, encoding='utf-8') as f:
 
 setup(
     name="morph-tool",
-    author="BlueBrain NSE",
-    author_email="bbp-ou-nse@groupes.epfl.ch",
+    author="Blue Brain Project, EPFL",
     version=VERSION,
     description="A collection of CLIs and python function related to morphology handling",
     long_description=long_description,
