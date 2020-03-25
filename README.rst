@@ -16,7 +16,7 @@ In a fresh virtualenv:
 
 .. code:: bash
 
-    pip install --index-url https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/ morph-tool
+    pip install morph-tool
 
 Usage
 =====
