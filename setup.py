@@ -6,8 +6,6 @@ from pathlib import Path
 
 from setuptools import setup, find_packages
 
-VERSION = imp.load_source("", "morph_tool/version.py").__version__
-
 # read the contents of the README file
 readme_path = Path(__file__).resolve().parent / "README.rst"
 with open(readme_path, encoding='utf-8') as f:
@@ -16,7 +14,6 @@ with open(readme_path, encoding='utf-8') as f:
 setup(
     name="morph-tool",
     author="Blue Brain Project, EPFL",
-    version=VERSION,
     description="A collection of CLIs and python function related to morphology handling",
     long_description=long_description,
     long_description_content_type="text/x-rst",
@@ -42,4 +39,6 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
 )
