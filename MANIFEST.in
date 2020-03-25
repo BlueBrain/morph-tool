@@ -1,3 +1,4 @@
 graft tests
 
 global-exclude *.py[co] .DS_Store
+prune tests
