@@ -30,7 +30,7 @@ def apical_point_section_segment(neuron):
         return None, None
 
     section, segment = point_to_section_segment(neuron, point)
-    section -= 1  # MorphIO ID = NeuroM ID + 1
+    section -= 1  # MorphIO ID = NeuroM ID - 1
     return section, segment
 
 
