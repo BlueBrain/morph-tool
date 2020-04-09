@@ -72,10 +72,12 @@ def make_convex(sides, rads):
             else:
                 idx[i] = False
         return idx
+
     for i_side in [0, 1]:
         ci = convex_idx(sides[i_side])
         sides[i_side] = sides[i_side][ci]
         rads[i_side] = rads[i_side][ci]
+
     return sides, rads
 
 
@@ -102,6 +104,7 @@ def contour2centroid(mean, points):
     idx = 3 - np.argmin(eigen_values) - np.argmax(eigen_values)
     minor = eigen_vectors[:, idx]
     minor[2] = 0
+    minor /= np.linalg.norm(minor)
 
     sides, rads = get_sides(points, major, minor)
     sides, rads = make_convex(sides, rads)
