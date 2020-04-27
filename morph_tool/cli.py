@@ -58,7 +58,9 @@ def soma_surface(input_file, quiet):
               help='recenter the morphology based on the center of gravity of the soma')
 @click.option('--nrn-order', is_flag=True,
               help='whether to traverse the neuron in the NEURON fashion')
-def file(input_file, output_file, quiet, recenter, nrn_order):
+@click.option('--single-point-soma', is_flag=True,
+              help='For SWC files only')
+def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma):
     '''Convert a single morphology from/to the following formats: ASC, SWC, H5'''
     # pylint: disable=import-outside-toplevel
     from morph_tool import converter
@@ -66,7 +68,7 @@ def file(input_file, output_file, quiet, recenter, nrn_order):
     if quiet:
         L.setLevel(logging.WARNING)
 
-    converter.convert(input_file, output_file, recenter, nrn_order)
+    converter.convert(input_file, output_file, recenter, nrn_order, single_point_soma)
 
 
 @convert.command(short_help='Convert all morphologies in a folder')
@@ -79,7 +81,9 @@ def file(input_file, output_file, quiet, recenter, nrn_order):
               help='recenter the morphology based on the center of gravity of the soma')
 @click.option('--nrn-order', is_flag=True,
               help='whether to traverse the neuron in the NEURON fashion')
-def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order):
+@click.option('--single-point-soma', is_flag=True,
+              help='For SWC files only')
+def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_point_soma):
     '''Convert all morphologies in the folder and its subfolders'''
     # pylint: disable=import-outside-toplevel
     from morph_tool import converter
@@ -91,7 +95,7 @@ def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order):
     for path in iter_morphology_files(input_dir):
         try:
             converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
-                              recenter, nrn_order)
+                              recenter, nrn_order, single_point_soma)
         except:  # noqa, pylint: disable=bare-except
             failed_conversions.append(str(path))
 

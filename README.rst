@@ -123,7 +123,7 @@ Here are the possible cases for the soma conversion:
       The points of the new contour are the outline of the soma stack projected in the XY plane.
     - Soma three point cylinder:
       The soma becomes a sphere of same surface. The contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
-    - Soma sphere (soma represented by a single point represeting the center of a sphere and its radius): the contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
+    - Soma sphere (soma represented by a single point representing the center of a sphere and its radius): the contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
     - other:
       Not in SWC spec -> not supported
 
@@ -134,7 +134,7 @@ Here are the possible cases for the soma conversion:
 
     Depending on soma type:
 
-    - Soma single point sphere (soma represented by a single point represeting the center of a sphere and its radius): the contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
+    - Soma single point sphere (soma represented by a single point representing the center of a sphere and its radius): the contour made by the circle of biggest section in the XY plane is sampled in 20 points written to disk.
     - Soma contour: no conversion needed
     - other: not in H5/ASC specs -> not supported
 
@@ -145,7 +145,7 @@ Here are the possible cases for the soma conversion:
     - Soma single point sphere: no conversion needed
     - Soma contour: A soma stack of cylinder is generated.
       Each cylinder of the stack has its center and its axis along the principal direction of the contour.
-      The radius of each stack is choosen such that it minimises the distance between the cylinder and the contour.
+      The radius of each stack is chosen such that it minimises the distance between the cylinder and the contour.
     - other: not in H5/ASC specs -> not supported
 
 Example:
@@ -165,7 +165,7 @@ NRN simulator compartment coordinates
 The NRN simulator splits each section into chunks of equal length (equal only among a given section).
 These compartments do not really exist in the physical world but we can remap them to paths
 along the section. Each compartment can be associated to a path (a list of 3D points) such
-that the path and the compartment have the same pathlength.
+that the path and the compartment have the same path-length.
 
 The following function can be used to access the mapping NeuroM section ID -> list of paths for the section:
 

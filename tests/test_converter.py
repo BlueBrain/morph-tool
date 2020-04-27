@@ -3,7 +3,7 @@ import numpy as np
 import itertools as it
 import os
 
-from nose.tools import ok_
+from nose.tools import ok_, assert_equal
 
 import morphio
 from morph_tool import diff
@@ -46,3 +46,17 @@ def test_convert_recenter():
         simple = morphio.Morphology(simple)
         centered_morph = morphio.Morphology(outname)
         ok_(np.all((simple.points - centered_morph.points) == 1))
+
+def test_convert_swc_contour_to_sphere():
+    with setup_tempdir('test_convert_swc_contour_to_sphere') as tmp_dir:
+        # needs to have a complex contour soma
+        simple = os.path.join(PATH, 'tkb061126a4_ch0_cc2_h_zk_60x_1.asc')
+        outname = os.path.join(tmp_dir, 'test.swc')
+        convert(simple, outname, single_point_soma=True)
+
+        m = morphio.Morphology(outname)
+        assert_equal(1, len(m.soma.points))
+        assert_equal(1, len(m.soma.diameters))
+
+        #value dumped from NEURON: h.area(0.5, sec=icell.soma[0])
+        np.testing.assert_approx_equal(m.soma.surface, 476.0504050847511)

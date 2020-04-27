@@ -7,6 +7,7 @@ from numpy.linalg import eig, norm
 from morphio import MorphologyVersion, SomaType, Option
 from morphio.mut import Morphology
 from morph_tool import transform
+from neurom import morphmath
 
 logger = logging.getLogger('morph_tool')
 
@@ -152,6 +153,17 @@ def single_point_sphere_to_circular_contour(neuron):
     _to_sphere(neuron)
 
 
+def soma_to_single_point(soma):
+    '''surface preserving cylindrical soma to a single point sphere'''
+    logger.info('Converting soma to a single point sphere, while preserving the surface')
+    neurom_points = np.hstack((soma.points, 0.5 * soma.diameters[:, None]))
+    surface_area = sum(morphmath.segment_area(seg)
+                       for seg in zip(neurom_points[1:], neurom_points[:-1]))
+
+    soma.points = np.mean(soma.points, axis=0)[None, :]
+    soma.diameters = [float((surface_area / np.pi) ** 0.5)]
+
+
 def from_swc(neuron, output_ext):
     '''Convert to SWC'''
     if output_ext == 'swc':
@@ -209,7 +221,7 @@ def from_h5_or_asc(neuron, output_ext):
     return neuron
 
 
-def convert(input_file, outputfile, recenter=False, nrn_order=False):
+def convert(input_file, outputfile, recenter=False, nrn_order=False, single_point_soma=False):
     '''Run the appropriate converter
 
     Args:
@@ -218,6 +230,7 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False):
         recenter(bool): whether to recenter the morphology based on the
         center of gravity of the soma
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
+        single_point_soma(bool):For SWC only
     '''
     kwargs = {}
     if nrn_order:
@@ -226,8 +239,13 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False):
     neuron = Morphology(input_file, **kwargs)
 
     output_ext = Path(outputfile).suffix
+
+    if single_point_soma and output_ext.lower() != '.swc':
+        raise Exception('Single point soma is only applicable for swc output')
+
     if output_ext.lower() not in ('.swc', '.asc', '.h5', ):
         raise Exception('Output file format should be one swc, asc or h5')
+
     output_ext = output_ext[1:]  # Remove the dot
 
     try:
@@ -243,6 +261,9 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False):
 
     logger.info('Original soma type: %s', neuron.soma_type)
     new = converter(neuron, output_ext)
+
+    if single_point_soma:
+        soma_to_single_point(new.soma)
 
     if recenter:
         transform.translate(new, -1 * new.soma.center)
