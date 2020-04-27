@@ -3,7 +3,7 @@ import numpy as np
 import itertools as it
 import os
 
-from nose.tools import ok_, eq_
+from nose.tools import ok_, assert_equal
 
 import morphio
 from morph_tool import diff
@@ -55,8 +55,8 @@ def test_convert_swc_contour_to_sphere():
         convert(simple, outname, single_point_soma=True)
 
         m = morphio.Morphology(outname)
-        eq_(1, len(m.soma.points))
-        eq_(1, len(m.soma.diameters))
+        assert_equal(1, len(m.soma.points))
+        assert_equal(1, len(m.soma.diameters))
 
         #value dumped from NEURON: h.area(0.5, sec=icell.soma[0])
         np.testing.assert_approx_equal(m.soma.surface, 476.0504050847511)

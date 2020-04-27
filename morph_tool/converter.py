@@ -7,6 +7,7 @@ from numpy.linalg import eig, norm
 from morphio import MorphologyVersion, SomaType, Option
 from morphio.mut import Morphology
 from morph_tool import transform
+from neurom import morphmath
 
 logger = logging.getLogger('morph_tool')
 
@@ -153,16 +154,14 @@ def single_point_sphere_to_circular_contour(neuron):
 
 
 def soma_to_single_point(soma):
-    logger.info('Converting a cylindrical to a single point sphere')
-    assert soma.type == SomaType.SOMA_SIMPLE_CONTOUR
-    r0 = 0.5 * soma.diameters[:-1]
-    r1 = 0.5 * soma.diameters[1:]
-    h2 = np.sum((soma.points[:-1] - soma.points[1:]) ** 2., axis=1)
+    '''surface preserving cylindrical soma to a single point sphere'''
+    logger.info('Converting soma to a single point sphere, while preserving the surface')
+    neurom_points = np.hstack((soma.points, 0.5 * soma.diameters[:, None]))
+    surface_area = sum(morphmath.segment_area(seg)
+                       for seg in zip(neurom_points[1:], neurom_points[:-1]))
 
-    surface_area = np.sum(np.pi * (r0 + r1) * np.sqrt((r0 - r1) ** 2 + h2))
     soma.points = np.mean(soma.points, axis=0)[None, :]
     soma.diameters = [float((surface_area / np.pi) ** 0.5)]
-    return
 
 
 def from_swc(neuron, output_ext):
