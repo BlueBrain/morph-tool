@@ -1,21 +1,26 @@
 """Utils related to the NRN simulator"""
+import json
 import logging
+import multiprocessing
+import multiprocessing.pool
+from functools import partial
 from pathlib import Path
 from typing import List, Sequence, Union
 
 import bluepyopt.ephys as ephys
 import neuron
 import numpy as np
+import yaml
 from neurom import COLS, NeuriteType, iter_sections, load_neuron
 from neurom.core import NeuriteIter
 from numpy.testing import assert_almost_equal
+from tqdm import tqdm
 
 L = logging.getLogger('morph_tool')
 
 
 def get_NRN_cell(filename: Path):
     """Returns a NRN cell"""
-
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
     cell = ephys.models.CellModel('test', morph=m, mechs=[])
@@ -265,3 +270,91 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
         if np.isclose(point, last_section_point, atol=atol, rtol=rtol).all():
             return index
     return None
+
+
+class NoDaemonProcess(multiprocessing.Process):
+    """Class that represents a non-daemon process"""
+
+    def _get_daemon(self):  # pylint: disable=R0201
+        """Get daemon flag"""
+        return False
+
+    def _set_daemon(self, value):
+        """Set daemon flag"""
+
+    daemon = property(_get_daemon, _set_daemon)
+
+
+class NestedPool(multiprocessing.pool.Pool):  # pylint: disable=abstract-method
+    """Class that represents a MultiProcessing nested pool"""
+
+    Process = NoDaemonProcess
+
+
+def isolate(func):
+    """Isolate a generic function for independent NEURON instances.
+
+    Note: it does not work as decorator.
+
+    Args:
+        func (function): function to isolate"""
+    def func_isolated(*args, **kwargs):
+        with NestedPool(1, maxtasksperchild=1) as pool:
+            return pool.apply(func, args, kwargs)
+    return func_isolated
+
+
+def convert_point_to_isec(morphology_path, point, section_type="apical"):
+    """Convert a point position to NEURON section index and return cell name and id.
+
+    Args:
+        morphology_path (Path): path to morphology
+        point (list/ndarray): 3d point
+    """
+    cell = get_NRN_cell(morphology_path)
+    point = point_to_section_end(getattr(cell.icell, section_type), point)
+    return morphology_path.stem, point
+
+
+def convert_point_to_isec_isolated(morph_data, section_type="apical"):
+    """Serves as a decorator to isolate convert_point_to_isc, but work with multiprocessing."""
+    return isolate(convert_point_to_isec)(*morph_data, section_type=section_type)
+
+
+def convert_points_to_isecs(morphology_path,
+                            points_file, isections_file,
+                            section_type='all', n_workers=1):
+    """Convert 3d positions to NEURON isections and save to json/yaml file.
+
+    Args:
+        morphology_path (str): path to the morphologies
+        points_file (str): path to a json/yaml file with points data
+        isections_file (str): patht to a json/yaml file to store isections data
+        section_types (str): NEURON types of isection to consider
+        n_workers (int): number of workers for multiprocessing"""
+    morphologies = Path(morphology_path).glob("**/*.asc")
+    with open(points_file, "rb") as yaml_file:
+        points = yaml.safe_load(yaml_file)
+
+    points_to_convert = {
+        morphology: points[morphology.stem]
+        for morphology in morphologies
+        if morphology.stem in points
+        if points[morphology.stem] is not None
+    }
+
+    with NestedPool(processes=n_workers) as pool:
+        isections = {
+            cell_name: isec
+            for cell_name, isec in tqdm(  # pylint: disable=unnecessary-comprehension
+                pool.imap_unordered(partial(convert_point_to_isec_isolated,
+                                            section_type=section_type),
+                                    points_to_convert.items()),
+                total=len(points_to_convert),
+            )
+        }
+
+    if Path(isections_file).suffix == ".json":
+        json.dump(isections, open(isections_file, "w"), indent=4)
+    if Path(isections_file).suffix == ".yaml":
+        yaml.dump(isections, open(isections_file, "w"))
