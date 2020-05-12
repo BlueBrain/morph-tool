@@ -4,8 +4,8 @@ from numpy.testing import assert_array_almost_equal, assert_equal
 
 import morph_tool.nrnhines as test_module
 
-PATH = Path(__file__).parent / 'data'
-SIMPLE = PATH / 'simple2.asc'
+DATA = Path(__file__).parent / 'data'
+SIMPLE = DATA / 'simple2.asc'
 
 
 def test_interpolate_compartments():

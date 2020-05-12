@@ -8,10 +8,10 @@ from nose.tools import eq_
 from morph_tool import apical_point_position, apical_point_section_segment
 
 
-DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
+DATA = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
 def test_get_apical_point():
-    morph = Morphology(os.path.join(DATA_PATH, 'apical_test.swc'))
+    morph = Morphology(os.path.join(DATA, 'apical_test.swc'))
     point = apical_point_position(morph)
     eq_(point[COLS.Y], 25.0)
 
@@ -21,13 +21,13 @@ def test_get_apical_point():
     eq_(point[COLS.Y], 30.0)
 
     #try w/ a h5v2: this was converted using morphologyConverter
-    morph = Morphology(os.path.join(DATA_PATH, 'apical_test.h5'))
+    morph = Morphology(os.path.join(DATA, 'apical_test.h5'))
     point = apical_point_position(morph)
     eq_(point[COLS.Y], 25.0)
 
 
 def test__find_apical_section_segment():
-    neuron = Morphology(os.path.join(DATA_PATH, 'apical_test.swc'))
+    neuron = Morphology(os.path.join(DATA, 'apical_test.swc'))
     section, segment = apical_point_section_segment(neuron)
     eq_(section, 1)
     eq_(segment, 1)
