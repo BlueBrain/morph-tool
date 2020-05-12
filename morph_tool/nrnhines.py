@@ -332,7 +332,7 @@ def convert_points_to_isecs(morphology_path,
         isections_file (str): patht to a json/yaml file to store isections data
         section_types (str): NEURON types of isection to consider
         n_workers (int): number of workers for multiprocessing"""
-    morphologies = Path(morphology_path).glob("**/*.asc")
+    morphologies = iter_morphology_files(morphology_path, recursive=True, extensions=('asc', 'swc'))
     with open(points_file, "rb") as yaml_file:
         points = yaml.safe_load(yaml_file)
 
