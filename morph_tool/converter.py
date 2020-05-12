@@ -1,13 +1,14 @@
 '''A morphology converter that tries to keep the soma surface equal'''
 import logging
-
 from pathlib import Path
+
 import numpy as np
-from numpy.linalg import eig, norm
-from morphio import MorphologyVersion, SomaType, Option
+from morphio import MorphologyVersion, Option, SomaType
 from morphio.mut import Morphology
-from morph_tool import transform
 from neurom import morphmath
+from numpy.linalg import eig, norm
+
+from morph_tool import transform
 
 logger = logging.getLogger('morph_tool')
 

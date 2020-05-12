@@ -10,20 +10,20 @@ from morph_tool import diff
 from morph_tool.converter import convert
 from utils import setup_tempdir
 
-PATH = os.path.join(os.path.dirname(__file__), 'data')
+DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
 def test_convert():
     with setup_tempdir('test-convert') as tmp_dir:
         for in_ext, out_ext in it.product(['asc', 'h5', 'swc'], repeat=2):
             # A simple morphology
-            inname = os.path.join(PATH, 'simple.' + in_ext)
+            inname = os.path.join(DATA, 'simple.' + in_ext)
             outname = os.path.join(tmp_dir, 'test.' + out_ext)
             convert(inname, outname)
             ok_(not diff(inname, outname))
 
             # A more complex one
-            inname = os.path.join(PATH, 'tkb061126a4_ch0_cc2_h_zk_60x_1.' + in_ext)
+            inname = os.path.join(DATA, 'tkb061126a4_ch0_cc2_h_zk_60x_1.' + in_ext)
             outname = os.path.join(tmp_dir, 'test.' + out_ext)
             convert(inname, outname)
             diff_result = diff(inname, outname, rtol=1e-5, atol=1e-5)
@@ -32,7 +32,7 @@ def test_convert():
 
 def test_convert_recenter():
     with setup_tempdir('test-convert_recenter') as tmp_dir:
-        simple = os.path.join(PATH, 'simple.swc')
+        simple = os.path.join(DATA, 'simple.swc')
         outname = os.path.join(tmp_dir, 'test.swc')
         convert(simple, outname, recenter=True)
         ok_(not diff(simple, outname))  #simple.swc is already centered
@@ -50,7 +50,7 @@ def test_convert_recenter():
 def test_convert_swc_contour_to_sphere():
     with setup_tempdir('test_convert_swc_contour_to_sphere') as tmp_dir:
         # needs to have a complex contour soma
-        simple = os.path.join(PATH, 'tkb061126a4_ch0_cc2_h_zk_60x_1.asc')
+        simple = os.path.join(DATA, 'tkb061126a4_ch0_cc2_h_zk_60x_1.asc')
         outname = os.path.join(tmp_dir, 'test.swc')
         convert(simple, outname, single_point_soma=True)
 
