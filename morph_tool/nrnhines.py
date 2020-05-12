@@ -344,15 +344,11 @@ def convert_points_to_isecs(morphology_path,
     }
 
     with NestedPool(processes=n_workers) as pool:
-        isections = {
-            cell_name: isec
-            for cell_name, isec in tqdm(  # pylint: disable=unnecessary-comprehension
-                pool.imap_unordered(partial(convert_point_to_isec_isolated,
+        isections = dict(tqdm(pool.imap_unordered(partial(convert_point_to_isec_isolated,
                                             section_type=section_type),
                                     points_to_convert.items()),
                 total=len(points_to_convert),
-            )
-        }
+            ))
 
     if Path(isections_file).suffix == ".json":
         json.dump(isections, open(isections_file, "w"), indent=4)
