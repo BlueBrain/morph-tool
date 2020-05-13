@@ -2,8 +2,8 @@ language: python
 jobs:
   include:
     - os: osx
-      osx_image: xcode11.4
-      language: generic      
+      osx_image: xcode11.2
+      language: shell      
     # - os: linux
     #   dist: xenial
 python:
