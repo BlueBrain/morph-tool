@@ -4,7 +4,6 @@ jobs:
     - os: osx
       osx_image: xcode11.2
       language: shell      
-      before_install: pip3 install tox
     # - os: linux
     #   dist: xenial
 python:
@@ -12,11 +11,11 @@ python:
   - 3.7
 cache: pip
 install:
-  - pip install tox-travis
+  - pip3 install tox-travis
 script:
   tox -v
 before_deploy:
-  - pip install twine
+  - pip3 install twine
 deploy:
   provider: pypi
   user: bbp.opensource
