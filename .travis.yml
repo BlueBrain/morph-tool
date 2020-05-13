@@ -3,6 +3,7 @@ jobs:
   include:
     - os: osx
       osx_image: xcode10.1
+      language: generic      
     - os: linux
       dist: xenial
 python:
