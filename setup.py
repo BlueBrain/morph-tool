@@ -27,6 +27,7 @@ setup(
         'morphio>=2.3.4',
         'numpy>=1.14',
         'neurom>=1.4.15',
+        'pandas>=1.0.3',
     ],
     extras_require={
         'all': ['bluepyopt>=1.6',
