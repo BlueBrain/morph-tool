@@ -4,6 +4,7 @@ jobs:
     - os: osx
       osx_image: xcode11.2
       language: shell      
+      env: PYTHON=python3
     # - os: linux
     #   dist: xenial
 python:
