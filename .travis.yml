@@ -4,8 +4,8 @@ jobs:
     - os: osx
       osx_image: xcode11.2
       language: shell      
-    # - os: linux
-    #   dist: xenial
+    - os: linux
+      dist: xenial
 python:
   - 3.6
   - 3.7
