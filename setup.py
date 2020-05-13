@@ -29,7 +29,9 @@ setup(
         'neurom>=1.4.15',
     ],
     extras_require={
-        'all': ['bluepyopt>=1.6'],
+        'all': ['bluepyopt>=1.6',
+                'neuron>=7.8',
+                ],
     },
     python_requires='>=3.6',
     packages=find_packages(),

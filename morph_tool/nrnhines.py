@@ -247,7 +247,7 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
     return NeuroM_to_compartment_position_mapping
 
 
-def point_to_section_end(sections: Sequence[neuron.nrn.Section],
+def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disable=no-member
                          point: List[float],
                          atol: float = 1e-08,
                          rtol: float = 1e-05) -> Union[None, int]:
