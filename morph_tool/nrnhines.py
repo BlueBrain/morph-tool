@@ -1,22 +1,14 @@
 """Utils related to the NRN simulator"""
 import logging
 from pathlib import Path
-from typing import List, Union, Sequence
+from typing import List, Sequence, Union
 
+import bluepyopt.ephys as ephys
+import neuron
 import numpy as np
-from numpy.testing import assert_almost_equal
-from neurom import COLS, iter_sections, load_neuron, NeuriteType
+from neurom import COLS, NeuriteType, iter_sections, load_neuron
 from neurom.core import NeuriteIter
-
-
-try:
-    # pylint: disable=import-outside-toplevel
-    import bluepyopt.ephys as ephys
-    import neuron
-except ImportError:
-    raise Exception('morph_tool.nrnhines requires the extra: all. '
-                    'Please install it by doing: pip install morph-tool[all]')
-
+from numpy.testing import assert_almost_equal
 
 L = logging.getLogger('morph_tool')
 
