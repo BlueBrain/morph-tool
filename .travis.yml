@@ -1,4 +1,10 @@
 language: python
+jobs:
+  include:
+    - os: osx
+      osx_image: xcode10.1
+    - os: linux
+      dist: xenial
 python:
   - 3.6
   - 3.7
