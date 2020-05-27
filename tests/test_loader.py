@@ -3,16 +3,16 @@ import nose.tools as nt
 import mock
 from mock import patch
 
-import morph_tool.loader as test_module
+import morph_tool.loader as tested
 
 
 def test_ensure_startswith_point():
     nt.assert_equal(
-        test_module._ensure_startswith_point(".ext"),
+        tested._ensure_startswith_point(".ext"),
         ".ext"
     )
     nt.assert_equal(
-        test_module._ensure_startswith_point("ext"),
+        tested._ensure_startswith_point("ext"),
         ".ext"
     )
 
@@ -20,7 +20,7 @@ def test_ensure_startswith_point():
 @patch('morphio.Morphology')
 def test_loader(f_mock):
     f_mock.configure_mock(side_effect=lambda *args: object())
-    loader = test_module.MorphLoader('/dir', file_ext='abc', cache_size=1)
+    loader = tested.MorphLoader('/dir', file_ext='abc', cache_size=1)
     morph1 = loader.get('test')
     # should get cached object now
     nt.assert_is(

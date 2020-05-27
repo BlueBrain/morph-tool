@@ -7,7 +7,7 @@ import numpy.testing as npt
 
 import morphio
 
-import morph_tool.transform as test_module
+import morph_tool.transform as tested
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,7 @@ class TestTransform:
 
     def test_translate_1(self):
         """ Translate whole morphology inplace. """
-        test_module.translate(self.morph, [1., 2., 3.])
+        tested.translate(self.morph, [1., 2., 3.])
         npt.assert_almost_equal(
             self.morph.soma.points[0],
             [1., 2., 3.]
@@ -55,7 +55,7 @@ class TestTransform:
     def test_translate_2(self):
         """ Translate axon inplace. """
         axon = self.morph.root_sections[1]
-        test_module.translate(axon, [1., 2., 3.])
+        tested.translate(axon, [1., 2., 3.])
         npt.assert_almost_equal(
             axon.children[1].points[-1],
             [-4., -2., 3.]
@@ -75,13 +75,13 @@ class TestTransform:
         """ Check translation vector. """
         nt.assert_raises(
             ValueError,
-            test_module.translate, self.morph, np.identity(4)
+            tested.translate, self.morph, np.identity(4)
         )
 
     def test_rotate_1(self):
         """ Rotate whole morphology inplace. """
         A = [[0, 1, 0], [-1, 0, 0], [0, 0, 1]]  # rotate around Z by 90 degrees
-        test_module.rotate(self.morph, A)
+        tested.rotate(self.morph, A)
         npt.assert_almost_equal(
             self.morph.soma.points[0],
             [0., 0., 0.]
@@ -99,7 +99,7 @@ class TestTransform:
         """ Rotate whole morphology inplace. """
         A = [[0, 1, 0], [-1, 0, 0], [0, 0, 1]]  # rotate around Z by 90 degrees
 
-        test_module.rotate(self.morph, A, origin=(1, 1, 1))
+        tested.rotate(self.morph, A, origin=(1, 1, 1))
         npt.assert_almost_equal(
             self.morph.soma.points[0],
             [0., 2., 0.]
@@ -118,14 +118,14 @@ class TestTransform:
         """ Check rotation matrix shape. """
         nt.assert_raises(
             ValueError,
-            test_module.rotate, self.morph, np.identity(4)
+            tested.rotate, self.morph, np.identity(4)
         )
 
     def test_transform_1(self):
         """ Transform whole morphology inplace. """
         # scale Y coordinate by 3 + shift by (-1, -2, -3)
         A = [[1, 0, 0, -1], [0, 3, 0, -2], [0, 0, 1, -3], [0, 0, 0, 1]]
-        test_module.transform(self.morph, A)
+        tested.transform(self.morph, A)
         npt.assert_almost_equal(
             self.morph.soma.points[0],
             [-1., -2., -3.]
@@ -143,13 +143,13 @@ class TestTransform:
         """ Check transform matrix shape. """
         nt.assert_raises(
             ValueError,
-            test_module.transform, self.morph, np.identity(3)
+            tested.transform, self.morph, np.identity(3)
         )
 
 
     def test_align(self):
         section = self.morph.section(0)
-        test_module.align(section, [-1, -1, 0])
+        tested.align(section, [-1, -1, 0])
 
         npt.assert_almost_equal(section.points,
                                 [[0., 0., 0.], [-3.535534, -3.535534, 0.]])
@@ -161,12 +161,12 @@ class TestTransform:
 
     def test_align_already_aligned(self):
         section = self.morph.section(1)
-        test_module.align(section, [-1, 0, 0])
+        tested.align(section, [-1, 0, 0])
 
         npt.assert_almost_equal(section.points, [[0., 5., 0.], [-5, 5, 0]])
 
     def test_align_pi_angle(self):
         section = self.morph.section(1)
-        test_module.align(section, [+1, 0, 0])
+        tested.align(section, [+1, 0, 0])
 
         npt.assert_almost_equal(section.points, [[0., 5., 0.], [+5, 5, 0]])
