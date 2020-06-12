@@ -30,6 +30,12 @@ setup(
         'numpy>=1.14',
         'pandas>=1.0.3',
     ],
+    extras_require={
+        'dendrogram': [
+            'plotly>=4.1.0',
+            'bluepysnap>=0.5',
+        ],
+    },
     python_requires='>=3.6',
     packages=find_packages(),
     classifiers=[
