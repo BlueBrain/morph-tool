@@ -230,6 +230,7 @@ Draw NeuroM dendrogram with synapses on it. Synapses must be represented as a Da
 columns in this dataframe are:
 
 .. code:: python
+
     required_columns = ['@source_node', '@target_node',
                         'afferent_section_id', 'afferent_section_pos',
                         'efferent_section_id', 'efferent_section_pos']
@@ -237,6 +238,7 @@ columns in this dataframe are:
 or equivalently
 
 .. code:: python
+
     from bluepysnap.sonata_constants import Edge
     required_columns = [Edge.SOURCE_NODE_ID, Edge.TARGET_NODE_ID,
                         Edge.POST_SECTION_ID, Edge.POST_SECTION_POS,
