@@ -1,27 +1,16 @@
 import numpy as np
 import pandas as pd
-
 import neurom as nm
-from bluepysnap import Circuit
-from bluepysnap.sonata_constants import Edge
-from bluepysnap.bbp import Synapse
-
-from morph_tool.dendrogram import draw
+from morph_tool import dendrogram
 
 
 def plain_example():
     """Example that shows how to draw a neuron dendrogram with a plain synapses dataframe."""
     # Those properties are required in synapses dataframe for positioning
     required_synapse_properties = [
-        Edge.SOURCE_NODE_ID, Edge.TARGET_NODE_ID,
-        Edge.POST_SECTION_ID, Edge.POST_SECTION_POS,
-        Edge.PRE_SECTION_ID, Edge.PRE_SECTION_POS,
-    ]
-    # if you don't want to use BluePySnap then you can use plain string names
-    required_synapse_properties = [
-        '@source_node', '@target_node',
-        'afferent_section_id', 'afferent_section_pos',
-        'efferent_section_id', 'efferent_section_pos',
+        dendrogram.SOURCE_NODE_ID, dendrogram.TARGET_NODE_ID,
+        dendrogram.POST_SECTION_ID, dendrogram.POST_SECTION_POS,
+        dendrogram.PRE_SECTION_ID, dendrogram.PRE_SECTION_POS,
     ]
     data = np.array([
         [0, 116, 4, 0.81408846, 3, 0.7344886],
@@ -35,7 +24,7 @@ def plain_example():
     synapses = synapses.astype({'@target_node': int, '@source_node': int,
                                 'afferent_section_id': int, 'efferent_section_id': int})
     neuron = nm.load_neuron('dendrogram_plain_example.swc')
-    fig = draw(neuron, synapses, 116)
+    fig = dendrogram.draw(neuron, synapses, 116)
     fig.show()
 
     # If you want to show additional data with synapses then just use additional columns in you
@@ -52,7 +41,7 @@ def plain_example():
     ])
     synapses_data = pd.DataFrame(columns=synapse_data_properties, data=data)
     synapses = pd.concat([synapses, synapses_data], axis=1)
-    fig = draw(neuron, synapses, 116)
+    fig = dendrogram.draw(neuron, synapses, 116)
     fig.show()
 
 
@@ -61,9 +50,12 @@ def circuit_example():
 
     To make this example work, you would need a proper SONATA circuit.
     """
+    from bluepysnap import Circuit
+    from bluepysnap.sonata_constants import Edge
+    from bluepysnap.bbp import Synapse
     circuit = Circuit('/path/to/sonata_circuit_config.json')
+    # you can use `bluepysnap.sonata_constants.Edge` instead of `dendrogram` for position constants
     edge_properties = [
-        # Must have properties names. They are required for positioning of synapses.
         Edge.SOURCE_NODE_ID, Edge.TARGET_NODE_ID,
         Edge.POST_SECTION_ID, Edge.POST_SECTION_POS,
         Edge.PRE_SECTION_ID, Edge.PRE_SECTION_POS,
@@ -78,7 +70,7 @@ def circuit_example():
     morph_filepath = circuit.nodes['default'].morph.get_filepath(target_node_id)
     neuron = nm.load_neuron(morph_filepath)
 
-    fig = draw(neuron, synapses, target_node_id)
+    fig = dendrogram.draw(neuron, synapses, target_node_id)
     fig.show()
 
 

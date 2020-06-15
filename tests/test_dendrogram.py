@@ -3,10 +3,11 @@ import neurom as nm
 import numpy as np
 import pandas as pd
 from bluepysnap.sonata_constants import Edge
-from nose.tools import assert_raises
 from plotly.offline import plot
 
-from morph_tool.dendrogram import draw
+from nose.tools import assert_raises
+
+from morph_tool import dendrogram
 
 DATA = Path(__file__).resolve().parent / 'data'
 
@@ -30,20 +31,30 @@ def _create_test_synapses(target_node_ids):
     return synapses
 
 
+def test_constants():
+    assert dendrogram.POST_SECTION_ID == Edge.POST_SECTION_ID
+    assert dendrogram.POST_SECTION_POS == Edge.POST_SECTION_POS
+    assert dendrogram.TARGET_NODE_ID == Edge.TARGET_NODE_ID
+    assert dendrogram.PRE_SECTION_ID == Edge.PRE_SECTION_ID
+    assert dendrogram.PRE_SECTION_POS == Edge.PRE_SECTION_POS
+    assert dendrogram.SOURCE_NODE_ID == Edge.SOURCE_NODE_ID
+
+
 def test_explicit_neuron_node_id():
     neuron_node_id = 1
-    fig = draw(_create_test_neuron(), _create_test_synapses([neuron_node_id, 2]), neuron_node_id)
+    fig = dendrogram.draw(
+        _create_test_neuron(), _create_test_synapses([neuron_node_id, 2]), neuron_node_id)
     plot(fig, auto_open=False)
 
 
 def test_implicit_valid_neuron_node_id():
     neuron_node_id = 1
-    fig = draw(_create_test_neuron(), _create_test_synapses([neuron_node_id]))
+    fig = dendrogram.draw(_create_test_neuron(), _create_test_synapses([neuron_node_id]))
     plot(fig, auto_open=False)
 
 
 def test_implicit_invalid_neuron_node_id():
     neuron_node_id = 1
     with assert_raises(ValueError) as cm:
-        draw(_create_test_neuron(), _create_test_synapses([neuron_node_id, 2]))
+        dendrogram.draw(_create_test_neuron(), _create_test_synapses([neuron_node_id, 2]))
     assert 'neuron_node_id' in cm.exception.args[0].lower()

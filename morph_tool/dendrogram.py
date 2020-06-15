@@ -2,15 +2,22 @@
 import numpy as np
 import plotly.express as px
 from plotly import graph_objects
-from bluepysnap.sonata_constants import Edge
 from neurom import NeuriteType
 from neurom.core import Neurite, Neuron
 from neurom.view.dendrogram import Dendrogram, layout_dendrogram, move_positions, get_size
 from neurom.view.view import TREE_COLOR
 
+POST_SECTION_ID = 'afferent_section_id'
+POST_SECTION_POS = 'afferent_section_pos'
+TARGET_NODE_ID = '@target_node'
+PRE_SECTION_ID = 'efferent_section_id'
+PRE_SECTION_POS = 'efferent_section_pos'
+SOURCE_NODE_ID = '@source_node'
+
 
 class SynDendrogram(Dendrogram):
     """Dendrogram that keeps track of ``neurom_section.id`` that was used to create it."""
+
     def __init__(self, neurom_section):
         super(SynDendrogram, self).__init__(neurom_section)
         if isinstance(neurom_section, Neuron):
@@ -25,7 +32,7 @@ class SynDendrogram(Dendrogram):
 
 
 def _draw_polygon(coords, color):
-    path = 'M' + ' L'.join(['{:.2f},{:.2f}'.format(coord[0], coord[1]) for coord in coords]) + ' Z'
+    path = 'M' + ' L'.join('{:.2f},{:.2f}'.format(coord[0], coord[1]) for coord in coords) + ' Z'
 
     return graph_objects.layout.Shape(
         opacity=0.4, type="path", path=path, fillcolor=color, line_color=color)
@@ -81,16 +88,16 @@ def _position_synapses(positions, synapses, neuron_node_id):
         return grp
 
     for dendrogram, position in positions.items():
-        post_section = ((synapses[Edge.POST_SECTION_ID] == dendrogram.section_id)
-                        & (synapses[Edge.TARGET_NODE_ID] == neuron_node_id))
+        post_section = ((synapses[POST_SECTION_ID] == dendrogram.section_id)
+                        & (synapses[TARGET_NODE_ID] == neuron_node_id))
         synapses.loc[post_section, 'x'] = position[0]
         synapses.loc[post_section, 'y'] = position[1] + synapses.loc[
-            post_section, Edge.POST_SECTION_POS] * dendrogram.height
-        pre_section = ((synapses[Edge.PRE_SECTION_ID] == dendrogram.section_id)
-                       & (synapses[Edge.SOURCE_NODE_ID] == neuron_node_id))
+            post_section, POST_SECTION_POS] * dendrogram.height
+        pre_section = ((synapses[PRE_SECTION_ID] == dendrogram.section_id)
+                       & (synapses[SOURCE_NODE_ID] == neuron_node_id))
         synapses.loc[pre_section, 'x'] = position[0]
         synapses.loc[pre_section, 'y'] = position[1] + synapses.loc[
-            pre_section, Edge.PRE_SECTION_POS] * dendrogram.height
+            pre_section, PRE_SECTION_POS] * dendrogram.height
 
         # jitter too close synapses
         df = synapses[pre_section | post_section]
@@ -119,7 +126,7 @@ def _add_neurite_legend(fig, dendrogram):
 
 
 def _get_default_neuron_node_id(synapses):
-    node_id_set = synapses[Edge.TARGET_NODE_ID].unique()
+    node_id_set = synapses[TARGET_NODE_ID].unique()
     if node_id_set.size > 1:
         raise ValueError('Please specify `neuron_node_id` parameter.')
     return node_id_set[0]
@@ -128,7 +135,7 @@ def _get_default_neuron_node_id(synapses):
 def _get_synapse_colormap(synapses):
     color_list = [
         'rgb(0,100,0)', 'rgb(139,69,19)', 'rgb(112,128,144)', 'rgb(255,215,0)', 'rgb(218,112,214)']
-    node_id_set = synapses[Edge.TARGET_NODE_ID].unique()
+    node_id_set = synapses[TARGET_NODE_ID].unique()
     return {id_: color_list[idx % len(color_list)] for idx, id_ in enumerate(node_id_set)}
 
 
@@ -139,7 +146,7 @@ def draw(neuron, synapses=None, neuron_node_id=None):
         neuron (Neurite|Neuron): a Neurite or a Neuron instance of NeuroM package.
         synapses (DataFrame): synapses dataframe.
         neuron_node_id (int|None): node id of ``neuron``. If None then it is taken from
-            ``synapses[Edge.TARGET_NODE_ID]``.
+            ``synapses[TARGET_NODE_ID]``.
 
     Returns:
         plotly.graph_objects.Figure: plotly figure
@@ -154,9 +161,9 @@ def draw(neuron, synapses=None, neuron_node_id=None):
         _position_synapses(positions, synapses, neuron_node_id)
         synapses['synapse_id'] = synapses.index.values
         # convert 'target node' to string for discrete colormap
-        synapses = synapses.astype({Edge.TARGET_NODE_ID: str})
+        synapses = synapses.astype({TARGET_NODE_ID: str})
         fig = px.scatter(
-            synapses, x='x', y='y', color=Edge.TARGET_NODE_ID,
+            synapses, x='x', y='y', color=TARGET_NODE_ID,
             color_discrete_map=_get_synapse_colormap(synapses),
             hover_data=synapses.columns)
     else:
