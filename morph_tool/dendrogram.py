@@ -85,12 +85,12 @@ def _position_synapses(positions, synapses, neuron_node_id):
                         & (synapses[Edge.TARGET_NODE_ID] == neuron_node_id))
         synapses.loc[post_section, 'x'] = position[0]
         synapses.loc[post_section, 'y'] = position[1] + synapses.loc[
-            post_section, Edge.POST_SECTION_POS]
+            post_section, Edge.POST_SECTION_POS] * dendrogram.height
         pre_section = ((synapses[Edge.PRE_SECTION_ID] == dendrogram.section_id)
                        & (synapses[Edge.SOURCE_NODE_ID] == neuron_node_id))
         synapses.loc[pre_section, 'x'] = position[0]
         synapses.loc[pre_section, 'y'] = position[1] + synapses.loc[
-            pre_section, Edge.PRE_SECTION_POS]
+            pre_section, Edge.PRE_SECTION_POS] * dendrogram.height
 
         # jitter too close synapses
         df = synapses[pre_section | post_section]
@@ -153,6 +153,8 @@ def draw(neuron, synapses=None, neuron_node_id=None):
             neuron_node_id = _get_default_neuron_node_id(synapses)
         _position_synapses(positions, synapses, neuron_node_id)
         synapses['synapse_id'] = synapses.index.values
+        # convert 'target node' to string for discrete colormap
+        synapses = synapses.astype({Edge.TARGET_NODE_ID: str})
         fig = px.scatter(
             synapses, x='x', y='y', color=Edge.TARGET_NODE_ID,
             color_discrete_map=_get_synapse_colormap(synapses),
