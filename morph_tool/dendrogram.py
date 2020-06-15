@@ -151,6 +151,8 @@ def draw(neuron, synapses=None, neuron_node_id=None):
     Returns:
         plotly.graph_objects.Figure: plotly figure
     """
+    synapses = synapses.astype({'@target_node': int, '@source_node': int,
+                                'afferent_section_id': int, 'efferent_section_id': int})
     dendrogram = SynDendrogram(neuron)
     positions = layout_dendrogram(dendrogram, np.array([0, 0]))
     w, h = get_size(positions)

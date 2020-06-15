@@ -20,9 +20,6 @@ def plain_example():
         [116, 0, 2, 0.5815143, 1, 0.68261607],
     ])
     synapses = pd.DataFrame(columns=required_synapse_properties, data=data)
-    # fix wrong Pandas dtypes autodetect.
-    synapses = synapses.astype({'@target_node': int, '@source_node': int,
-                                'afferent_section_id': int, 'efferent_section_id': int})
     neuron = nm.load_neuron('dendrogram_plain_example.swc')
     fig = dendrogram.draw(neuron, synapses, 116)
     fig.show()

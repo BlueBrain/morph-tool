@@ -224,7 +224,7 @@ This functionality is available only when the package is installed with **dendro
 
 .. code:: bash
 
-    pip install morph-tool[dendrogram]
+    pip install morph-tool
 
 Draw NeuroM dendrogram with synapses on it. Synapses must be represented as a DataFrame. Required
 columns in this dataframe are:
