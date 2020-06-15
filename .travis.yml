@@ -5,12 +5,13 @@ jobs:
       osx_image: xcode11.2
       language: shell
     - os: linux
-      dist: bionic
+      dist: xenial
 python:
   - 3.6
   - 3.7
 cache: pip
 install:
+  - pip3 install -U pip
   - pip3 install tox-travis
 script:
   tox -v
