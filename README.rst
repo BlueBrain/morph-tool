@@ -245,7 +245,7 @@ or equivalently
                         Edge.PRE_SECTION_ID, Edge.PRE_SECTION_POS]
 
 
-For usage examples look at :file:`examples/dendrogram.py`.
+For usage examples look at `examples/dendrogram.py`.
 
 Contributing
 ============
