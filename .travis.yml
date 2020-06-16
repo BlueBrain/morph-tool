@@ -3,9 +3,9 @@ jobs:
   include:
     - os: osx
       osx_image: xcode11.2
-      language: shell      
+      language: shell
     - os: linux
-      dist: xenial
+      dist: bionic
 python:
   - 3.6
   - 3.7

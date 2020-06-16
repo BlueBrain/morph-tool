@@ -29,6 +29,7 @@ setup(
         'neuron>=7.8',
         'numpy>=1.14',
         'pandas>=1.0.3',
+        'plotly>=4.1.0',
     ],
     python_requires='>=3.6',
     packages=find_packages(),
