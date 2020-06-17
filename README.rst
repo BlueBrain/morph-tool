@@ -231,21 +231,21 @@ columns in this dataframe are:
 
 .. code:: python
 
-    required_columns = ['@source_node', '@target_node',
-                        'afferent_section_id', 'afferent_section_pos',
-                        'efferent_section_id', 'efferent_section_pos']
+    from morph_tool import dendrogram
+    required_columns = [dendrogram.SOURCE_NODE_ID, dendrogram.TARGET_NODE_ID,
+                        dendrogram.POST_SECTION_ID, dendrogram.POST_SECTION_POS,
+                        dendrogram.PRE_SECTION_ID, dendrogram.PRE_SECTION_POS]
 
 or equivalently
 
 .. code:: python
 
-    from bluepysnap.sonata_constants import Edge
-    required_columns = [Edge.SOURCE_NODE_ID, Edge.TARGET_NODE_ID,
-                        Edge.POST_SECTION_ID, Edge.POST_SECTION_POS,
-                        Edge.PRE_SECTION_ID, Edge.PRE_SECTION_POS]
+    required_columns = ['@source_node', '@target_node',
+                        'afferent_section_id', 'afferent_section_pos',
+                        'efferent_section_id', 'efferent_section_pos']
 
 
-For usage examples look at `examples/dendrogram.py`.
+For usage examples look at ``examples/dendrogram.py``.
 
 Contributing
 ------------
