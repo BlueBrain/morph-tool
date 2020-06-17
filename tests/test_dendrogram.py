@@ -22,10 +22,10 @@ def _create_test_synapses(target_node_ids):
         Edge.POST_SECTION_ID, Edge.POST_SECTION_POS,
         Edge.PRE_SECTION_ID, Edge.PRE_SECTION_POS,
     ]
-    synapses_number = 3
+    synapses_number = 5
     data = [[0, target_node_id, 1, 0.5, 1, 0.7]
             for _ in range(synapses_number) for target_node_id in target_node_ids]
-    synapse_ids = np.random.randint(100, size=synapses_number)
+    synapse_ids = np.arange(synapses_number)
     index = pd.MultiIndex.from_product([target_node_ids, synapse_ids])
     synapses = pd.DataFrame(data, index=index, columns=columns)
     return synapses
