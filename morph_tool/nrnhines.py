@@ -1,5 +1,7 @@
 """Utils related to the NRN simulator"""
 import logging
+import multiprocessing
+import multiprocessing.pool
 from pathlib import Path
 from typing import List, Sequence, Union
 
@@ -15,7 +17,6 @@ L = logging.getLogger('morph_tool')
 
 def get_NRN_cell(filename: Path):
     """Returns a NRN cell"""
-
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
     cell = ephys.models.CellModel('test', morph=m, mechs=[])
@@ -265,3 +266,43 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
         if np.isclose(point, last_section_point, atol=atol, rtol=rtol).all():
             return index
     return None
+
+
+class NestedPool(multiprocessing.pool.Pool):  # pylint: disable=abstract-method
+    """Class that represents a MultiProcessing nested pool"""
+
+    class Process(multiprocessing.Process):
+        """Class that represents a non-daemon process"""
+        daemon = False
+
+
+def isolate(func):
+    """Isolate a generic function for independent NEURON instances.
+
+    It must be used in conjunction with NestedPool.
+
+    Example:
+
+        def _to_be_isolated(morphology_path, point):
+            cell = nrnhines.get_NRN_cell(morphology_path)
+            return nrnhines.point_to_section_end(cell.icell.all, point)
+
+        def _isolated(morph_data):
+            return nrnhines.isolate(_to_be_isolated)(*morph_data)
+
+        with nrnhines.NestedPool(processes=n_workers) as pool:
+            result = pool.imap_unordered(_isolated, data)
+
+
+    Args:
+        func (function): function to isolate
+
+    Returns:
+        the isolated function
+
+    Note: it does not work as decorator.
+    """
+    def func_isolated(*args, **kwargs):
+        with NestedPool(1, maxtasksperchild=1) as pool:
+            return pool.apply(func, args, kwargs)
+    return func_isolated
