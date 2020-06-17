@@ -31,6 +31,9 @@ setup(
         'pandas>=1.0.3',
         'plotly>=4.1.0',
     ],
+    extras_require={
+        'docs': ['sphinx', 'sphinx-bluebrain-theme'],
+    },
     python_requires='>=3.6',
     packages=find_packages(),
     classifiers=[

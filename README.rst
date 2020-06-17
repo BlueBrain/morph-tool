@@ -10,7 +10,7 @@ Currently MorphTool provides:
 - A soma area calculator (as computed by NEURON, requires the NEURON python module)
 
 Installation
-============
+------------
 
 In a fresh virtualenv:
 
@@ -19,7 +19,7 @@ In a fresh virtualenv:
     pip install morph-tool
 
 Usage
-=====
+-----
 
 In a shell, do:
 
@@ -36,7 +36,7 @@ Currently the three sub-command are:
     morph-tool soma-surface input_file
 
 Morphology diffing
-==================
+------------------
 One can compare two morphologies with the CLI
 
 .. code:: bash
@@ -75,7 +75,7 @@ The same functionality is also avalaible through the python API:
 
 
 Converter
-=========
+---------
 
 What is supported ?
 ~~~~~~~~~~~~~~~~~~~
@@ -160,7 +160,7 @@ Example:
 
 
 NRN simulator compartment coordinates
-=====================================
+-------------------------------------
 
 The NRN simulator splits each section into chunks of equal length (equal only among a given section).
 These compartments do not really exist in the physical world but we can remap them to paths
@@ -218,7 +218,7 @@ Splitting this section into 3 compartments would results in the following paths:
 
 
 Dendrogram with synapses
-========================
+------------------------
 
 This functionality is available only when the package is installed with **dendrogram** extras:
 
@@ -248,13 +248,13 @@ or equivalently
 For usage examples look at `examples/dendrogram.py`.
 
 Contributing
-============
+------------
 
 If you want to improve the project or you see any issue, every contribution is welcome.
 Please check the `contribution guidelines <CONTRIBUTING.md>`__ for more information.
 
 License
-=======
+-------
 
 morph-tool is licensed under the terms of the GNU Lesser General Public License version 3.
 Refer to COPYING.LESSER and COPYING for details.
