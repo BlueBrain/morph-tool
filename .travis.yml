@@ -1,3 +1,7 @@
+# A root OS seems to be needed even though the matrix already provides everything needed
+os: linux
+dist: bionic
+
 language: python
 jobs:
   include:
