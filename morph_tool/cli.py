@@ -64,6 +64,7 @@ def soma_surface(input_file, quiet):
               help='For SWC files only')
 def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma):
     '''Convert a single morphology from/to the following formats: ASC, SWC, H5'''
+
     if quiet:
         L.setLevel(logging.WARNING)
 
