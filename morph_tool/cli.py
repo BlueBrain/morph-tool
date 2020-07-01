@@ -95,7 +95,7 @@ def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_po
               help='whether to traverse the neuron in the NEURON fashion')
 @click.option('--single-point-soma', is_flag=True,
               help='For SWC files only')
-@click.option('--ncores', 'The number of cores', default=None)
+@click.option('--ncores', help='The number of cores', default=None)
 def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_point_soma, ncores):
     '''Convert all morphologies in the folder and its subfolders'''
     if quiet:
