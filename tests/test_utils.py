@@ -1,5 +1,4 @@
 from pathlib import Path
-from mock import patch
 from nose.tools import ok_, assert_equal
 
 import pandas as pd
@@ -39,6 +38,7 @@ def test_iter_morphology_files():
                   DATA / 'folder' / 'subfolder' / 'g.SWC',
                   DATA / 'folder' / 'subfolder' / 'e.h5',
 })
+
 
 def test_neurondb_dataframe():
     expected = pd.DataFrame(data=[['name1', '1', 'L1_mtype-submtype'],
