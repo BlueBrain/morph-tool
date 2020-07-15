@@ -27,7 +27,6 @@ def neurondb_dataframe(filename: Path) -> pd.DataFrame:
     Args:
         filename: the neurondb.dat file
     '''
-    df = pd.read_csv(filename, sep=r'\s+', names=['name', 'layer', 'mtype'],
-                     na_filter=False)
+    df = pd.read_csv(filename, sep=r'\s+', names=['name', 'layer', 'mtype'])
     df.layer = df.layer.astype('str')
     return df
