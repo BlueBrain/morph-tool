@@ -2,6 +2,7 @@ from pathlib import Path
 from nose.tools import ok_, assert_equal
 
 import pandas as pd
+from nose.tools import assert_equal, assert_raises, ok_
 from pandas.testing import assert_frame_equal
 
 import morph_tool.utils as tested
@@ -47,3 +48,14 @@ def test_neurondb_dataframe():
                             columns=['name', 'layer', 'mtype'])
 
     assert_frame_equal(tested.neurondb_dataframe(DATA / 'neurondb.dat'), expected)
+    df = tested.neurondb_dataframe(DATA / 'neurondb.xml')
+    expected = pd.DataFrame(data=[['C270106A', '1', 'L1_DAC', True],
+                                  ['C270106C', '1', 'L1_DAC', True],
+                                  ['a_neuron', '1', 'an_mtype:a_subtype', False],
+                                  ['a_2nd_neuron', '1', 'an_mtype:a_subtype', True],
+                                  ],
+                            columns=['name', 'layer', 'mtype', 'use_axon'])
+
+    assert_frame_equal(df, expected)
+
+    assert_raises(ValueError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')

@@ -30,6 +30,7 @@ setup(
         'numpy>=1.14',
         'pandas>=1.0.3',
         'plotly>=4.1.0',
+        'xmltodict>=0.12.0',
     ],
     extras_require={
         'docs': ['sphinx', 'sphinx-bluebrain-theme'],
