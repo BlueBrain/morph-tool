@@ -34,7 +34,7 @@ def neurondb_dataframe(filename: Path) -> pd.DataFrame:
         df = pd.read_csv(filename, sep=r'\s+', names=columns, usecols=range(len(columns)))
         df.layer = df.layer.astype('str')
     elif filename.suffix.lower() == '.xml':
-        with open(filename) as fd:
+        with filename.open() as fd:
             neuronDB = xmltodict.parse(fd.read())
 
         rows = list()

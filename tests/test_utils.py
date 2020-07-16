@@ -1,5 +1,4 @@
 from pathlib import Path
-from nose.tools import ok_, assert_equal
 
 import pandas as pd
 from nose.tools import assert_equal, assert_raises, ok_
