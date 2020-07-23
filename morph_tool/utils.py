@@ -3,7 +3,7 @@ from functools import partial
 from pathlib import Path
 
 import pandas as pd
-import xmltodict
+from morph_tool.morphdb import MorphologyDB
 
 
 def is_morphology(filename, extensions=None):
@@ -33,24 +33,9 @@ def neurondb_dataframe(filename: Path) -> pd.DataFrame:
         columns = ['name', 'layer', 'mtype']
         df = pd.read_csv(filename, sep=r'\s+', names=columns, usecols=range(len(columns)))
         df.layer = df.layer.astype('str')
-    elif filename.suffix.lower() == '.xml':
-        with filename.open() as fd:
-            neuronDB = xmltodict.parse(fd.read())
+        return df
 
-        rows = list()
-        for morph in neuronDB["neurondb"]["listing"]["morphology"]:
-            assert morph["repair"]["use_axon"] in {'true', 'false', 'True', 'False', None}
-            rows.append(
-                (morph["name"],
-                 morph["layer"],
-                 morph["mtype"] + (":" + morph["msubtype"] if morph["msubtype"] else ""),
-                 # According to Eilif, an empty use_axon (corresponding to a null in the database)
-                 # means that the axon is supposed to be used
-                 (morph["repair"]["use_axon"] in {'true', 'True', None})))
+    if filename.suffix.lower() == '.xml':
+        return MorphologyDB(filename).df
 
-        df = pd.DataFrame(data=rows, columns=['name', 'layer', 'mtype', 'use_axon'])
-
-    else:
-        raise ValueError(f'Unrecognized extension for neurondb file: {filename}')
-
-    return df
+    raise ValueError(f'Unrecognized extension for neurondb file: {filename}')

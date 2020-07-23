@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<neurondb>
+  <meta>
+    <created_by>mgevaert's hand</created_by>
+    <date>Wed Nov 25 09:33:25 CET 2015</date>
+    <readme>Includes an mtype from layers 1, 23, 4, 5, 6
+       Also includes 1 L1_HAC since these are handled differently by
+       the old 'Cloning' step
+
+       C060110A2 is chosen, because it has an entry in the apical_points.xml, which means that the layer 5 mtype must be L5_TTPC1
+    </readme>
+  </meta>
+  <overview>
+    <count>6</count>
+    <types>
+      <type>L1_DAC</type>
+      <type>L1_HAC</type>
+      <type>L23_BP</type>
+      <type>L4_BTC</type>
+      <type>L5_TTPC1</type>
+      <type>L6_BPC</type>
+    </types>
+    <layers>
+      <layer>1</layer>
+      <layer>2</layer>
+      <layer>3</layer>
+      <layer>4</layer>
+      <layer>5</layer>
+      <layer>6</layer>
+    </layers>
+  </overview>
+  <listing>
+    <morphology>
+      <name>C270106A</name>
+      <mtype>L1_DAC</mtype>
+      <msubtype></msubtype>
+      <layer>1</layer>
+      <repair>
+        <axon_repair>true</axon_repair>
+        <dendrite_repair>false</dendrite_repair>
+        <unravel>true</unravel>
+        <use_for_stats>true</use_for_stats>
+        <use_axon>true</use_axon>
+        <axon_sources>
+          <axoninput>C270106A</axoninput>
+        </axon_sources>
+      </repair>
+    </morphology>
+    <!-- for some reason, the morphology tracker adds blank morphologies, emulate that -->
+    <morphology>
+    </morphology>
+    <morphology>
+    </morphology>
+    <morphology>
+    </morphology>
+    <morphology>
+      <name>C060106F</name>
+      <mtype>L1_HAC</mtype>
+      <msubtype></msubtype>
+      <layer>1</layer>
+      <repair>
+        <axon_repair>true</axon_repair>
+        <dendrite_repair>false</dendrite_repair>
+        <unravel>true</unravel>
+        <use_for_stats>true</use_for_stats>
+        <use_axon>true</use_axon>
+        <axon_sources>
+          <axoninput>C060106F</axoninput>
+        </axon_sources>
+      </repair>
+    </morphology>
+    <morphology>
+      <name>C230998A-I3</name>
+      <mtype>L23_BP</mtype>
+      <msubtype></msubtype>
+      <layer>2</layer>
+      <repair>
+        <axon_repair>true</axon_repair>
+        <dendrite_repair>false</dendrite_repair>
+        <unravel>true</unravel>
+        <use_for_stats>true</use_for_stats>
+        <use_axon></use_axon>
+        <axon_sources>
+          <axoninput>C230998A-I3</axoninput>
+        </axon_sources>
+      </repair>
+    </morphology>
+    <morphology>
+      <name>C020600C1</name>
+      <mtype>L4_BTC</mtype>
+      <msubtype></msubtype>
+      <layer>4</layer>
+      <repair>
+        <axon_repair>true</axon_repair>
+        <dendrite_repair>false</dendrite_repair>
+        <unravel>true</unravel>
+        <use_for_stats>true</use_for_stats>
+        <use_axon>true</use_axon>
+        <axon_sources>
+          <axoninput>C020600C1</axoninput>
+        </axon_sources>
+      </repair>
+    </morphology>
+    <morphology>
+      <name>C060110A2</name>
+      <mtype>L5_TTPC1</mtype>
+      <msubtype></msubtype>
+      <layer>5</layer>
+      <repair>
+        <axon_repair>true</axon_repair>
+        <basal_dendrite_repair>true</basal_dendrite_repair>
+        <tuft_dendrite_repair>true</tuft_dendrite_repair>
+        <oblique_dendrite_repair>true</oblique_dendrite_repair>
+        <dendrite_repair>true</dendrite_repair>
+        <unravel>true</unravel>
+        <use_for_stats>true</use_for_stats>
+        <use_axon>true</use_axon>
+        <axon_sources>
+          <axoninput>C060110A2</axoninput>
+        </axon_sources>
+      </repair>
+    </morphology>
+    <morphology>
+      <name>Fluo42_right</name>
+      <mtype>L6_BPC</mtype>
+      <msubtype></msubtype>
+      <layer>6</layer>
+      <repair>
+        <axon_repair>true</axon_repair>
+        <basal_dendrite_repair>true</basal_dendrite_repair>
+        <tuft_dendrite_repair>false</tuft_dendrite_repair>
+        <oblique_dendrite_repair>true</oblique_dendrite_repair>
+        <dendrite_repair>false</dendrite_repair>
+        <unravel>true</unravel>
+        <use_for_stats>true</use_for_stats>
+        <use_axon>true</use_axon>
+        <axon_sources>
+          <axoninput>Fluo42_right</axoninput>
+        </axon_sources>
+      </repair>
+    </morphology>
+
+  </listing>
+  <commands>
+     <default_repair>
+        repair --input=C270106A -C repair.conf --output=C270106A --doaxonrepair=true --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror --axoninput=C270106A ;
+        repair --input=C060106F -C repair.conf --output=C060106F --doaxonrepair=true --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror --axoninput=C060106F ;
+        repair --input=C230998A-I3 -C repair.conf --output=C230998A-I3 --doaxonrepair=true --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror --axoninput=C230998A-I3 ;
+        repair --input=C020600C1 -C repair.conf --output=C020600C1 --doaxonrepair=true --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror --axoninput=C020600C1 ;
+        repair --input=C060110A2 -C repair.conf --output=C060110A2 --doaxonrepair=true --dodendrepair=true --dotuftrepair=true --dobasalrepair=true --doobliquerepair=true  --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror --axoninput=C060110A2 ;
+        repair --input=Fluo42_right -C repair.conf --output=Fluo42_right --doaxonrepair=true --dodendrepair=true --dotuftrepair=false --dobasalrepair=true --doobliquerepair=true  --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror --axoninput=Fluo42_right ;
+     </default_repair>
+     <default_unravel>
+        repair --input=C270106A -C unravel.conf --output=C270106A --doaxonrepair=false --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror;
+        repair --input=C060106F -C unravel.conf --output=C060106F --doaxonrepair=false --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror;
+        repair --input=C230998A-I3 -C unravel.conf --output=C230998A-I3 --doaxonrepair=false --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror;
+        repair --input=C020600C1 -C unravel.conf --output=C020600C1 --doaxonrepair=false --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror;
+        repair --input=C060110A2 -C unravel.conf --output=C060110A2 --doaxonrepair=false --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror;
+        repair --input=Fluo42_right -C unravel.conf --output=Fluo42_right --doaxonrepair=false --dodendrepair=false --dounravel=true --overlap=true --incremental=false --restrict=true --distmethod=mirror;
+     </default_unravel>
+  </commands>
+</neurondb>
+
