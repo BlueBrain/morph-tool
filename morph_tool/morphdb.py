@@ -199,8 +199,12 @@ class MorphologyDB(object):
            'oblique_dendrite_repair': flag to activate oblique dendrites repair (dendrite_repair
                                     must be true as well)
            'unravel': flag to activate unravelling
-           'use_for_stats': ???
            'axon_inputs': the list of morphologies whose axon can be grafted on this morphology
+
+           # deprecated
+           'use_for_stats': Legacy flag that was used to determine if an axon was suitable to be
+                            used as a axoninput
+
         '''
         return pd.DataFrame([morph.row for morph in self.morphologies],
                             columns=MorphInfo.COLUMNS)
@@ -232,6 +236,7 @@ class MorphologyDB(object):
 
     def _write_neurondb(self, output_path: Path, sep=' ', write_header=False,
                         filt: Dict[str, bool] = None):
+        '''private helper to write the neurondb file'''
         if filt is None:
             filt = {}
         with open(output_path, 'w') as fd:
