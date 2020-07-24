@@ -42,6 +42,12 @@ class MorphInfo:
                'layer'] + BOOLEAN_REPAIR_ATTRS + ['axon_inputs']
 
     def __init__(self, item: Dict[str, Any]):
+        '''MorphInfo ctor.
+
+        Args:
+            item: A dictionnary that represents the content of the XML file.
+                  The only mandatory keys are [name, mtype, layer]
+        '''
         self.item = item
         self.name = item['name']
         self.mtype = item['mtype']
@@ -50,7 +56,8 @@ class MorphInfo:
         self.fullmtype = MTYPE_MSUBTYPE_SEPARATOR.join(filter(None, [self.mtype, self.msubtype]))
 
         def is_true(el: Optional[str]) -> bool:
-            '''
+            '''Parse a string representing a boolean repair flag and returns its boolean value
+
             Unless clearly stated as false, missing tags default to True
 
             - According to Eilif, an empty use_axon (corresponding to a null in the database)
@@ -151,7 +158,7 @@ class MorphologyDB(object):
             self.lineage.pop(name, None)
 
     def add_morph(self, morph_info: MorphInfo) -> bool:
-        '''add a morphology to the database
+        '''Add a morphology to the database.
 
         If the name, mtype, layer combination already exists, then nothing is added
 
@@ -174,17 +181,26 @@ class MorphologyDB(object):
     def df(self):
         '''Returns a pandas.DataFrame view of the data with the following columns:
 
-            'name', 'mtype', 'msubtype', 'fullmtype', 'layer', 'use_axon',
-            'use_dendrites', 'axon_repair', 'dendrite_repair',
-            'basal_dendrite_repair', 'tuft_dendrite_repair',
-            'oblique_dendrite_repair', 'unravel', 'use_for_stats', 'axon_inputs'
+           'name': the morpho name (without extension)
+           'mtype': the mtype (without msubtype),
+           'msubtype': the msubtype (the part of the fullmtype after the ":")
+           'fullmtype': the full mtype (mtype:msubtype)
+           'layer': the layer (as a string)
 
-
-        Note about mtype, msubtype, fullmtype:
-            example: L1_DAC:A
-                - mtype = L1_DAC
-                - msubtype = A
-                - fullmtype = L1_DAC:A
+           # repair related columns
+           'use_axon': states that the morphology's axon can be used as a donor for axon grafting
+           'use_dendrites': states that this morphology can be used as a recipient for axon grafting
+           'axon_repair': flag to activate axon repair
+           'dendrite_repair': flag to activate dendrites repair
+           'basal_dendrite_repair': flag to activate basal dendrites repair (dendrite_repair
+                                    must be true as well)
+           'tuft_dendrite_repair': flag to activate tuft dendrites repair (dendrite_repair
+                                    must be true as well)
+           'oblique_dendrite_repair': flag to activate oblique dendrites repair (dendrite_repair
+                                    must be true as well)
+           'unravel': flag to activate unravelling
+           'use_for_stats': ???
+           'axon_inputs': the list of morphologies whose axon can be grafted on this morphology
         '''
         return pd.DataFrame([morph.row for morph in self.morphologies],
                             columns=MorphInfo.COLUMNS)
