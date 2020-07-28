@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from nose.tools import eq_, ok_
+from nose.tools import eq_, ok_, assert_not_equal
 from numpy.testing import assert_array_equal
 
 from morph_tool import morphdb, utils
@@ -12,6 +12,20 @@ from morph_tool.morphdb import MorphInfo, MorphologyDB
 # from .utils import create_fake_files, TemporaryDirectory, write_neurondb
 
 DATA_PATH = Path(__file__).parent / 'data'
+
+
+def test_MorphInfo_hash():
+    eq_(hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
+        hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1', use_axon=True))),)
+
+    assert_not_equal(hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
+                     hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0:A', layer='1'))),)
+
+    assert_not_equal(hash(MorphInfo(dict(name='aaa', mtype='L1_fake_type0', layer='1'))),
+                     hash(MorphInfo(dict(name='bbb', mtype='L1_fake_type0', layer='1'))),)
+
+    assert_not_equal(hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
+                     hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='2'))),)
 
 
 def test__xmlmorphinfo_from_xml():

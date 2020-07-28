@@ -45,10 +45,9 @@ class MorphInfo:
         '''MorphInfo ctor.
 
         Args:
-            item: A dictionnary that represents the content of the XML file.
+            item: A dictionary that represents the content of the XML file.
                   The only mandatory keys are [name, mtype, layer]
         '''
-        self.item = item
         self.name = item['name']
         self.mtype = item['mtype']
         self.layer = str(item['layer'])
@@ -83,7 +82,7 @@ class MorphInfo:
         self.axon_donor = item.get('parent') or item.get('axon')
 
     def __hash__(self):
-        return hash((self.name, self.mtype, self.layer))
+        return hash((self.name, self.fullmtype, self.layer))
 
     @property
     def data(self) -> Dict:
