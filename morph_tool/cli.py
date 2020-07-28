@@ -4,8 +4,10 @@ import sys
 from pathlib import Path
 
 import click
+import dask.bag as dask_bag
 
 import morph_tool
+from morph_tool import converter
 from morph_tool.utils import iter_morphology_files
 
 logging.basicConfig()
@@ -62,13 +64,23 @@ def soma_surface(input_file, quiet):
               help='For SWC files only')
 def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma):
     '''Convert a single morphology from/to the following formats: ASC, SWC, H5'''
-    # pylint: disable=import-outside-toplevel
-    from morph_tool import converter
-
     if quiet:
         L.setLevel(logging.WARNING)
 
     converter.convert(input_file, output_file, recenter, nrn_order, single_point_soma)
+
+
+def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_point_soma):
+    '''Function to be passed to dask.bag.map
+
+    Attempts a conversion and returns the path if it failed
+    '''
+    try:
+        converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
+                          recenter, nrn_order, single_point_soma)
+        return None
+    except:  # noqa, pylint: disable=bare-except
+        return str(path)
 
 
 @convert.command(short_help='Convert all morphologies in a folder')
@@ -83,21 +95,21 @@ def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma)
               help='whether to traverse the neuron in the NEURON fashion')
 @click.option('--single-point-soma', is_flag=True,
               help='For SWC files only')
-def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_point_soma):
+@click.option('--ncores', help='The number of cores', default=None)
+def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_point_soma, ncores):
     '''Convert all morphologies in the folder and its subfolders'''
-    # pylint: disable=import-outside-toplevel
-    from morph_tool import converter
-
     if quiet:
         L.setLevel(logging.WARNING)
 
-    failed_conversions = list()
-    for path in iter_morphology_files(input_dir):
-        try:
-            converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
-                              recenter, nrn_order, single_point_soma)
-        except:  # noqa, pylint: disable=bare-except
-            failed_conversions.append(str(path))
+    failed_conversions = dask_bag.from_sequence(iter_morphology_files(input_dir),
+                                                npartitions=ncores).map(
+        _attempt_convert,
+        output_dir=output_dir,
+        extension=extension,
+        recenter=recenter,
+        nrn_order=nrn_order,
+        single_point_soma=single_point_soma)
+    failed_conversions = list(filter(None, failed_conversions))
 
     if failed_conversions:
         L.warning('The following morphologies could not be converted: %s',

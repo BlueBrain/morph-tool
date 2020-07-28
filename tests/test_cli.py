@@ -37,7 +37,7 @@ def test_convert():
         runner = CliRunner()
         result = runner.invoke(cli, ['convert', 'folder', '-ext', 'swc',
                                      str(DATA / 'input-convert'), tmp_dir])
-        assert_equal(result.exit_code, 0)
+        assert_equal(result.exit_code, 0, result.exc_info)
 
         n_converted_files = len(list(Path(tmp_dir).rglob('**/*.swc')))
 
