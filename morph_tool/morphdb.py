@@ -8,7 +8,7 @@ MorphologyDB('neurondb.xml').df
 import json
 import logging
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 import pandas as pd
 import xmltodict
@@ -81,9 +81,6 @@ class MorphInfo:
         self.dendrite_donor = item.get('parent') or item.get('dendrite')
         self.axon_donor = item.get('parent') or item.get('axon')
 
-    def __hash__(self):
-        return hash((self.name, self.fullmtype, self.layer))
-
     @property
     def data(self) -> Dict:
         '''Data that matter to generate the neurondb.xml'''
@@ -140,10 +137,15 @@ class MorphologyDB(object):
             morphologies = []
 
         self.morphologies = list(morphologies)
-        self._known_morphologies = set(map(hash, self.morphologies))
+        self._known_morphologies = set(map(self._morph_key, self.morphologies))
 
     def __iter__(self):
         return iter(self.morphologies)
+
+    @staticmethod
+    def _morph_key(morph: MorphInfo) -> Tuple[str, str, str]:
+        '''Returns the key that is used to uniquely identify a morphology.'''
+        return (morph.name, morph.fullmtype, morph.layer)
 
     def remove_morphs(self, removed_morphs: Iterable[MorphInfo]) -> None:
         '''Removes morphologies from the database.'''
@@ -151,7 +153,7 @@ class MorphologyDB(object):
         self.morphologies = [morph for morph in self.morphologies
                              if morph.name not in removed_morphs]
 
-        self._known_morphologies = set(map(hash, self.morphologies))
+        self._known_morphologies = set(map(self._morph_key, self.morphologies))
 
         for name in removed_morphs:
             self.lineage.pop(name, None)
@@ -164,7 +166,7 @@ class MorphologyDB(object):
         Return:
             True if morphology added, False otherwise
         '''
-        key = hash(morph_info)
+        key = self._morph_key(morph_info)
         if key in self._known_morphologies:
             return False
         self._known_morphologies.add(key)

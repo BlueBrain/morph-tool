@@ -14,18 +14,18 @@ from morph_tool.morphdb import MorphInfo, MorphologyDB
 DATA_PATH = Path(__file__).parent / 'data'
 
 
-def test_MorphInfo_hash():
-    eq_(hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
-        hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1', use_axon=True))),)
+def test_MorphInfo__morph_key():
+    eq_(MorphologyDB._morph_key(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
+        MorphologyDB._morph_key(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1', use_axon=True))),)
 
-    assert_not_equal(hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
-                     hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0:A', layer='1'))),)
+    assert_not_equal(MorphologyDB._morph_key(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
+                     MorphologyDB._morph_key(MorphInfo(dict(name='morph0', mtype='L1_fake_type0:A', layer='1'))),)
 
-    assert_not_equal(hash(MorphInfo(dict(name='aaa', mtype='L1_fake_type0', layer='1'))),
-                     hash(MorphInfo(dict(name='bbb', mtype='L1_fake_type0', layer='1'))),)
+    assert_not_equal(MorphologyDB._morph_key(MorphInfo(dict(name='aaa', mtype='L1_fake_type0', layer='1'))),
+                     MorphologyDB._morph_key(MorphInfo(dict(name='bbb', mtype='L1_fake_type0', layer='1'))),)
 
-    assert_not_equal(hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
-                     hash(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='2'))),)
+    assert_not_equal(MorphologyDB._morph_key(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='1'))),
+                     MorphologyDB._morph_key(MorphInfo(dict(name='morph0', mtype='L1_fake_type0', layer='2'))),)
 
 
 def test__xmlmorphinfo_from_xml():
