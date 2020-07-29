@@ -15,7 +15,6 @@ import xmltodict
 
 L = logging.getLogger(__name__)
 
-NEURONDB_XML = 'neuronDB.xml'
 MTYPE_MSUBTYPE_SEPARATOR = ':'
 
 
