@@ -33,10 +33,6 @@ def test_loader(f_mock):
         morph1
     )
 
-    nt.assert_is(
-        loader.get('test'),
-        morph1
-    )
     # first cached object was evicted from the cache
     loader.get('test', options=1)
     nt.assert_is_not(
