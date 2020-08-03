@@ -20,7 +20,7 @@ def test_ensure_startswith_point():
 @patch('morphio.Morphology')
 def test_loader(f_mock):
     f_mock.configure_mock(side_effect=lambda *args: object())
-    loader = tested.MorphLoader('/dir', file_ext='abc', cache_size=1)
+    loader = tested.MorphLoader('/dir', file_ext='abc', cache_size=2)
     morph1 = loader.get('test')
     # should get cached object now
     nt.assert_is(
