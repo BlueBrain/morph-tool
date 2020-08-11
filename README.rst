@@ -158,6 +158,17 @@ Example:
    # Additionally the morphology can be recentered or written according to the NEURON neurite order during the conversion
    convert(inputfile, outputfile, recenter=True, nrn_order=True)
 
+The same for bash
+
+.. code:: bash
+
+   morph-tool convert file ./inputfile ./outputfile
+   # with additional options
+   morph-tool convert file --recenter --nrn-order ./inputfile ./outputfile
+   # or an entire folder
+   morph-tool convert folder -ext SWC ./h5_input_folder ./swc_output_folder
+   # for more info use
+   morph-tool convert folder --help
 
 NRN simulator compartment coordinates
 -------------------------------------
