@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 from nose.tools import assert_equal, assert_raises, ok_
+from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
 import morph_tool.utils as tested
@@ -58,3 +59,9 @@ def test_neurondb_dataframe():
     assert_frame_equal(df, expected)
 
     assert_raises(ValueError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')
+
+
+def test_neurondb_dataframe_with_path():
+    folder = DATA / 'test-neurondb-with-path'
+    df = tested.neurondb_dataframe(DATA / 'neurondb.xml', morphology_dir=folder)
+    assert_array_equal(df.path, [folder / 'C270106A.h5', None, folder / 'a_neuron.ASC', None])

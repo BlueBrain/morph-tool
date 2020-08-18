@@ -1,6 +1,7 @@
 '''Utils'''
 from functools import partial
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 import xmltodict
@@ -22,19 +23,21 @@ def iter_morphology_files(folder, recursive=False, extensions=None):
     return filter(partial(is_morphology, extensions=extensions), files)
 
 
-def neurondb_dataframe(filename: Path) -> pd.DataFrame:
+def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) -> pd.DataFrame:
     '''Returns a DataFrame: [name, layer, mtype]
 
     If read from an XML, additional columns maybe be present
     Args:
         filename: the neurondb.(dat|xml) file
+        morphology_dir: (Optional) If passed, a column with the path to each morphology file
+            will be added
     '''
-    if filename.suffix.lower() == '.dat':
+    if neurondb.suffix.lower() == '.dat':
         columns = ['name', 'layer', 'mtype']
-        df = pd.read_csv(filename, sep=r'\s+', names=columns, usecols=range(len(columns)))
+        df = pd.read_csv(neurondb, sep=r'\s+', names=columns, usecols=range(len(columns)))
         df.layer = df.layer.astype('str')
-    elif filename.suffix.lower() == '.xml':
-        with filename.open() as fd:
+    elif neurondb.suffix.lower() == '.xml':
+        with neurondb.open() as fd:
             neuronDB = xmltodict.parse(fd.read())
 
         rows = list()
@@ -51,6 +54,20 @@ def neurondb_dataframe(filename: Path) -> pd.DataFrame:
         df = pd.DataFrame(data=rows, columns=['name', 'layer', 'mtype', 'use_axon'])
 
     else:
-        raise ValueError(f'Unrecognized extension for neurondb file: {filename}')
+        raise ValueError(f'Unrecognized extension for neurondb file: {neurondb}')
+
+    if morphology_dir:
+        def _find_morph(row: str) -> Optional[Path]:
+            '''Returns the path to a morphology in morphology_dir matching row.stem.
+
+            If no morphology is found, returns None
+            '''
+            for ext in {'.asc', '.ASC', '.h5', '.H5', '.swc', '.SWC'}:
+                path = morphology_dir / (row['name'] + ext)
+                if path.exists():
+                    return path
+            return None
+
+        df['path'] = df.apply(_find_morph, axis=1)
 
     return df
