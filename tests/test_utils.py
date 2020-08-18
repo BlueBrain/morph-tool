@@ -40,6 +40,15 @@ def test_iter_morphology_files():
                   DATA / 'folder' / 'subfolder' / 'e.h5',
 })
 
+def test_find_morph():
+    folder = DATA / 'test-neurondb-with-path'
+    assert_equal(tested.find_morph(folder, 'not-here.h5'),
+                 None)
+    assert_equal(tested.find_morph(folder, 'C270106A'),
+                 folder / 'C270106A.h5')
+    assert_equal(tested.find_morph(folder, 'C270106C.wrongext'),
+                 None)
+
 
 def test_neurondb_dataframe():
     expected = pd.DataFrame(data=[['name1', '1', 'L1_mtype-submtype'],

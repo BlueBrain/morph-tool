@@ -23,6 +23,18 @@ def iter_morphology_files(folder, recursive=False, extensions=None):
     return filter(partial(is_morphology, extensions=extensions), files)
 
 
+def find_morph(folder: Path, stem: str) -> Optional[Path]:
+    '''Returns the path to a morphology in morphology_dir matching stem.
+
+    If no morphology is found, returns None
+    '''
+    for ext in {'.asc', '.ASC', '.h5', '.H5', '.swc', '.SWC'}:
+        path = folder / (stem + ext)
+        if path.exists():
+            return path
+    return None
+
+
 def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) -> pd.DataFrame:
     '''Returns a DataFrame: [name, layer, mtype]
 
@@ -57,17 +69,6 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
         raise ValueError(f'Unrecognized extension for neurondb file: {neurondb}')
 
     if morphology_dir:
-        def _find_morph(row: str) -> Optional[Path]:
-            '''Returns the path to a morphology in morphology_dir matching row.stem.
-
-            If no morphology is found, returns None
-            '''
-            for ext in {'.asc', '.ASC', '.h5', '.H5', '.swc', '.SWC'}:
-                path = morphology_dir / (row['name'] + ext)
-                if path.exists():
-                    return path
-            return None
-
-        df['path'] = df.apply(_find_morph, axis=1)
+        df['path'] = df.apply(lambda row: find_morph(morphology_dir, row['name']), axis=1)
 
     return df
