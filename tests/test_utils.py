@@ -148,11 +148,5 @@ def test_neurondb_dataframe_with_path():
     folder = DATA / 'test-neurondb-with-path'
     df = tested.neurondb_dataframe(DATA / 'neurondb.xml', morphology_dir=folder)
 
-    def _lower_case_if_macos(string):
-        '''MacOS is case incensitive'''
-        return string.lower() if sys.platform == 'darwin' else string
-
-    assert_array_equal(df.path, [folder / 'C270106A.h5',
-                                 None,
-                                 folder / _lower_case_if_macos('a_neuron.ASC'),
-                                 None])
+    assert_array_equal([p.stem if p is not None else None for p in df.path],
+                       ['C270106A', None, 'a_neuron', None])
