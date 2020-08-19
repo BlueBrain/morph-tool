@@ -150,7 +150,7 @@ def test_neurondb_dataframe_with_path():
 
     def _lower_case_if_macos(string):
         '''MacOS is case incensitive'''
-        return string.lower() if sys.platform == 'Darwin' else string
+        return string.lower() if sys.platform == 'darwin' else string
 
     assert_array_equal(df.path, [folder / 'C270106A.h5',
                                  None,
