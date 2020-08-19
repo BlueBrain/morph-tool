@@ -35,6 +35,25 @@ def find_morph(folder: Path, stem: str) -> Optional[Path]:
     return None
 
 
+def _ensure_list(data):
+    '''Returns the data if already a list else [data].
+
+    xmltodict.parse will represent the data as a list if it sees
+    the same tag multiple times in a row. For example,
+    <morphology></morphology> will appear multiple times in neuronDB.xml
+
+    However if the neurondb has a single <morphology></morphology> tag the data
+    won't be represented as a list so this function enforce it
+
+    Args:
+        data: the python dict coming from xmltodict.parse.
+
+    '''
+    if isinstance(data, list):
+        return data
+    return [data]
+
+
 def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) -> pd.DataFrame:
     '''Returns a DataFrame: [name, layer, mtype]
 
@@ -53,7 +72,7 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
             neuronDB = xmltodict.parse(fd.read())
 
         rows = list()
-        for morph in neuronDB["neurondb"]["listing"]["morphology"]:
+        for morph in _ensure_list(neuronDB["neurondb"]["listing"]["morphology"]):
             assert morph["repair"]["use_axon"] in {'true', 'false', 'True', 'False', None}
             rows.append(
                 (morph["name"],
