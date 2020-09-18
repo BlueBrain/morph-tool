@@ -256,9 +256,9 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
                      MorphologyVersion.MORPHOLOGY_VERSION_H5_1_1: from_h5_or_asc,
                      MorphologyVersion.MORPHOLOGY_VERSION_H5_2: from_h5_or_asc
                      }[neuron.version]
-    except KeyError:
+    except KeyError as e:
         raise Exception(
-            'No converter for morphology type: {}'.format(neuron.version))
+            'No converter for morphology type: {}'.format(neuron.version)) from e
 
     logger.info('Original soma type: %s', neuron.soma_type)
     new = converter(neuron, output_ext)
