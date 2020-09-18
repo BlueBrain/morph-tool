@@ -46,10 +46,11 @@ def soma_surface(input_file, quiet):
 
     try:
         click.echo('Soma surface: {}'.format(get_NEURON_surface(input_file)))
-    except ImportError:
+    except ImportError as e:
         raise ImportError('''the NEURON module is not installed.
         - if you are on the cluster, you can try: module load nix/hpc/neuron
-        - otherwise, get it here: https://github.com/neuronsimulator/nrn and compile it...''')
+        - otherwise, get it here: https://github.com/neuronsimulator/nrn and compile it...'''
+                          ) from e
 
 
 @convert.command(short_help='Convert a single morphology')
