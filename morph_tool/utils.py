@@ -73,16 +73,20 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
 
         rows = list()
         for morph in _ensure_list(neuronDB["neurondb"]["listing"]["morphology"]):
-            assert morph["repair"]["use_axon"] in {'true', 'false', 'True', 'False', None}
-            rows.append(
-                (morph["name"],
-                 morph["layer"],
-                 morph["mtype"] + (":" + morph["msubtype"] if morph["msubtype"] else ""),
-                 # According to Eilif, an empty use_axon (corresponding to a null in the database)
-                 # means that the axon is supposed to be used
-                 (morph["repair"]["use_axon"] in {'true', 'True', None})))
+            row = (morph["name"],
+                   morph["layer"],
+                   morph["mtype"] + (":" + morph["msubtype"] if morph["msubtype"] else ""),
+                   )
+            columns = ['name', 'layer', 'mtype']
+            if 'repair' in morph:
+                assert morph["repair"]["use_axon"] in {'true', 'false', 'True', 'False', None}
+                # According to Eilif, an empty use_axon (corresponding to a null in the database)
+                # means that the axon is supposed to be used
+                row += (morph["repair"]["use_axon"] in {'true', 'True', None},)
+                columns += ['use_axon']
+            rows.append(row)
 
-        df = pd.DataFrame(data=rows, columns=['name', 'layer', 'mtype', 'use_axon'])
+        df = pd.DataFrame(data=rows, columns=columns)
 
     else:
         raise ValueError(f'Unrecognized extension for neurondb file: {neurondb}')
