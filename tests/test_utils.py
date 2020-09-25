@@ -87,8 +87,6 @@ def test_neurondb_dataframe_no_repair():
 
     assert_frame_equal(df, expected)
 
-    assert_raises(ValueError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')
-
 
 def mock_path_content(content):
     class MockPathContent:
