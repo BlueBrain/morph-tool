@@ -73,6 +73,22 @@ def test_neurondb_dataframe():
     assert_raises(ValueError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')
 
 
+def test_neurondb_dataframe_no_repair():
+    df = tested.neurondb_dataframe(DATA / 'neurondb-no-repair.xml')
+    expected = pd.DataFrame(data=[['C270106A', '1', 'L1_DAC', True],
+                                  ['C270106C', '1', 'L1_DAC', True],
+
+                                  # This time (cf test_neurondb_dataframe), use_axon is True
+                                  ['a_neuron', '1', 'an_mtype:a_subtype', True],
+
+                                  ['a_2nd_neuron', '1', 'an_mtype:a_subtype', True],
+                                  ],
+                            columns=['name', 'layer', 'mtype', 'use_axon'])
+
+    assert_frame_equal(df, expected)
+
+    assert_raises(ValueError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')
+
 
 def mock_path_content(content):
     class MockPathContent:
