@@ -28,7 +28,7 @@ def find_axon(axon_or_donor_axon):
         raise NoAxonException('No axon found!')
 
     if len(axons) > 1:
-       raise TooManyAxonsException('Too many axons found!')
+        raise TooManyAxonsException('Too many axons found!')
 
     return axons[0]
 
