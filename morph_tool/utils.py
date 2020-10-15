@@ -54,14 +54,14 @@ def _ensure_list(data):
     return [data]
 
 
-def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) -> pd.DataFrame:
+def neurondb_dataframe(neurondb: Path, morphology_dirs: Optional[dict] = None) -> pd.DataFrame:
     '''Returns a DataFrame: [name, layer, mtype]
 
     If read from an XML, additional columns maybe be present
     Args:
         filename: the neurondb.(dat|xml) file
-        morphology_dir: (Optional) If passed, a column with the path to each morphology file
-            will be added
+        morphology_dirs: (Optional) If passed, a column with the path to each morphology file
+            will be added for each entry of the dict, where the column name is the dict key
     '''
     if neurondb.suffix.lower() == '.dat':
         columns = ['name', 'layer', 'mtype']
@@ -73,21 +73,26 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
 
         rows = list()
         for morph in _ensure_list(neuronDB["neurondb"]["listing"]["morphology"]):
-            use_axon = morph.get("repair", {}).get("use_axon")
-            assert use_axon in {'true', 'false', 'True', 'False', None}
-            rows.append(
-                (morph["name"],
-                 morph["layer"],
-                 morph["mtype"] + (":" + morph["msubtype"] if morph["msubtype"] else ""),
-                 # According to Eilif, an empty use_axon (corresponding to a null in the database)
-                 # means that the axon is supposed to be used
-                 (use_axon in {'true', 'True', None})))
+            row = (morph["name"],
+                   morph["layer"],
+                   morph["mtype"] + (":" + morph["msubtype"] if morph["msubtype"] else ""),
+                   )
+            columns = ['name', 'layer', 'mtype']
+            if 'repair' in morph:
+                assert morph["repair"]["use_axon"] in {'true', 'false', 'True', 'False', None}
+                # According to Eilif, an empty use_axon (corresponding to a null in the database)
+                # means that the axon is supposed to be used
+                row += (morph["repair"]["use_axon"] in {'true', 'True', None},)
+                columns += ['use_axon']
+            rows.append(row)
 
-        df = pd.DataFrame(data=rows, columns=['name', 'layer', 'mtype', 'use_axon'])
+        df = pd.DataFrame(data=rows, columns=columns)
+
     else:
         raise ValueError(f'Unrecognized extension for neurondb file: {neurondb}')
 
-    if morphology_dir:
-        df['path'] = df.apply(lambda row: find_morph(morphology_dir, row['name']), axis=1)
+    if morphology_dirs:
+        for name, morphology_dir in morphology_dirs.items():
+            df[name] = df.apply(lambda row: find_morph(morphology_dir, row['name']), axis=1)
 
     return df
