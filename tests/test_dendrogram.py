@@ -44,13 +44,13 @@ def test_explicit_neuron_node_id():
     neuron_node_id = 1
     fig = dendrogram.draw(
         _create_test_neuron(), _create_test_synapses([neuron_node_id, 2]), neuron_node_id)
-    plot(fig, auto_open=False)
+    plot(fig, auto_open=False, output_type='div')
 
 
 def test_implicit_valid_neuron_node_id():
     neuron_node_id = 1
     fig = dendrogram.draw(_create_test_neuron(), _create_test_synapses([neuron_node_id]))
-    plot(fig, auto_open=False)
+    plot(fig, auto_open=False, output_type='div')
 
 
 def test_implicit_invalid_neuron_node_id():
