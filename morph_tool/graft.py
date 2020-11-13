@@ -1,19 +1,24 @@
 '''What we call grafting is the process of taking one piece of a neuron and
 putting it on another neuron.'''
+import logging
+
 import numpy as np
 from morphio import SectionType, SomaType, Section as ImmutSection
 from morphio.mut import Section
 
 
-from morph_tool import (NoAxonException, TooManyAxonsException,
-                        NoDendriteException, MorphToolException)
+from morph_tool import NoAxonException, NoDendriteException, MorphToolException
 from morph_tool.transform import translate
 
 
-def find_axon(axon_or_donor_axon):
-    '''Find the root section which is an axon
+logger = logging.getLogger('morph_tool')
 
-    raises if number of axon found is not 1'''
+
+def find_axon(axon_or_donor_axon):
+    """Find the root section which is an axon.
+
+    If the number of axons found is greater than 1, then return the first axon.
+    """
 
     if isinstance(axon_or_donor_axon, (ImmutSection, Section)):
         if axon_or_donor_axon.type == SectionType.axon:
@@ -28,7 +33,7 @@ def find_axon(axon_or_donor_axon):
         raise NoAxonException('No axon found!')
 
     if len(axons) > 1:
-        raise TooManyAxonsException('Too many axons found!')
+        logger.warning("Found multiple axons (%s), choosing the first one.", len(axons))
 
     return axons[0]
 
