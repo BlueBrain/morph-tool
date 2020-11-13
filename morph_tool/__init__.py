@@ -17,7 +17,3 @@ class NoAxonException(MorphToolException):
 
 class NoDendriteException(MorphToolException):
     '''MorphTool exception'''
-
-
-class TooManyAxonsException(MorphToolException):
-    '''MorphTool exception'''
