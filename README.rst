@@ -264,6 +264,11 @@ Contributing
 If you want to improve the project or you see any issue, every contribution is welcome.
 Please check the `contribution guidelines <CONTRIBUTING.md>`__ for more information.
 
+Acknowledgements
+----------------
+
+This research was supported by the EBRAINS research infrastructure, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under the Specific Grant Agreement No. 945539 (Human Brain Project SGA3).
+
 License
 -------
 
