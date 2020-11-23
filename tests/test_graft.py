@@ -13,23 +13,25 @@ from morphio import PointLevel, SomaType, SectionType, Morphology as ImmutMorpho
 _path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 SIMPLE = Morphology(os.path.join(_path, 'simple.swc'))
 
+
 def test_find_axon():
     axon = find_axon(SIMPLE)
     assert_array_equal(axon.points,
                        [[0, 0, 0], [0, -4, 0]])
 
-    with assert_raises(MorphToolException) as obj:
+    # section is not an axon
+    with assert_raises(MorphToolException):
         dendrite = SIMPLE.root_sections[0]
         find_axon(dendrite)
 
-
+    # no axon found
     with assert_raises(MorphToolException) as obj:
         find_axon(Morphology(os.path.join(_path, 'no_axon.swc')))
     assert_equal(str(obj.exception), 'No axon found!')
 
-    with assert_raises(MorphToolException) as obj:
-        find_axon(Morphology(os.path.join(_path, 'two_axons.asc')))
-    assert_equal(str(obj.exception), 'Too many axons found!')
+    # first axon is chosen
+    axon = find_axon(Morphology(os.path.join(_path, 'two_axons.asc')))
+    assert_array_equal(axon.points, [[0, 0, 0], [0, -4, 0]])
 
 
 def test_graft():
