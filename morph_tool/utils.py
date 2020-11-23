@@ -87,6 +87,7 @@ def neurondb_dataframe(neurondb: Path, morphology_dirs: Optional[dict] = None) -
             rows.append(row)
 
         df = pd.DataFrame(data=rows, columns=columns)
+
     else:
         raise ValueError(f'Unrecognized extension for neurondb file: {neurondb}')
 
