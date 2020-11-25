@@ -4,7 +4,6 @@ import shutil
 import sys
 import tempfile
 from contextlib import contextmanager
-from difflib import Differ
 from functools import partial
 from io import StringIO
 from pprint import pformat

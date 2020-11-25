@@ -2,7 +2,6 @@ import nose.tools as nt
 
 import mock
 from mock import patch
-from nose.tools import assert_equal
 
 import morph_tool.loader as tested
 
@@ -50,4 +49,4 @@ def test_loader_no_cache(f_mock):
     loader = tested.MorphLoader('/dir', file_ext='abc', cache_size=0)
     loader.get('test')
     loader.get('test')
-    assert_equal(f_mock.call_count, 2)
+    nt.assert_equal(f_mock.call_count, 2)

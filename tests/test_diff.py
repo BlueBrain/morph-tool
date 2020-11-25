@@ -1,4 +1,3 @@
-import shutil
 from os.path import dirname, join as joinp
 from nose.tools import assert_equal, ok_
 from click.testing import CliRunner
