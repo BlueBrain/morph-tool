@@ -166,3 +166,16 @@ def diff(morph1, morph2, rtol, atol, quiet):
         L.info("Morphologies not identical")
         L.info(result.info)
         sys.exit(1)
+
+
+@cli.command()
+@click.argument('input_file', type=REQUIRED_PATH)
+@click.argument('output_file')
+@click.option('--epsilon', type=float)
+def simplify(input_file, output_file, epsilon):
+    '''Simplify the sections of a morphology'''
+    import morphio
+    from morph_tool import simplify
+    morph = morphio.Morphology(input_file)
+    simplified = simplify.simplify_neuron(morph, epsilon)
+    simplified.write(output_file)
