@@ -1,6 +1,3 @@
-import itertools as it
-import os
-import shutil
 from pathlib import Path
 from nose.tools import assert_equal, ok_
 from click.testing import CliRunner

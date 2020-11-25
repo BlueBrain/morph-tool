@@ -1,7 +1,5 @@
 import os
 
-
-import neurom
 from morphio import Morphology
 from neurom.core.dataformat import COLS
 from nose.tools import eq_
