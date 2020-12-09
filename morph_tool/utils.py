@@ -72,7 +72,7 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
             neuronDB = xmltodict.parse(fd.read())
 
         rows = list()
-        for morph in _ensure_list(neuronDB["neurondb"]["listing"]["morphology"]):
+        for morph in filter(None, _ensure_list(neuronDB["neurondb"]["listing"]["morphology"])):
             use_axon = morph.get("repair", {}).get("use_axon")
             assert use_axon in {'true', 'false', 'True', 'False', None}
             rows.append(

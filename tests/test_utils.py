@@ -86,6 +86,16 @@ def test_neurondb_dataframe_no_repair():
 
     assert_frame_equal(df, expected)
 
+def test_neurondb_dataframe_empty_morph():
+    df = tested.neurondb_dataframe(DATA / 'neurondb-empty-morph-tag.xml')
+    expected = pd.DataFrame(data=[['C270106A', '1', 'L1_DAC', True],
+                                  ['a_neuron', '1', 'an_mtype:a_subtype', True],
+                                  ['a_2nd_neuron', '1', 'an_mtype:a_subtype', True],
+                                  ],
+                            columns=['name', 'layer', 'mtype', 'use_axon'])
+
+    assert_frame_equal(df, expected)
+
 
 def mock_path_content(content):
     class MockPathContent:
