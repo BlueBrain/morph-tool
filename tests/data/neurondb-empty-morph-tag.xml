@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<neurondb>
+  <meta>
+    <readme>
+        same as neurondb.xml but without an empty "morphology" tag
+    </readme>
+  </meta>
+  <listing>
+    <morphology>
+      <name>C270106A</name>
+      <mtype>L1_DAC</mtype>
+      <msubtype></msubtype>
+      <layer>1</layer>
+    </morphology>
+    <morphology>
+    </morphology>
+    <morphology>
+        <name>a_neuron</name>
+        <mtype>an_mtype</mtype>
+        <msubtype>a_subtype</msubtype>
+        <layer>1</layer>
+    </morphology>
+    <morphology>
+        <name>a_2nd_neuron</name>
+        <mtype>an_mtype</mtype>
+        <msubtype>a_subtype</msubtype>
+        <layer>1</layer>
+    </morphology>
+  </listing>
+</neurondb>
