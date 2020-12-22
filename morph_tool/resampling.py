@@ -51,9 +51,6 @@ def _resample_from_linear_density(points, linear_density):
             - fractions (np.array): (K-2,) Parametric fractions
 
     Notes:
-        A linear density of 1 corresponds to 1 point per um, 0.5 (1/2) to
-        1 point per 2 um, 2.0 (2/1) to two points per 1 um, etc.
-
         Given consecutive points [p0, p1, ..., pN] a resampling will create
         new points on the polyline defined by these points. This means
         that a new point p' can be defined as a fraction t of an existing
@@ -182,8 +179,8 @@ def resample_linear_density(obj, linear_density):
     """Resample the number of points in morphology
 
     Args:
-        obj: Morphology object
-        kind: Mode of resampling
+        obj: Morphology object, mutable or immutable
+        linear_density (float): Number of points per micron
 
     Returns:
         morphio.mut.Morphology: Resampled morphology copy
@@ -191,6 +188,9 @@ def resample_linear_density(obj, linear_density):
     Notes:
         Resampling maintains cell topology, i.e. it
         does not modify branching and termination points
+
+        A linear density of 1 corresponds to 1 point per um, 0.5 (1/2) to
+        1 point per 2 um, 2.0 (2/1) to two points per 1 um, etc.
     """
     obj = morphio.mut.Morphology(obj)
     resample_function = _dispatch_section_function(obj.cell_family)
