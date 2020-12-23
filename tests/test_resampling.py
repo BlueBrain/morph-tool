@@ -10,13 +10,13 @@ from morph_tool.morphio_diff import diff
 DATA_DIR = Path(__file__).resolve().parent / 'data'
 
 
-def test_vertex_path_lengths():
+def test_accumulated_path_lengths():
 
     points = np.array([[0., 0., 0.], [1., 1., 1.], [2., 2., 2.]])
     segment_length = np.linalg.norm(points[1] - points[0])
     total_length = np.linalg.norm(points[1:] - points[:-1], axis=1).sum()
 
-    path_lengths = tested._vertex_path_lengths(points)
+    path_lengths = tested._accumulated_path_lengths(points)
 
     npt.assert_allclose(path_lengths, [0.0, segment_length, 2.0 * segment_length])
 
@@ -75,7 +75,7 @@ def test_resample_parametric_values():
     npt.assert_allclose(new_values, [1.0, 1.5, 2.0, 2.5, 3.0])
 
 
-def test_resample_section_neuron_strip():
+def test_resample_neuron_section_strip():
     """Check that only the first and last points and diameters remain
     if linear_density is zero.
     """
@@ -84,13 +84,13 @@ def test_resample_section_neuron_strip():
         diameters=np.array([3., 2., 1.])
     )
 
-    tested._resample_section_neuron(section, linear_density=0.)
+    tested._resample_neuron_section(section, linear_density=0.)
 
     npt.assert_allclose(section.points, [[0., 0., 0.], [2., 2., 2.]])
     npt.assert_allclose(section.diameters, [3., 1.])
 
 
-def test_resample_section_astrocyte_strip():
+def test_resample_astrocyte_section_strip():
     """Check that only the first and last points and diameters remain
     if linear_density is zero.
     """
@@ -100,14 +100,14 @@ def test_resample_section_astrocyte_strip():
         perimeters=np.array([1., 2., 3.])
     )
 
-    tested._resample_section_astrocyte(section, linear_density=0.)
+    tested._resample_astrocyte_section(section, linear_density=0.)
 
     npt.assert_allclose(section.points, [[0., 0., 0.], [2., 2., 2.]])
     npt.assert_allclose(section.diameters, [3., 1.])
     npt.assert_allclose(section.perimeters, [1., 3.])
 
 
-def test_resample_section_neuron__identity():
+def test_resample_neuron_section__identity():
     """If we have points 1um apart with a density of 1 points per um
     then the result should the same as the input.
     """
@@ -116,14 +116,14 @@ def test_resample_section_neuron__identity():
         diameters=np.array([3., 2., 1.])
     )
 
-    tested._resample_section_neuron(section, linear_density=1.)
+    tested._resample_neuron_section(section, linear_density=1.)
 
     npt.assert_allclose(
         section.points, [[0., 0., 0.], [1., 0., 0.], [2., 0., 0.]])
     npt.assert_allclose(section.diameters, [3., 2., 1.])
 
 
-def test_resample_section_astrocyte__identity():
+def test_resample_astrocyte_section__identity():
     """If we have points 1um apart with a density of 1 points per um
     then the result should the same as the input.
     """
@@ -133,7 +133,7 @@ def test_resample_section_astrocyte__identity():
         perimeters=np.array([1., 2., 3.])
     )
 
-    tested._resample_section_astrocyte(section, linear_density=1.)
+    tested._resample_astrocyte_section(section, linear_density=1.)
 
     npt.assert_allclose(
         section.points, [[0., 0., 0.], [1., 0., 0.], [2., 0., 0.]])
@@ -141,7 +141,7 @@ def test_resample_section_astrocyte__identity():
     npt.assert_allclose(section.perimeters, [1., 2., 3.])
 
 
-def test_resample_section_neuron__double_density():
+def test_resample_neuron_section__double_density():
     """If we have points 1um apart with a density of 1 points per um
     then the result should the same as the input.
     """
@@ -151,7 +151,7 @@ def test_resample_section_neuron__double_density():
         diameters=np.array([3., 2., 1.])
     )
 
-    tested._resample_section_neuron(section, linear_density=2.)
+    tested._resample_neuron_section(section, linear_density=2.)
 
     npt.assert_allclose(
         section.points,
@@ -163,7 +163,7 @@ def test_resample_section_neuron__double_density():
     npt.assert_allclose(section.diameters, [3., 2.5, 2., 1.5, 1.])
 
     # let's do a full cycle now!
-    tested._resample_section_neuron(section, linear_density=1.)
+    tested._resample_neuron_section(section, linear_density=1.)
 
     npt.assert_allclose(
         section.points,
@@ -173,7 +173,7 @@ def test_resample_section_neuron__double_density():
     npt.assert_allclose(section.diameters, [3., 2., 1.])
 
 
-def test_resample_section_astrocyte__double_density():
+def test_resample_astrocyte_section__double_density():
     """If we have points 1um apart with a density of 1 points per um
     then the result should the same as the input.
     """
@@ -184,7 +184,7 @@ def test_resample_section_astrocyte__double_density():
         perimeters=np.array([1., 2., 3.])
     )
 
-    tested._resample_section_astrocyte(section, linear_density=2.)
+    tested._resample_astrocyte_section(section, linear_density=2.)
 
     npt.assert_allclose(
         section.points,
@@ -197,7 +197,7 @@ def test_resample_section_astrocyte__double_density():
     npt.assert_allclose(section.perimeters, [1., 1.5, 2., 2.5, 3.])
 
     # let's do a full cycle now!
-    tested._resample_section_astrocyte(section, linear_density=1.)
+    tested._resample_astrocyte_section(section, linear_density=1.)
 
     npt.assert_allclose(
         section.points,
@@ -214,12 +214,12 @@ def _test_dispatch_section_function():
 
     assert isinstance(
         tested._dispatch_section_function(CellFamily.FAMILY_NEURON),
-        tested._resample_section_neuron
+        tested._resample_neuron_section
     )
 
     assert isinstance(
         tested._dispatch_section_function(CellFamily.FAMILY_GLIA),
-        tested._resample_section_astrocyte
+        tested._resample_astrocyte_section
     )
 
 def _assert_allclose_first_last(arr1, arr2):

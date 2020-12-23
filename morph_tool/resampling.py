@@ -1,20 +1,19 @@
-"""Resampling for morphio morphologies
+"""Resampling functionality for morphio morphologies. It allows for the
+generation of new points on the morphology skeleton with different frequency
 """
-
 import numpy as np
 import morphio
 
 
-def _vertex_path_lengths(points):
-    """Using the segment length assign a path length for each vertex in the
-    points array.
+def _accumulated_path_lengths(points):
+    """Return the accumulated path lengths along the polygonal line joining
+    the consecutive 3D points of points, starting with the point of index 0
 
     Args:
-        segment_lengths (np.ndarray): (N,) array of floats corresponding to
-            segment lengths of a section
+        points (np.ndarray): (N, 3) array of 3D points
 
-    Example:
-        [1, 2, 3] -> [0, 1, 3, 6]
+    Returns:
+        path_lengths (np.ndarray): (N,) Accumulated path lengths
 
     Notes:
         The last element in the path length array corresponds to the total
@@ -29,44 +28,42 @@ def _vertex_path_lengths(points):
 
 
 def _resample_from_linear_density(points, linear_density):
-    """Creates a resampling of K-2 elements on the polyline defined by
-    N `points`, omitting the first and last values which should remain
-    unchanged. The number of elements is determined by the `linear_density`.
+    """The linear density determines the number K of the new points and point
+    properties that will be created on the polyline defined by the consecutive
+    points. The functions returns the ids and fractions, where each id i and
+    fraction t corresponds to a new point via the equation:
 
-    The new sampling is represented by the line segment parametric equation:
+    p' = p[i] + t * (p[i + 1] - p[i])
+
+    which can be also used for any value defined on points (e.g. diameters):
 
     v'[k] = v[ids[k]] + fractions[k] * (v[ids[k] + 1] - v[ids[k]])
 
-    where (v'[k], v[k]) can be either `points` or any other property mapped
-    on `points`.
+    It doesn't not return the ids and fractions for first and last points in
+    the new resampling, because they should remain unchanged. Therefore, the
+    total number of ids and fractions is K-2.
 
     Args:
-        points (np.ndarray): (N, 3) Array of consecutive points definining
+        points (np.ndarray): (N, 3) Array of consecutive points defining
         segments.
         linear_density (float): Target number of points per micron
 
     Returns:
-        tuple of numpy arrays:
-            - ids (np.array): (K-2,) Array of positional ids
-            - fractions (np.array): (K-2,) Parametric fractions
+        tuple:
+            - ids (np.array): (K-2,) int array of positional ids
+            - fractions (np.array): (K-2,) float array of fractions in the
+                range [0, 1]
+
+        Using the ids and fractions, the new interior points (without first
+        and last) can be created:
+
+        new_points = points[ids] + fractions * (points[ids + 1] - points[ids])
+
+        Similarly, point properties (e.g. diameters) can be interpolated:
+
+        new_diams = diams[ids] + fractions * (diams[ids + 1] - diams[ids])
 
     Notes:
-        Given consecutive points [p0, p1, ..., pN] a resampling will create
-        new points on the polyline defined by these points. This means
-        that a new point p' can be defined as a fraction t of an existing
-        segment (p[n], p[n + 1]). Therefore, using the line segment's
-        parametric eq:
-
-        p' = p[n] + t * (p[n+1] - p[n])
-
-        where p[n] is the start of the segment, (p[n+1] - p[n]) the segment's
-        vector and t the fraction [0., 1.] of the vector to create the point.
-
-        Therefore, this function returns K ids and fractions, where each id n
-        and fraction t corespond to tehe equation for p' above. In vectorized
-        form will then be:
-
-        p'[k] = points[ids[k]] + fractions[k] * (p[ids[k] + 1] - p[ids[k]])
 
         For example if we have four points and the new point p'[k] lies
         between p[1] and p[2], and exactly at the middle:
@@ -76,22 +73,18 @@ def _resample_from_linear_density(points, linear_density):
         then the equation will become:
 
         p'[k] = p[1] + 0.5 * (p[2] - p[1])
-
-        This interpolation relation holds for all values mapped onto points.
-        For example the respective new diameters d' for i will be:
-
-        d'[k] = d[ids[k]] + fractions[k] * (d[ids[k] + 1] - d[ids[k]])
     """
-    path_lengths = _vertex_path_lengths(points)
+    path_lengths = _accumulated_path_lengths(points)
     total_length = path_lengths[-1]
 
     # segment number according to linear density, minimum 1
+    # the number of points K = n_segments + 1
     n_segments = max(1, int(total_length * linear_density))
 
-    # split total length in n_segments equal parts of dl length
+    # split total length in n_segments of equal length dl
     dl = total_length / n_segments
 
-    # vertex path lengths without including first and last
+    # vertex path lengths without including first and last (K-2)
     new_path_lengths = np.arange(dl, total_length, dl)
 
     # ids of the starting points for the parametric equation
@@ -140,11 +133,11 @@ def _parametric_values(values, ids, fractions):
     return new_values
 
 
-def _resample_section_neuron(section, linear_density):
+def _resample_neuron_section(section, linear_density):
     """Resample in-place the section data based on linear density.
     Args:
         section (Section): Mutable morphology's section
-        linear_density (float): Linear density to determine the point number
+        linear_density (float): Number of points per micron
     """
     points = section.points
     ids, fractions = _resample_from_linear_density(points, linear_density)
@@ -152,11 +145,11 @@ def _resample_section_neuron(section, linear_density):
     section.diameters = _parametric_values(section.diameters, ids, fractions)
 
 
-def _resample_section_astrocyte(section, linear_density):
+def _resample_astrocyte_section(section, linear_density):
     """Resample in-place the section data based on linear density.
     Args:
         section (Section): Mutable morphology's section
-        linear_density (float): Linear density to determine the point number
+        linear_density (float): Number of points per micron
     """
     points = section.points
     ids, fractions = _resample_from_linear_density(points, linear_density)
@@ -170,13 +163,18 @@ def _dispatch_section_function(cell_family):
     of the morphology
     """
     return {
-        morphio.CellFamily.FAMILY_NEURON: _resample_section_neuron,
-        morphio.CellFamily.FAMILY_GLIA: _resample_section_astrocyte
+        morphio.CellFamily.FAMILY_NEURON: _resample_neuron_section,
+        morphio.CellFamily.FAMILY_GLIA: _resample_astrocyte_section
     }[cell_family]
 
 
 def resample_linear_density(obj, linear_density):
-    """Resample the number of points in morphology
+    """Returns a new morphology with new points and point properties,
+    the number of which depends on the linear_density. The new
+    values are linearly interpolated from the old ones.
+
+    This function is useful for use cases where morphologies have too
+    many points and a resampling with fewer points/properties is required.
 
     Args:
         obj: Morphology object, mutable or immutable
