@@ -95,6 +95,6 @@ def align(section, direction):
     else:
         axis = np.cross(section_dir, direction)
     axis /= np.linalg.norm(axis)
-    matrix = Rotation.from_rotvec(alpha * axis).as_dcm()
+    matrix = Rotation.from_rotvec(alpha * axis).as_matrix()
 
     rotate(section, matrix, origin=section.points[0])
