@@ -94,7 +94,7 @@ class MorphInfo:
 
     @property
     def row(self) -> List:
-        '''Flattened data structude ready to be used by a dataframe.'''
+        '''Flattened data structure ready to be used by a dataframe.'''
         return [getattr(self, attr) for attr in MorphInfo.COLUMNS]
 
     def __repr__(self):
