@@ -1,5 +1,5 @@
 """Resampling functionality for morphio morphologies. It allows for the
-generation of new points on the morphology skeleton with different frequency
+generation of new points on the morphology skeleton with different density
 """
 import numpy as np
 import morphio
@@ -7,7 +7,7 @@ import morphio
 
 def _accumulated_path_lengths(points):
     """Return the accumulated path lengths along the polygonal line joining
-    the consecutive 3D points of points, starting with the point of index 0
+    the consecutive points, starting with the point of index 0
 
     Args:
         points (np.ndarray): (N, 3) array of 3D points
@@ -28,20 +28,23 @@ def _accumulated_path_lengths(points):
 
 
 def _resample_from_linear_density(points, linear_density):
-    """The linear density determines the number K of the new points and point
-    properties that will be created on the polyline defined by the consecutive
-    points. The functions returns the ids and fractions, where each id i and
-    fraction t corresponds to a new point via the equation:
+    """Given a polyline of consecutive points that form segments, it creates
+    a new sampling of K points (or point properties) on the same polyline. K
+    is determined from the linear density as points per micron.
 
-    p' = p[i] + t * (p[i + 1] - p[i])
-
-    which can be also used for any value defined on points (e.g. diameters):
+    Each new point / property is determined via two values: a starting point
+    in the points array and a fraction along the segment (points[i], points[i+1]).
 
     v'[k] = v[ids[k]] + fractions[k] * (v[ids[k] + 1] - v[ids[k]])
 
-    It doesn't not return the ids and fractions for first and last points in
-    the new resampling, because they should remain unchanged. Therefore, the
-    total number of ids and fractions is K-2.
+    where ids are the positional indices in the points array, corresponding to the
+    starting points to which fractions of the segments (v[ids[k]], v[ids[k+1]]) are
+    added to reconstruct the new point or property.
+
+    The reason of returning the ids and fractions instead of new points is because
+    if instead of points a property is used, such as diameter, it will result to its
+    iterpolation on the polyline. Therefore, the result of this function can be used
+    to interpolate both points and point properties on a polyline.
 
     Args:
         points (np.ndarray): (N, 3) Array of consecutive points defining
@@ -65,14 +68,9 @@ def _resample_from_linear_density(points, linear_density):
 
     Notes:
 
-        For example if we have four points and the new point p'[k] lies
-        between p[1] and p[2], and exactly at the middle:
-
-        p[0] ---- p[1] --p'[k]-- p[2] ---- p[3]
-
-        then the equation will become:
-
-        p'[k] = p[1] + 0.5 * (p[2] - p[1])
+        It doesn't not return the ids and fractions for first and last points in
+        the new resampling, because they should remain unchanged. Therefore, the
+        total number of ids and fractions is K-2.
     """
     path_lengths = _accumulated_path_lengths(points)
     total_length = path_lengths[-1]
