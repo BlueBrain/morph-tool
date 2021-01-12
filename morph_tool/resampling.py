@@ -103,8 +103,12 @@ def _parametric_values(values, ids, fractions):
 
     v'[k] = v[ids[k]] + fractions[k] * (v[ids[k] + 1] - v[ids[k]])
 
+    See _resample_from_linear_density for more details on ids and fractions
+
     Args:
         values (np.ndarray): 1D or 2D array of values
+            Points or any property defined on points can be interpolated
+            using this function.
         ids (np.ndarray): (N,) Array of ints
         fractions (np.ndarray): (N,) Array of floats
 
