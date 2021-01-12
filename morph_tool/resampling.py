@@ -33,7 +33,8 @@ def _resample_from_linear_density(points, linear_density):
     is determined from the linear density as points per micron.
 
     Each new point / property is determined via two values: a starting point
-    in the points array and a fraction along the segment (points[i], points[i+1]).
+    at positional id i in the points array i and a fraction along the segment formed
+    by the consecutive points (points[i], points[i+1]). Thus, we have:
 
     v'[k] = v[ids[k]] + fractions[k] * (v[ids[k] + 1] - v[ids[k]])
 
