@@ -25,6 +25,7 @@ setup(
         'bluepyopt>=1.9.37',
         'click>=6.7',
         'dask[bag]>=2.19.0',
+        'deprecation>=2.1.0',
         'morphio>=2.3.4',
         'neurom>=1.4.15',
         'neuron>=7.8',

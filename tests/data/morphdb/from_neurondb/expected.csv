@@ -1,0 +1,5 @@
+name,mtype,msubtype,mtype_no_subtype,layer,label,path,use_axon,use_dendrites,axon_repair,dendrite_repair,basal_dendrite_repair,tuft_dendrite_repair,oblique_dendrite_repair,unravel,use_for_stats,axon_inputs
+C270106A,L1_DAC,,L1_DAC,1,release-1,,True,True,False,False,True,True,True,True,True,"['C270106A', 'C270106C', 'C270106G', 'sm080529a1-5_idA', 'sm080619a1-7_idG', 'sm080625a1-6_idD', 'sm080723a1-4_idC', 'sm080930a1-5_idC']"
+C270106C,L1_DAC,,L1_DAC,1,release-1,,True,True,True,True,True,True,True,True,True,"['C270106A', 'C270106C', 'C270106G', 'sm080529a1-5_idA', 'sm080619a1-7_idG', 'sm080625a1-6_idD', 'sm080723a1-4_idC', 'sm080930a1-5_idC']"
+a_neuron,an_mtype:a_subtype,a_subtype,an_mtype,1,release-1,,False,True,True,True,True,True,True,True,True,[]
+a_2nd_neuron,an_mtype:a_subtype,a_subtype,an_mtype,1,release-1,,True,True,True,True,True,True,True,True,True,[]

@@ -53,10 +53,10 @@ def test_find_morph():
 
 
 def test_neurondb_dataframe():
-    expected = pd.DataFrame(data=[['name1', '1', 'L1_mtype-submtype'],
-                                  ['name2', '2', 'L2_bla'],
-                                  ['name3', '3', 'L3_tomato']],
-                            columns=['name', 'layer', 'mtype'])
+    expected = pd.DataFrame(data=[['name1', '1', 'L1_mtype-submtype', True],
+                                  ['name2', '2', 'L2_bla', True],
+                                  ['name3', '3', 'L3_tomato', True]],
+                            columns=['name', 'layer', 'mtype', 'use_axon'])
 
     assert_frame_equal(tested.neurondb_dataframe(DATA / 'neurondb.dat'), expected)
     df = tested.neurondb_dataframe(DATA / 'neurondb.xml')
@@ -69,7 +69,7 @@ def test_neurondb_dataframe():
 
     assert_frame_equal(df, expected)
 
-    assert_raises(ValueError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')
+    assert_raises(FileNotFoundError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')
 
 
 def test_neurondb_dataframe_no_repair():

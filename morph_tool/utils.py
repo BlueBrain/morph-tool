@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-import xmltodict
+from deprecation import deprecated
 
 
 def is_morphology(filename, extensions=None):
@@ -54,6 +54,7 @@ def _ensure_list(data):
     return [data]
 
 
+@deprecated(details='Use `morph_tool.morphdb.MorphDB` instead.')
 def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) -> pd.DataFrame:
     '''Returns a DataFrame: [name, layer, mtype]
 
@@ -63,31 +64,10 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
         morphology_dir: (Optional) If passed, a column with the path to each morphology file
             will be added
     '''
-    if neurondb.suffix.lower() == '.dat':
-        columns = ['name', 'layer', 'mtype']
-        df = pd.read_csv(neurondb, sep=r'\s+', names=columns, usecols=range(len(columns)))
-        df.layer = df.layer.astype('str')
-    elif neurondb.suffix.lower() == '.xml':
-        with neurondb.open() as fd:
-            neuronDB = xmltodict.parse(fd.read())
-
-        rows = list()
-        for morph in filter(None, _ensure_list(neuronDB["neurondb"]["listing"]["morphology"])):
-            use_axon = morph.get("repair", {}).get("use_axon")
-            assert use_axon in {'true', 'false', 'True', 'False', None}
-            rows.append(
-                (morph["name"],
-                 morph["layer"],
-                 morph["mtype"] + (":" + morph["msubtype"] if morph["msubtype"] else ""),
-                 # According to Eilif, an empty use_axon (corresponding to a null in the database)
-                 # means that the axon is supposed to be used
-                 (use_axon in {'true', 'True', None})))
-
-        df = pd.DataFrame(data=rows, columns=['name', 'layer', 'mtype', 'use_axon'])
-    else:
-        raise ValueError(f'Unrecognized extension for neurondb file: {neurondb}')
-
-    if morphology_dir:
-        df['path'] = df.apply(lambda row: find_morph(morphology_dir, row['name']), axis=1)
-
+    from morph_tool.morphdb import MorphDB  # pylint: disable=import-outside-toplevel,cyclic-import
+    df = MorphDB.from_neurondb(neurondb, morphology_folder=morphology_dir).df
+    columns = ['name', 'layer', 'mtype', 'use_axon']
+    if not pd.isnull(df.path).all():
+        columns.append('path')
+    df = df[columns]
     return df
