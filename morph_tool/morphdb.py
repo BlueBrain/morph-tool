@@ -45,18 +45,6 @@ COLUMNS = ['name', 'mtype', 'msubtype', 'mtype_no_subtype',
            'layer', 'label', 'path'] + BOOLEAN_REPAIR_ATTRS + ['axon_inputs']
 
 
-def find_morph(folder: Path, stem: str) -> Optional[Path]:
-    '''Returns the path to a morphology in morphology_dir matching stem.
-
-    If no morphology is found, returns None
-    '''
-    for ext in {'.asc', '.ASC', '.h5', '.H5', '.swc', '.SWC'}:
-        path = folder / (stem + ext)
-        if path.exists():
-            return path
-    return None
-
-
 class MorphInfo:
     '''A class the contains information about a morphology.
     Its role is to abstract away the raw data.
@@ -139,35 +127,6 @@ class MorphInfo:
         return f'MorphInfo(name={self.name}, mtype={self.mtype}, layer={self.layer})'
 
 
-def _create_dataframe(morphologies: List[MorphInfo]):
-    '''Returns a pandas.DataFrame view of the data with the following columns:
-       'name': the morpho name (without extension)
-       'mtype': the mtype with its subtype
-       'msubtype': the msubtype (the part of the mtype after the ":")
-       'mtype_no_subtype': the mtype without the msubtype
-       'layer': the layer (as a string)
-       # repair related columns
-       'use_axon': states that the morphology's axon can be used as a donor for axon grafting
-       'use_dendrites': states that this morphology can be used as a recipient for axon grafting
-       'axon_repair': flag to activate axon repair
-       'dendrite_repair': flag to activate dendrites repair
-       'basal_dendrite_repair': flag to activate basal dendrites repair (dendrite_repair
-                                must be true as well)
-       'tuft_dendrite_repair': flag to activate tuft dendrites repair (dendrite_repair
-                                must be true as well)
-       'oblique_dendrite_repair': flag to activate oblique dendrites repair (dendrite_repair
-                                must be true as well)
-       'unravel': flag to activate unravelling
-       'axon_inputs': the list of morphologies whose axon can be grafted on this morphology
-       # deprecated
-       'use_for_stats': Legacy flag that was used to determine if an axon was suitable to be
-                        used as a axoninput
-    '''
-    df = pd.DataFrame([morph.row for morph in morphologies], columns=COLUMNS)
-    df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
-    return df
-
-
 class MorphDB(object):
     '''A MorphInfo container.
     It takes care of maintaining unicity of the MorphInfo element
@@ -197,6 +156,8 @@ class MorphDB(object):
         if not morphology_folder:
             morphology_folder = neurondb.parent.resolve()
 
+        morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
+
         if neurondb.suffix.lower() == '.dat':
             columns = ['name', 'layer', 'mtype']
             obj.df = pd.read_csv(neurondb, sep=r'\s+', names=columns, usecols=range(len(columns)))
@@ -212,8 +173,7 @@ class MorphDB(object):
             for missing_col in set(COLUMNS) - set(obj.df.columns):
                 obj.df[missing_col] = None
             obj.df.layer = obj.df.layer.astype('str')
-            obj.df['path'] = obj.df.apply(lambda row: find_morph(
-                morphology_folder, row['name']), axis=1)
+            obj.df['path'] = obj.df.name.map(morph_paths)
             obj.df = obj.df.reindex(columns=COLUMNS)
             for key in BOOLEAN_REPAIR_ATTRS:
                 obj.df[key] = True
@@ -235,9 +195,9 @@ class MorphDB(object):
 
         for morph in morphologies:
             morph.label = label
-            morph.path = find_morph(morphology_folder, morph.name)
+            morph.path = morph_paths.get(morph.name)
 
-        obj.df = _create_dataframe(morphologies)
+        obj.df = MorphDB._create_dataframe(morphologies)
         obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
         return obj
 
@@ -316,6 +276,17 @@ class MorphDB(object):
         stats = extract_dataframe(paths, config, n_workers).drop(columns='name', level=1)
         return df.join(stats, how='inner').drop(columns=('neuron', 'index'))
 
+    def check_files_exist(self):
+        '''Raises if `self.df.path` has None values or non existing paths'''
+        missing_morphs = self.df[self.df.path.isnull()].name.values
+        if missing_morphs:
+            raise ValueError(
+                f'DataFrame has morphologies with undefined filepaths: {missing_morphs}')
+
+        for path in self.df.path:
+            if not path.exists():
+                raise ValueError(f'Non existing path: {path}')
+
     def __add__(self, other):
         obj = MorphDB()
         if isinstance(other, MorphDB):
@@ -344,3 +315,32 @@ class MorphDB(object):
 
         self.df = self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
         return self
+
+    @staticmethod
+    def _create_dataframe(morphologies: List[MorphInfo]):
+        '''Returns a pandas.DataFrame view of the data with the following columns:
+           'name': the morpho name (without extension)
+           'mtype': the mtype with its subtype
+           'msubtype': the msubtype (the part of the mtype after the ":")
+           'mtype_no_subtype': the mtype without the msubtype
+           'layer': the layer (as a string)
+           # repair related columns
+           'use_axon': states that the morphology's axon can be used as a donor for axon grafting
+           'use_dendrites': states that this morphology can be used as a recipient for axon grafting
+           'axon_repair': flag to activate axon repair
+           'dendrite_repair': flag to activate dendrites repair
+           'basal_dendrite_repair': flag to activate basal dendrites repair (dendrite_repair
+                                    must be true as well)
+           'tuft_dendrite_repair': flag to activate tuft dendrites repair (dendrite_repair
+                                    must be true as well)
+           'oblique_dendrite_repair': flag to activate oblique dendrites repair (dendrite_repair
+                                    must be true as well)
+           'unravel': flag to activate unravelling
+           'axon_inputs': the list of morphologies whose axon can be grafted on this morphology
+           # deprecated
+           'use_for_stats': Legacy flag that was used to determine if an axon was suitable to be
+                            used as a axoninput
+        '''
+        df = pd.DataFrame([morph.row for morph in morphologies], columns=COLUMNS)
+        df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
+        return df

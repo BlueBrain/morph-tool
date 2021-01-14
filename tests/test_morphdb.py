@@ -146,3 +146,16 @@ def test_features():
         expected['neuron', key] = expected['neuron', key].astype(bool)
     assert_frame_equal(features.drop(columns=('neuron', 'axon_inputs')),
                        expected.drop(columns=('neuron', 'axon_inputs')))
+
+
+def test_check_file_exists():
+    # A null path should raise
+    original = tested.MorphDB.from_neurondb(
+        DATA_DIR / 'morphdb/from_neurondb/neurondb-only-dat-info.xml')
+    assert_raises(ValueError, original.check_files_exist)
+
+    # A non existing path should raise
+    original = tested.MorphDB.from_neurondb(
+        DATA_DIR / 'morphdb/from_neurondb/neurondb-only-dat-info.xml')
+    original.df.loc[1, 'path'] = Path('/non/existing/path')
+    assert_raises(ValueError, original.check_files_exist)
