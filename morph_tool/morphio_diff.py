@@ -4,7 +4,6 @@ import logging
 
 import numpy as np
 from morphio import Morphology
-from numpy import isclose
 
 logger = logging.getLogger('morph_tool')
 
