@@ -75,9 +75,9 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
                                   'Attributes Section.{} of:\n'
                                   '{}\n{}\nhave different shapes: {} vs {}'.format(
                                       attrib, section1, section2, val1.shape, val2.shape))
-            _isclose = isclose(val1, val2, rtol=rtol, atol=atol)
-            if not _isclose.all():
-                first_diff_index = np.where(~_isclose)[0][0]
+            is_close = isclose(val1, val2, rtol=rtol, atol=atol)
+            if not is_close.all():
+                first_diff_index = np.where(~is_close)[0][0]
 
                 return DiffResult(True,
                                   f'Attributes Section.{attrib} of:\n'
