@@ -1,8 +1,8 @@
 """Resampling functionality for morphio morphologies. It allows for the
 generation of new points on the morphology skeleton with different density
 """
-import numpy as np
 import morphio
+import numpy as np
 
 
 def _accumulated_path_lengths(points):
@@ -119,12 +119,12 @@ def _parametric_values(values, ids, fractions):
 
     if values.ndim > 1:
         fractions = fractions[:, np.newaxis]
-        new_values = np.empty_like(
+        new_values = np.empty_like(  # pylint: disable=unexpected-keyword-arg
             values,
             shape=(n_new_values, values.shape[1])
         )
     else:
-        new_values = np.empty_like(
+        new_values = np.empty_like(  # pylint: disable=unexpected-keyword-arg
             values,
             shape=(n_new_values,)
         )
