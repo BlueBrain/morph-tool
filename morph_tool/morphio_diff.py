@@ -2,7 +2,7 @@
 to see if two morphologies are the same or not'''
 import logging
 
-from numpy import allclose
+import numpy as np
 from morphio import Morphology
 
 logger = logging.getLogger('morph_tool')
@@ -53,8 +53,8 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
     Args:
         morph1 (str|morphio.Morphology|morphio.mut.Morphology): a morphology
         morph2 (str|morphio.Morphology|morphio.mut.Morphology): a morphology
-        rtol (float): the relative tolerance used for comparing points (see numpy.allclose help)
-        atol (float): the absolute tolerance used for comparing points (see numpy.allclose help)
+        rtol (float): the relative tolerance used for comparing points (see numpy.isclose help)
+        atol (float): the absolute tolerance used for comparing points (see numpy.isclose help)
     '''
 
     if not isinstance(morph1, Morphology):
@@ -74,11 +74,16 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
                                   'Attributes Section.{} of:\n'
                                   '{}\n{}\nhave different shapes: {} vs {}'.format(
                                       attrib, section1, section2, val1.shape, val2.shape))
-            if not allclose(val1, val2, rtol=rtol, atol=atol):
+            is_close = np.isclose(val1, val2, rtol=rtol, atol=atol)
+            if not is_close.all():
+                first_diff_index = np.where(~is_close)[0][0]
+
                 return DiffResult(True,
-                                  'Attributes Section.{} of:\n'
-                                  '{}\n{}\nhave the same shape but different values'.format(
-                                      attrib, section1, section2))
+                                  f'Attributes Section.{attrib} of:\n'
+                                  f'{section1}\n{section2}\nhave the same shape '
+                                  'but different values\n'
+                                  f'Vector {attrib} differs at index {first_diff_index}: '
+                                  f'{val1[first_diff_index]} != {val2[first_diff_index]}')
         if section1.type != section2.type:
             return DiffResult(True, '{} and {} have different section types'.format(
                 section1, section2))
