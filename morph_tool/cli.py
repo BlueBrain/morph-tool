@@ -120,8 +120,12 @@ def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_
 @cli.command()
 @click.argument('morph1')
 @click.argument('morph2')
+@click.option('--rtol', type=float, default=None, help='The relative tolerance. '
+              'See https://numpy.org/doc/stable/reference/generated/numpy.allclose.html')
+@click.option('--atol', type=float, default=None, help='The absolute tolerance. '
+              'See https://numpy.org/doc/stable/reference/generated/numpy.allclose.html')
 @click.option('--quiet/--no-quiet', default=False)
-def diff(morph1, morph2, quiet):
+def diff(morph1, morph2, rtol, atol, quiet):
     '''
     Compare two morphology files.
 
@@ -135,7 +139,12 @@ def diff(morph1, morph2, quiet):
     if quiet:
         L.setLevel(logging.WARNING)
 
-    result = morph_tool.diff(morph1, morph2)
+    kwargs = {}
+    if atol is not None:
+        kwargs['atol'] = atol
+    if rtol is not None:
+        kwargs['rtol'] = rtol
+    result = morph_tool.diff(morph1, morph2, **kwargs)
     if result:
         L.info("Morphologies not identical")
         L.info(result.info)

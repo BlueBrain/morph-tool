@@ -1,9 +1,11 @@
-from os.path import dirname, join as joinp
-from nose.tools import assert_equal, ok_
+from os.path import dirname
+from os.path import join as joinp
+
 from click.testing import CliRunner
 from morph_tool import diff
-from morphio import PointLevel, SectionType, set_ignored_warning, Warning
+from morphio import PointLevel, SectionType, Warning, set_ignored_warning
 from morphio.mut import Morphology
+from nose.tools import assert_equal, ok_
 
 DATA = joinp(dirname(__file__), 'data')
 
@@ -34,7 +36,8 @@ def test_equality():
                  '\n'.join(['Attributes Section.points of:',
                             'Section(id=1, points=[(0 5 0),..., (-6 5 0)])',
                             'Section(id=1, points=[(0 0 0),..., (0 0 1)])',
-                            'have the same shape but different values']))
+                            'have the same shape but different values',
+                            'Vector points differs at index 0: [0. 5. 0.] != [0. 0. 0.]']))
 
     a = Morphology(joinp(DATA, 'simple2.asc'))
     mundane_section(a).diameters = [0,0,0]
@@ -44,7 +47,8 @@ def test_equality():
                  '\n'.join(['Attributes Section.diameters of:',
                             'Section(id=1, points=[(0 5 0),..., (-6 5 0)])',
                             'Section(id=1, points=[(0 5 0),..., (-6 5 0)])',
-                            'have the same shape but different values']))
+                            'have the same shape but different values',
+                            'Vector diameters differs at index 0: 2.0 != 0.0']))
 
     a = Morphology(joinp(DATA, 'simple2.asc'))
     for section in a.iter():
