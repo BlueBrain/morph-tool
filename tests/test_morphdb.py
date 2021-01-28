@@ -24,8 +24,7 @@ def test_from_folder():
 
     expected = pd.read_csv(DATA_DIR / 'morphdb/from_folder/expected.csv',
                            header=0, keep_default_na=False, na_values={'path': ['']})
-    expected.path = expected.path.astype(str)
-    actual.path = expected.path.astype(str)
+    expected.path = expected.path.apply(lambda p: DATA_DIR / 'morphdb/from_folder' / p)
 
     assert_frame_equal(actual.drop(columns='axon_inputs'),
                        expected.drop(columns='axon_inputs'),)
