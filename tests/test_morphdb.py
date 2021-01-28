@@ -3,23 +3,29 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import morph_tool.morphdb as tested
-import numpy as np
 import pandas as pd
-from nose.tools import assert_raises, eq_
+from nose.tools import assert_raises
 from numpy.testing import assert_array_equal, assert_equal
 from pandas.testing import assert_frame_equal
 
 DATA_DIR = Path(__file__).parent / 'data'
 
 
+def test_MorphInfo():
+    morph = tested.MorphInfo(name='a', mtype='b', layer='c')
+    assert_equal(str(morph), 'MorphInfo(name=a, mtype=b, layer=c, label=None)')
+
 
 def test_from_folder():
     actual = tested.MorphDB.from_folder(DATA_DIR / 'morphdb/from_folder',
-                                        mtypes={'simple': 'typeA', 'simple2': 'typeB:withsubtype'},
+                                        mtypes=[('simple', 'typeA'),
+                                                ('simple2', 'typeB:withsubtype')],
                                         label='release-1').df
 
-    expected = pd.read_csv(DATA_DIR / 'morphdb/from_folder/expected.csv', header=0, keep_default_na=False, na_values={'path': ['']})
-    expected.path = expected.path.astype(str).replace(to_replace={'nan': None})
+    expected = pd.read_csv(DATA_DIR / 'morphdb/from_folder/expected.csv',
+                           header=0, keep_default_na=False, na_values={'path': ['']})
+    expected.path = expected.path.astype(str)
+    actual.path = expected.path.astype(str)
 
     assert_frame_equal(actual.drop(columns='axon_inputs'),
                        expected.drop(columns='axon_inputs'),)
@@ -29,7 +35,8 @@ def test_from_neurondb():
     actual = tested.MorphDB.from_neurondb(DATA_DIR / 'morphdb/from_neurondb/neurondb.xml',
                                           label='release-1').df
 
-    expected = pd.read_csv(DATA_DIR / 'morphdb/from_neurondb/expected.csv', header=0, keep_default_na=False, na_values={'path': ['']})
+    expected = pd.read_csv(DATA_DIR / 'morphdb/from_neurondb/expected.csv',
+                           header=0, keep_default_na=False, na_values={'path': ['']})
 
     expected.layer = expected.layer.astype(str)
     expected.path = expected.path.astype(str).replace(to_replace={'nan': None})
@@ -37,18 +44,13 @@ def test_from_neurondb():
     assert_frame_equal(actual.drop(columns='axon_inputs'),
                        expected.drop(columns='axon_inputs'),)
 
+
 def test_single_axon_input():
     actual = tested.MorphDB.from_neurondb(
         DATA_DIR / 'morphdb/from_neurondb/single-axon-input.neurondb',
         label='release-1').df
 
-
     assert_equal(actual.axon_inputs.iloc[0], ['C270106A'])
-
-
-def test_MorphInfo():
-    morph = tested.MorphInfo(name='a', mtype='b', layer='c')
-    assert_equal(str(morph), 'MorphInfo(name=a, mtype=b, layer=c)')
 
 
 def test_read_msubtype():
@@ -59,7 +61,6 @@ def test_read_msubtype():
                                                        ['L1_DAC', '', 'L1_DAC'],
                                                        ['L1_DAC', '', 'L1_DAC']],
                                                  columns=columns))
-
 
 
 def test_write_neurondb_dat():
@@ -75,41 +76,42 @@ def test_write_neurondb_dat():
 
 
 def test_add():
-    original = tested.MorphDB.from_neurondb(DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
-    morphs = [tested.MorphInfo(name='tomato', mtype='banana:split', layer=1),
-              tested.MorphInfo(name='elon', mtype='musk', layer='2')]
+    original = tested.MorphDB.from_neurondb(
+        DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
+    morphs = tested.MorphDB([tested.MorphInfo(name='tomato', mtype='banana:split', layer=1),
+                             tested.MorphInfo(name='elon', mtype='musk', layer='2')])
 
-    # testing adding lists
     total = original + morphs
     assert_array_equal(total.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
-       'tomato', 'elon'])
+                                       'tomato', 'elon'])
 
-    # testing adding an MorphDB
     total = original + original
     assert_array_equal(total.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
-       'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
+                                       'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
 
     assert_raises(TypeError, original.__add__, None)
 
 
-
 def test_iadd():
-    original = tested.MorphDB.from_neurondb(DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
-    morphs = [tested.MorphInfo(name='tomato', mtype='banana:split', layer=1),
-              tested.MorphInfo(name='elon', mtype='musk', layer='2')]
+    original = tested.MorphDB.from_neurondb(
+        DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
+    morphs = tested.MorphDB(
+        [tested.MorphInfo(name='tomato', mtype='banana:split', layer=1),
+         tested.MorphInfo(name='elon', mtype='musk', layer='2')])
 
     original += morphs
     assert_array_equal(original.df.name,
                        ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
                         'tomato', 'elon'])
 
-
-    original = tested.MorphDB.from_neurondb(DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
+    original = tested.MorphDB.from_neurondb(
+        DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
     original += original
     assert_array_equal(original.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
-       'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
+                                          'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
 
     assert_raises(TypeError, original.__iadd__, None)
+
 
 def test_write_neurondb_xml():
     morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
@@ -121,6 +123,7 @@ def test_write_neurondb_xml():
 
         new = tested.MorphDB.from_neurondb(path, morphology_folder=morphology_folder)
         assert_frame_equal(original.df, new.df)
+
 
 def test_load_raises():
     original = tested.MorphDB.from_neurondb(

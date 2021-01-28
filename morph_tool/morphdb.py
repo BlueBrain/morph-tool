@@ -16,12 +16,12 @@ print(total.features({'neurite': {'section_lengths': ['max']}}))
 '''
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import pandas as pd
 import xmltodict
+from more_itertools import always_iterable
 from neurom.apps.morph_stats import extract_dataframe
-from toolz import isiterable
 
 from morph_tool.utils import iter_morphology_files
 
@@ -53,7 +53,7 @@ class MorphInfo:
     MTYPE_SEPARATOR = ':'
 
     def __init__(self, name: str, mtype: str, layer: Optional[Union[str, int]] = None,
-                 label: str = None):
+                 **kwargs):
         '''MorphInfo ctor:
 
         Upon initialization, all repair attributes are set to True.
@@ -62,8 +62,20 @@ class MorphInfo:
             name: the morphology name (without the extension)
             mtype: the full mtype (ie 'L1_DAC:A')
             layer: the layer (accepts both string and int)
-            label: (optional) a group label to be used to identify multiple groups of morphologies
-                added to the same collection.
+            kwargs: The following keyword arguments are also supported:
+
+                - use_axon
+                - use_dendrites
+                - axon_repair
+                - dendrite_repair
+                - basal_dendrite_repair
+                - tuft_dendrite_repair
+                - oblique_dendrite_repair
+                - unravel
+                - use_for_stats
+                - axon_inputs
+                - path
+                - label
         '''
         self.name = name
         self.mtype = mtype
@@ -74,14 +86,14 @@ class MorphInfo:
         self.layer = str(layer or '')
 
         for attr in BOOLEAN_REPAIR_ATTRS:
-            setattr(self, attr, True)
+            setattr(self, attr, kwargs.get(attr, True))
 
-        self.axon_inputs = []
-        self.path = None
-        self.label = label
+        self.axon_inputs = kwargs.get('axon_inputs', [])
+        self.path = kwargs.get('path')
+        self.label = kwargs.get('label')
 
     @classmethod
-    def _from_xml(cls, item: Dict[str, Any]):
+    def _from_xmldict(cls, item: Dict[str, Any]):
         '''MorphInfo ctor.
         Args:
             item: A dictionary that represents the content of the XML file.
@@ -93,7 +105,7 @@ class MorphInfo:
             item['layer']
         )
 
-        def is_true(el: Optional[str]) -> bool:
+        def is_true(repair: Dict[str, Any], key: str) -> bool:
             '''Parse a string representing a boolean repair flag and returns its boolean value
             Unless clearly stated as false, missing tags default to True
             - According to Eilif, an empty use_axon (corresponding to a null in the database)
@@ -102,19 +114,26 @@ class MorphInfo:
             - basal_dendrite_repair defaults to True in BlueRepairSDK
             - unravel: well I guess we always want to do it
             '''
-            assert el in {'true', 'false', 'True', 'False', None}, f'Invalid element: {el}'
-            return el in (None, '', 'true', 'True', )
+            el = repair.get(key)
+            if el not in {'true', 'false', 'True', 'False', None}:
+                raise ValueError(f'Invalid XML element {key} has invalid value: {el}\n'
+                                 'Allowed values:\n'
+                                 '- empty tag (which is equivalent to True)\n',
+                                 '- true\n',
+                                 '- True\n',
+                                 '- false\n',
+                                 '- False')
+            return el in (None, 'true', 'True', )
 
         repair = item.get('repair', {})
         for attr in BOOLEAN_REPAIR_ATTRS:
-            setattr(morph, attr, is_true(repair.get(attr)))
+            setattr(morph, attr, is_true(repair, attr))
 
-        axon_sources = repair.get('axon_sources')
-        morph.axon_inputs = axon_sources.get('axoninput', []) if axon_sources else []
-
-        # Case where there is a single <axoninput></axoninput> tag in the XML
-        if not isinstance(morph.axon_inputs, list):
-            morph.axon_inputs = [morph.axon_inputs]
+        # "always_iterable" deals with <axoninput> not being interpreted
+        # as a list if there is a single entry <axoninput> entry in the XML.
+        morph.axon_inputs = list(always_iterable(
+            (repair.get('axon_sources') or {}).get('axoninput', [])
+        ))
 
         return morph
 
@@ -124,17 +143,24 @@ class MorphInfo:
         return [getattr(self, attr) for attr in COLUMNS]
 
     def __repr__(self):
-        return f'MorphInfo(name={self.name}, mtype={self.mtype}, layer={self.layer})'
+        return (f'MorphInfo(name={self.name}, mtype={self.mtype}, layer={self.layer}, '
+                f'label={self.label})')
 
 
-class MorphDB(object):
+class MorphDB:
     '''A MorphInfo container.
-    It takes care of maintaining unicity of the MorphInfo element
+    It takes care of maintaining uniqueness of the MorphInfo element
     and methods to write neurondb to various format (xml, dat, csv)
     '''
 
-    def __init__(self):
-        self.df = pd.DataFrame(columns=COLUMNS)
+    def __init__(self, morph_info_seq: Optional[Sequence[MorphInfo]] = None):
+        """Constructor of MorphDB.
+
+        Args:
+            morph_info_seq: an optional sequence of MorphInfo objects
+        """
+        self.df = pd.DataFrame([morph_info.row for morph_info in (morph_info_seq or ())],
+                               columns=COLUMNS)
         self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
 
     @classmethod
@@ -148,6 +174,9 @@ class MorphDB(object):
             label: a unique label to mark all morphologies coming from this neurondb
             morphology_folder: the location of the morphology files, if None it will default
                 to the neurondb folder
+
+        Raises: ValueError if the neurondb does not abide by the specification
+        https://bbpteam.epfl.ch/documentation/projects/morphology-repair-workflow/latest/input_files.html#specification
 
         ..note:: missing keys are filled with `True` values
         '''
@@ -191,7 +220,7 @@ class MorphDB(object):
         if not isinstance(morphologies, list):
             morphologies = [morphologies]
         morphologies = filter(None, morphologies)
-        morphologies = list(map(MorphInfo._from_xml, morphologies))  # noqa, pylint: disable=protected-access
+        morphologies = list(map(MorphInfo._from_xmldict, morphologies))  # noqa, pylint: disable=protected-access
 
         for morph in morphologies:
             morph.label = label
@@ -204,52 +233,58 @@ class MorphDB(object):
     @classmethod
     def from_folder(cls,
                     morphology_folder: Path,
-                    mtypes: Dict[str, str],
+                    mtypes: Sequence[Tuple[str, str]],
                     label: str = 'default'):
         '''Factory method to create a MorphDB object from a folder containing morphologies
 
         Args:
             morphology_folder: a folder containing morphologies
-            mtype: a dictionary of where key is a morphology name and value its mtype
+            mtypes: a sequence of 2-tuples (morphology name, mtype)
             label: (optional) a group label to be used to identify the morphlogies from this folder
         '''
 
-        obj = cls()
-        obj += (MorphInfo(path.stem, mtypes[path.stem], label=label)
-                for path in iter_morphology_files(morphology_folder))
-        return obj
+        paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
+        return MorphDB(MorphInfo(name, mtype, label=label, path=paths[name])
+                       for name, mtype in mtypes)
 
-    def write(self, output_path: Path):
-        '''Write the neurondb file to XML or DAT format'''
+    def _to_xmldict(self):
+        '''Transform the data to a xmldict compatible dictionary'''
+        def get_repair_attr(morph, attr):
+            if attr == 'axon_inputs':
+                return 'axon_sources', {'axoninput': getattr(morph, attr)}
+            else:
+                return attr, getattr(morph, attr)
+
+        return {'neurondb': {'listing': {
+            'morphology': [{
+                'name': morph.name,
+                'mtype': morph.mtype_no_subtype,
+                'msubtype': morph.msubtype,
+                'layer': morph.layer,
+                'repair': dict(
+                    get_repair_attr(morph, attr)
+                    for attr in BOOLEAN_REPAIR_ATTRS + ['axon_inputs']
+                )
+            } for morph in self.df.itertuples()]}
+        }}
+
+    def write(self, output_path: Union[Path, str]):
+        '''Write the neurondb file to XML or DAT format
+
+        Args:
+            output_path: the output path
+        '''
+        output_path = Path(output_path)
         ext = output_path.suffix.lower()
         if ext == '.dat':
             self.df[['name', 'layer', 'mtype']].to_csv(output_path, sep=' ', header=False,
                                                        index=False)
         elif ext == '.xml':
-            def get_repair_attr(morph, attr):
-                if attr == 'axon_inputs':
-                    return 'axon_sources', {'axoninput': getattr(morph, attr)}
-                else:
-                    return attr, getattr(morph, attr)
-            data = {'neurondb':
-                    {'listing': {
-                        'morphology': [{
-                            'name': morph.name,
-                            'mtype': morph.mtype_no_subtype,
-                            'msubtype': morph.msubtype,
-                            'layer': morph.layer,
-                            'repair': dict(
-                                get_repair_attr(morph, attr)
-                                for attr in BOOLEAN_REPAIR_ATTRS + ['axon_inputs']
-                            )
-                        } for morph in self.df.itertuples()]}
-                     }}
             with output_path.open('w') as fd:
-                fd.write(xmltodict.unparse(data, pretty=True))
+                fd.write(xmltodict.unparse(self._to_xmldict(), pretty=True))
         else:
             raise ValueError(f'Unsupported neurondb extensions ({ext}).'
                              ' Should be one of: (xml,csv,dat)')
-        return output_path
 
     def features(self, config: Dict, n_workers=1):
         '''Returns a dataframe containing morphometrics and neurondb information
@@ -291,29 +326,19 @@ class MorphDB(object):
         obj = MorphDB()
         if isinstance(other, MorphDB):
             obj.df = pd.concat([self.df, other.df])
-        elif isiterable(other):
-            seq = list(other)
-            if seq and isinstance(seq[0], MorphInfo):
-                df = pd.DataFrame([morph_info.row for morph_info in seq], columns=COLUMNS)
-                obj.df = pd.concat([self.df, df])
+            obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
         else:
             raise TypeError(f'Must be MorphDB or a sequence of MorphInfo, not {type(other)}')
 
-        obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
         return obj
 
     def __iadd__(self, other):
         if isinstance(other, MorphDB):
             self.df = pd.concat([self.df, other.df])
-        elif isiterable(other):
-            seq = list(other)
-            if seq and isinstance(seq[0], MorphInfo):
-                df = pd.DataFrame([morph_info.row for morph_info in seq], columns=COLUMNS)
-                self.df = pd.concat([self.df, df])
+            self.df = self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
         else:
             raise TypeError(f'Must be MorphDB or a sequence of MorphInfo, not {type(other)}')
 
-        self.df = self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
         return self
 
     @staticmethod

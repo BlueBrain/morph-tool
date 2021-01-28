@@ -1,15 +1,15 @@
 from io import StringIO
 from pathlib import Path
 
+import morph_tool.utils as tested
 import pandas as pd
 from mock import patch
 from nose.tools import assert_equal, assert_raises, ok_
 from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
-import morph_tool.utils as tested
-
 DATA = Path(__file__).resolve().parent / 'data'
+
 
 def test_is_morphology():
     ok_(tested.is_morphology('a.swc'))
@@ -33,14 +33,15 @@ def test_iter_morphology_files():
                   DATA / 'folder' / 'b.swc',
                   DATA / 'folder' / 'subfolder' / 'g.SWC',
                   DATA / 'folder' / 'subfolder' / 'e.h5',
-})
+                  })
 
     assert_equal(set(tested.iter_morphology_files(str(DATA / 'folder'), recursive=True)),
                  {DATA / 'folder' / 'a.h5',
                   DATA / 'folder' / 'b.swc',
                   DATA / 'folder' / 'subfolder' / 'g.SWC',
                   DATA / 'folder' / 'subfolder' / 'e.h5',
-})
+                  })
+
 
 def test_find_morph():
     folder = DATA / 'test-neurondb-with-path'
@@ -86,6 +87,7 @@ def test_neurondb_dataframe_no_repair():
 
     assert_frame_equal(df, expected)
 
+
 def test_neurondb_dataframe_empty_morph():
     df = tested.neurondb_dataframe(DATA / 'neurondb-empty-morph-tag.xml')
     expected = pd.DataFrame(data=[['C270106A', '1', 'L1_DAC', True],
@@ -100,6 +102,7 @@ def test_neurondb_dataframe_empty_morph():
 def mock_path_content(content):
     class MockPathContent:
         '''pathlib.Path mock to mock the call to Path.open()'''
+
         def __enter__(self):
             return StringIO(content)
 
@@ -133,6 +136,7 @@ def test_neurondb_dataframe_single_morph():
                                 columns=['name', 'layer', 'mtype', 'use_axon'])
         assert_frame_equal(df, expected)
 
+
 def test_neurondb_dataframe_use_axon():
     neurondb = DATA / 'neurondb.xml'
 
@@ -164,7 +168,7 @@ def test_neurondb_dataframe_use_axon():
 
     for use_axon in ['tRuE', 'fals', 0, 1, 'mickael jackson']:
         with patch.object(Path, 'open', mock_path_content(neurondb_template.format(use_axon))):
-            assert_raises(AssertionError, tested.neurondb_dataframe, neurondb)
+            assert_raises(ValueError, tested.neurondb_dataframe, neurondb)
 
 
 def test_neurondb_dataframe_with_path():

@@ -63,6 +63,9 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
         filename: the neurondb.(dat|xml) file
         morphology_dir: (Optional) If passed, a column with the path to each morphology file
             will be added
+
+    Raises: ValueError if the neurondb does not abide by the specification
+    https://bbpteam.epfl.ch/documentation/projects/morphology-repair-workflow/latest/input_files.html#specification
     '''
     from morph_tool.morphdb import MorphDB  # pylint: disable=import-outside-toplevel,cyclic-import
     df = MorphDB.from_neurondb(neurondb, morphology_folder=morphology_dir).df
