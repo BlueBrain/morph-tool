@@ -14,9 +14,10 @@ print(total.df)
 # combined information (neurondb + morph_stats)
 print(total.features({'neurite': {'section_lengths': ['max']}}))
 '''
+import collections
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import pandas as pd
 import xmltodict
@@ -24,6 +25,7 @@ from more_itertools import always_iterable
 from neurom.apps.morph_stats import extract_dataframe
 
 from morph_tool.utils import iter_morphology_files
+
 
 L = logging.getLogger(__name__)
 
@@ -153,7 +155,7 @@ class MorphDB:
     and methods to write neurondb to various format (xml, dat, csv)
     '''
 
-    def __init__(self, morph_info_seq: Optional[Sequence[MorphInfo]] = None):
+    def __init__(self, morph_info_seq: Optional[Iterable[MorphInfo]] = None):
         """Constructor of MorphDB.
 
         Args:
@@ -232,10 +234,7 @@ class MorphDB:
 
         ..note:: missing keys are filled with `True` values
         '''
-        obj = MorphDB()
-
-        if not morphology_folder:
-            morphology_folder = neurondb.parent.resolve()
+        morphology_folder = morphology_folder or neurondb.parent.resolve()
 
         morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
 
@@ -247,7 +246,7 @@ class MorphDB:
     @classmethod
     def from_folder(cls,
                     morphology_folder: Path,
-                    mtypes: Sequence[Tuple[str, str]],
+                    mtypes: Iterable[Tuple[str, str]],
                     label: str = 'default'):
         '''Factory method to create a MorphDB object from a folder containing morphologies
 
@@ -255,9 +254,20 @@ class MorphDB:
             morphology_folder: a folder containing morphologies
             mtypes: a sequence of 2-tuples (morphology name, mtype)
             label: (optional) a group label to be used to identify the morphlogies from this folder
-        '''
 
-        paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
+        Raises: ValueError if the folder contains multiple files with the same name but
+        different extensions
+        '''
+        files = list(iter_morphology_files(morphology_folder))
+        duplicates = [item for item, count in
+                      collections.Counter(path.stem for path in files).items()
+                      if count > 1]
+        if duplicates:
+            raise ValueError(
+                f'Folder {morphology_folder} have multiple morphologies with the same '
+                'name but different extensions. This is not supported.\n'
+                f'Duplicate morphogies: {duplicates}')
+        paths = {path.stem: path for path in files}
         return MorphDB(MorphInfo(name, mtype, label=label, path=paths[name])
                        for name, mtype in mtypes)
 

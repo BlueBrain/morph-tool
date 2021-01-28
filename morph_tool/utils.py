@@ -56,7 +56,7 @@ def _ensure_list(data):
 
 @deprecated(details='Use `morph_tool.morphdb.MorphDB` instead.')
 def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) -> pd.DataFrame:
-    '''Returns a DataFrame: [name, layer, mtype]
+    '''Returns a DataFrame: [name, layer, mtype, use_axon, (optional) path]
 
     If read from an XML, additional columns maybe be present
     Args:

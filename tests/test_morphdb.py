@@ -30,6 +30,11 @@ def test_from_folder():
     assert_frame_equal(actual.drop(columns='axon_inputs'),
                        expected.drop(columns='axon_inputs'),)
 
+    assert_raises(ValueError,
+                  tested.MorphDB.from_folder,
+                  DATA_DIR / 'morphdb/from_folder_duplicates',
+                  mtypes=[('a', 'L1_DAC'), ('simple2', 'typeB:withsubtype')])
+
 
 def test_from_neurondb():
     actual = tested.MorphDB.from_neurondb(DATA_DIR / 'morphdb/from_neurondb/neurondb.xml',
