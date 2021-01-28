@@ -143,7 +143,8 @@ def test_features():
                            header=[0, 1])
     expected['neuron'] = expected['neuron'].fillna('')
     expected['neuron', 'layer'] = expected['neuron', 'layer'].astype(str)
-    expected['neuron', 'path'] = expected['neuron', 'path'].apply(Path)
+    expected['neuron', 'path'] = expected['neuron', 'path'].apply(
+        lambda p: DATA_DIR / 'morphdb/from_neurondb/' / p)
     for key in tested.BOOLEAN_REPAIR_ATTRS:
         expected['neuron', key] = expected['neuron', key].astype(bool)
     assert_frame_equal(features.drop(columns=('neuron', 'axon_inputs')),
