@@ -13,7 +13,8 @@ DATA_DIR = Path(__file__).parent / 'data'
 
 def test_MorphInfo():
     morph = tested.MorphInfo(name='a', mtype='b', layer='c')
-    assert_equal(str(morph), 'MorphInfo(name=a, mtype=b, layer=c, label=None)')
+    assert_equal(str(morph),
+                 """MorphInfo(name='a', mtype='b', layer='c', label=None)""")
 
 
 def test_from_folder():

@@ -118,10 +118,10 @@ class MorphInfo:
             if el not in {'true', 'false', 'True', 'False', None}:
                 raise ValueError(f'Invalid XML element {key} has invalid value: {el}\n'
                                  'Allowed values:\n'
-                                 '- empty tag (which is equivalent to True)\n',
-                                 '- true\n',
-                                 '- True\n',
-                                 '- false\n',
+                                 '- empty tag (which is equivalent to True)\n'
+                                 '- true\n'
+                                 '- True\n'
+                                 '- false\n'
                                  '- False')
             return el in (None, 'true', 'True', )
 
@@ -143,8 +143,8 @@ class MorphInfo:
         return [getattr(self, attr) for attr in COLUMNS]
 
     def __repr__(self):
-        return (f'MorphInfo(name={self.name}, mtype={self.mtype}, layer={self.layer}, '
-                f'label={self.label})')
+        return (f'MorphInfo(name={self.name!r}, mtype={self.mtype!r}, layer={self.layer!r}, '
+                f'label={self.label!r})')
 
 
 class MorphDB:
@@ -164,8 +164,60 @@ class MorphDB:
         self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
 
     @classmethod
+    def _from_neurondb_dat(cls, neurondb, morph_paths, label):
+        '''Private constructor from neuronDB.dat files
+
+        The equivalent public method is MorphDB.from_neurondb
+        '''
+        obj = cls()
+        columns = ['name', 'layer', 'mtype']
+        obj.df = pd.read_csv(neurondb, sep=r'\s+', names=columns, usecols=range(len(columns)))
+
+        fulltypes = obj.df.mtype.str.split(':', n=1, expand=True).fillna('')
+        if len(fulltypes.columns) > 1:
+            obj.df['mtype_no_subtype'] = fulltypes[0]
+            obj.df['msubtype'] = fulltypes[1]
+        else:
+            obj.df['mtype_no_subtype'] = obj.df.mtype
+            obj.df['msubtype'] = ''
+
+        obj.df['label'] = label
+        for missing_col in set(COLUMNS) - set(obj.df.columns):
+            obj.df[missing_col] = None
+            obj.df.layer = obj.df.layer.astype('str')
+            obj.df['path'] = obj.df.name.map(morph_paths)
+            obj.df = obj.df.reindex(columns=COLUMNS)
+        for key in BOOLEAN_REPAIR_ATTRS:
+            obj.df[key] = True
+            obj.df['axon_inputs'] = [[] for _ in range(len(obj.df))]
+        return obj
+
+    @classmethod
+    def _from_neurondb_xml(cls, neurondb, morph_paths, label):
+        obj = MorphDB()
+        with neurondb.open() as fd:
+            content = fd.read()
+            neurondb = xmltodict.parse(content)
+
+        morphologies = neurondb['neurondb']['listing']['morphology']
+
+        # Case where there is a single <morphology></morphology> tag in the XML
+        if not isinstance(morphologies, list):
+            morphologies = [morphologies]
+        morphologies = filter(None, morphologies)
+        morphologies = list(map(MorphInfo._from_xmldict, morphologies))  # noqa, pylint: disable=protected-access
+
+        for morph in morphologies:
+            morph.label = label
+            morph.path = morph_paths.get(morph.name)
+
+        obj.df = MorphDB._create_dataframe(morphologies)
+        obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
+        return obj
+
+    @classmethod
     def from_neurondb(cls,
-                      neurondb: Path = None,
+                      neurondb: Path,
                       label: str = 'default',
                       morphology_folder: Optional[Path] = None):
         '''Builds a MorphologyDB from a neurondb.(xml|dat) file
@@ -188,47 +240,9 @@ class MorphDB:
         morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
 
         if neurondb.suffix.lower() == '.dat':
-            columns = ['name', 'layer', 'mtype']
-            obj.df = pd.read_csv(neurondb, sep=r'\s+', names=columns, usecols=range(len(columns)))
-
-            fulltypes = obj.df.mtype.str.split(':', n=1, expand=True).fillna('')
-            if len(fulltypes.columns) > 1:
-                obj.df['mtype_no_subtype'] = fulltypes[0]
-                obj.df['msubtype'] = fulltypes[1]
-            else:
-                obj.df['mtype_no_subtype'] = obj.df.mtype
-                obj.df['msubtype'] = ''
-            obj.df['label'] = label
-            for missing_col in set(COLUMNS) - set(obj.df.columns):
-                obj.df[missing_col] = None
-            obj.df.layer = obj.df.layer.astype('str')
-            obj.df['path'] = obj.df.name.map(morph_paths)
-            obj.df = obj.df.reindex(columns=COLUMNS)
-            for key in BOOLEAN_REPAIR_ATTRS:
-                obj.df[key] = True
-            obj.df['axon_inputs'] = [[] for _ in range(len(obj.df))]
-
-            return obj
-
-        with neurondb.open() as fd:
-            content = fd.read()
-            neurondb = xmltodict.parse(content)
-
-        morphologies = neurondb['neurondb']['listing']['morphology']
-
-        # Case where there is a single <morphology></morphology> tag in the XML
-        if not isinstance(morphologies, list):
-            morphologies = [morphologies]
-        morphologies = filter(None, morphologies)
-        morphologies = list(map(MorphInfo._from_xmldict, morphologies))  # noqa, pylint: disable=protected-access
-
-        for morph in morphologies:
-            morph.label = label
-            morph.path = morph_paths.get(morph.name)
-
-        obj.df = MorphDB._create_dataframe(morphologies)
-        obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
-        return obj
+            return cls._from_neurondb_dat(neurondb, morph_paths, label)
+        else:
+            return cls._from_neurondb_xml(neurondb, morph_paths, label)
 
     @classmethod
     def from_folder(cls,
@@ -292,6 +306,7 @@ class MorphDB:
         Args:
             config: a NeuroM morph_stas config.
                 See https://neurom.readthedocs.io/en/latest/morph_stats.html for more information
+            n_workers: the number of workers to use to perform the computations
 
         Returns:
             A jointure dataframe between `neurom.stats.extract_dataframe` and `self.df`
@@ -324,12 +339,8 @@ class MorphDB:
 
     def __add__(self, other):
         obj = MorphDB()
-        if isinstance(other, MorphDB):
-            obj.df = pd.concat([self.df, other.df])
-            obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
-        else:
-            raise TypeError(f'Must be MorphDB or a sequence of MorphInfo, not {type(other)}')
-
+        obj += self
+        obj += other
         return obj
 
     def __iadd__(self, other):
