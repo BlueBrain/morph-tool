@@ -26,7 +26,6 @@ from neurom.apps.morph_stats import extract_dataframe
 
 from morph_tool.utils import iter_morphology_files
 
-
 L = logging.getLogger(__name__)
 
 
@@ -247,26 +246,31 @@ class MorphDB:
     def from_folder(cls,
                     morphology_folder: Path,
                     mtypes: Iterable[Tuple[str, str]],
-                    label: str = 'default'):
+                    label: str = 'default',
+                    extension: Optional[str] = None):
         '''Factory method to create a MorphDB object from a folder containing morphologies
 
         Args:
             morphology_folder: a folder containing morphologies
             mtypes: a sequence of 2-tuples (morphology name, mtype)
             label: (optional) a group label to be used to identify the morphlogies from this folder
+            ext: Specify the morphology format to consider, if the folder contains multiple formats
 
         Raises: ValueError if the folder contains multiple files with the same name but
-        different extensions
+        different extensions and the extension argument has not been provided
         '''
-        files = list(iter_morphology_files(morphology_folder))
-        duplicates = [item for item, count in
-                      collections.Counter(path.stem for path in files).items()
-                      if count > 1]
-        if duplicates:
-            raise ValueError(
-                f'Folder {morphology_folder} have multiple morphologies with the same '
-                'name but different extensions. This is not supported.\n'
-                f'Duplicate morphogies: {duplicates}')
+        files = list(iter_morphology_files(morphology_folder,
+                                           extensions={extension} if extension else None))
+        if not extension:
+            duplicates = [item for item, count in
+                          collections.Counter(path.stem for path in files).items()
+                          if count > 1]
+            if duplicates:
+                raise ValueError(
+                    f'Folder {morphology_folder} have multiple morphologies with the same '
+                    'name but different extensions. This is not supported.\n'
+                    f'Duplicate morphogies: {duplicates}\n\n'
+                    'Please provide the extension to use with the arguement: extension')
         paths = {path.stem: path for path in files}
         return MorphDB(MorphInfo(name, mtype, label=label, path=paths[name])
                        for name, mtype in mtypes)

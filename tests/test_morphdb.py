@@ -35,6 +35,12 @@ def test_from_folder():
                   DATA_DIR / 'morphdb/from_folder_duplicates',
                   mtypes=[('a', 'L1_DAC'), ('simple2', 'typeB:withsubtype')])
 
+    db = tested.MorphDB.from_folder(
+        DATA_DIR / 'morphdb/from_folder_duplicates',
+        mtypes=[('a', 'L1_DAC')],
+        extension='swc')
+    assert_equal(len(db.df), 1)
+
 
 def test_from_neurondb():
     actual = tested.MorphDB.from_neurondb(DATA_DIR / 'morphdb/from_neurondb/neurondb.xml',
