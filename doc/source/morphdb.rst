@@ -97,7 +97,7 @@ Example:
                            MorphInfo(name='name', mtype='mtype', 'layer'='layer', label='extra-morphs'),
                            MorphInfo(name='name', mtype='mtype', 'layer'='layer', label='extra-morphs'),
                            MorphInfo(name='name', mtype='mtype', 'layer'='layer', label='extra-morphs')])
-    morph2 = all_morphs + morph_info_list
+    morph2 = all_morphs + more_morphs
 
 Writing neurondb to disk.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
