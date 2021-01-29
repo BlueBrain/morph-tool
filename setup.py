@@ -4,7 +4,7 @@ import imp
 import sys
 from pathlib import Path
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # read the contents of the README file
 readme_path = Path(__file__).resolve().parent / "README.rst"
@@ -25,6 +25,8 @@ setup(
         'bluepyopt>=1.9.37',
         'click>=6.7',
         'dask[bag]>=2.19.0',
+        'deprecation>=2.1.0',
+        'more-itertools>=8.6.0',
         'morphio>=2.3.4',
         'neurom>=1.4.15',
         'neuron>=7.8',

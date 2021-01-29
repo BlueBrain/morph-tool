@@ -1,0 +1,4 @@
+neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,neuron,axon,basal_dendrite,apical_dendrite,all
+name,mtype,msubtype,mtype_no_subtype,layer,label,path,use_axon,use_dendrites,axon_repair,dendrite_repair,basal_dendrite_repair,tuft_dendrite_repair,oblique_dendrite_repair,unravel,use_for_stats,axon_inputs,max_section_length,max_section_length,max_section_length,max_section_length
+tkb061126a4_ch0_cc2_h_zk_60x_1,L1_DAC,,L1_DAC,1,default,tkb061126a4_ch0_cc2_h_zk_60x_1.h5,True,True,True,True,True,True,True,True,True,[],464.12187202802545,162.41220764649324,536.7585059841872,536.7585059841872
+simple3,L1_DAC,,L1_DAC,1,default,simple3.asc,True,True,True,True,True,True,True,True,True,[],6.0,7.896464810537854,,7.896464810537854

@@ -5,3 +5,4 @@
    :hidden:
 
    Home <self>
+   morphdb

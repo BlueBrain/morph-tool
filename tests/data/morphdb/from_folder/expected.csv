@@ -1,0 +1,3 @@
+name,mtype,msubtype,mtype_no_subtype,layer,label,path,use_axon,use_dendrites,axon_repair,dendrite_repair,basal_dendrite_repair,tuft_dendrite_repair,oblique_dendrite_repair,unravel,use_for_stats,axon_inputs
+simple,typeA,,typeA,,release-1,simple.h5,True,True,True,True,True,True,True,True,True,[]
+simple2,typeB:withsubtype,withsubtype,typeB,,release-1,simple2.swc,True,True,True,True,True,True,True,True,True,[]

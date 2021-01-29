@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<neurondb>
+  <listing>
+    <morphology>
+      <name>C270106A</name>
+      <mtype>L1_DAC</mtype>
+      <msubtype></msubtype>
+      <layer>1</layer>
+      <repair>
+        <axon_repair>false</axon_repair>
+        <dendrite_repair>false</dendrite_repair>
+        <unravel>true</unravel>
+        <use_for_stats>true</use_for_stats>
+        <use_axon>true</use_axon>
+        <axon_sources>
+          <axoninput>C270106A</axoninput>
+        </axon_sources>
+      </repair>
+    </morphology>
+
+  </listing>
+</neurondb>
