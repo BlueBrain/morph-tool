@@ -166,8 +166,8 @@ def _dispatch_section_function(cell_family):
     of the morphology
     """
     return {
-        morphio.CellFamily.FAMILY_NEURON: _resample_neuron_section,
-        morphio.CellFamily.FAMILY_GLIA: _resample_astrocyte_section
+        morphio.CellFamily.NEURON: _resample_neuron_section,
+        morphio.CellFamily.GLIA: _resample_astrocyte_section
     }[cell_family]
 
 

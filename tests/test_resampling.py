@@ -213,12 +213,12 @@ def _test_dispatch_section_function():
     from morphio import CellFamily
 
     assert isinstance(
-        tested._dispatch_section_function(CellFamily.FAMILY_NEURON),
+        tested._dispatch_section_function(CellFamily.NEURON),
         tested._resample_neuron_section
     )
 
     assert isinstance(
-        tested._dispatch_section_function(CellFamily.FAMILY_GLIA),
+        tested._dispatch_section_function(CellFamily.GLIA),
         tested._resample_astrocyte_section
     )
 
