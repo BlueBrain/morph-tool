@@ -27,7 +27,7 @@ setup(
         'dask[bag]>=2.19.0',
         'deprecation>=2.1.0',
         'more-itertools>=8.6.0',
-        'morphio>=2.3.4',
+        'morphio>=2.5.1',
         'neurom>=1.4.15',
         'neuron>=7.8',
         'numpy>=1.14',

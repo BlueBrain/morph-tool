@@ -48,7 +48,7 @@ def test_equality():
                             'Section(id=1, points=[(0 5 0),..., (-6 5 0)])',
                             'Section(id=1, points=[(0 5 0),..., (-6 5 0)])',
                             'have the same shape but different values',
-                            'Vector diameters differs at index 0: 2.0 != 0.0']))
+                            'Vector diameters differs at index 0: 3.0 != 0.0']))
 
     a = Morphology(joinp(DATA, 'simple2.asc'))
     for section in a.iter():
