@@ -2,6 +2,9 @@
 import yaml
 from pathlib import Path
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MarkerSet:
@@ -19,13 +22,13 @@ class MarkerSet:
             morph_names = {marker.morph_name for marker in markers}
             if len(morph_names) > 1:
                 raise Exception("Markers of different morphologies were provided.")
-            self._markers = markers
+            self.markers = markers
             self._morph_name = morph_names.pop()
             self.morph_path = markers[0].morph_path
 
     def _from_dicts(self, markers):
         """Load marker from dict."""
-        self._markers = markers["markers"]
+        self.markers = [Marker(**marker) for marker in markers["markers"]]
         self._morph_name = markers["morph_name"]
         self.morph_path = markers["morph_path"]
 
@@ -34,45 +37,88 @@ class MarkerSet:
         """"""
         return self._morph_name
 
-    def plot(self, with_plotly=True, filename="markers.html", plot_kwargs=None):
+    def plot(self, filename="markers.html", with_plotly=True):
         """Plot morphology with markers."""
         if with_plotly:
             from neurom import load_neuron
+            from neurom.geom import bounding_box
             from plotly_helper.neuron_viewer import NeuronBuilder
-            from plotly_helper.object_creator import scatter
+            from plotly_helper.object_creator import scatter, vector
 
-            builder = NeuronBuilder(
-                load_neuron(self.morph_path), "3d", line_width=4, title=f"{self.morph_name}"
-            )
-            for marker in self._markers:
+            neuron = load_neuron(self.morph_path)
+            builder = NeuronBuilder(neuron, "3d", line_width=4, title=f"{self.morph_name}")
+
+            for marker in self.markers:
                 data = np.array(marker._data)
-                if len(np.shape(marker._data)) == 1:
-                    data = marker._data[np.newaxis]
-                builder.helper.add_data(
-                    {
-                        f"{marker._label}": scatter(
-                            data, name=f"{marker._label}", showlegend=True, **marker.plot_style
-                        )
-                    }
-                )
-            builder.plot(filename=filename)
+                if marker.type == "points":
+                    if len(np.shape(marker._data)) == 1:
+                        data = data[np.newaxis]
+                    builder.helper.add_data(
+                        {
+                            f"{marker._label}": scatter(
+                                data, name=f"{marker._label}", showlegend=True, **marker.plot_style
+                            )
+                        }
+                    )
+                elif marker.type == "line":
+                    point_x = np.array(marker._data[0])
+                    point_y = np.array(marker._data[1])
+
+                    bbox = bounding_box(neuron)
+                    bbox[0] -= np.array([10, 10, 10])
+                    bbox[1] += np.array([10, 10, 10])
+
+                    fac = 1.0
+                    point1 = point_x.copy()
+                    while (point1 > bbox[0]).all() and (point1 < bbox[1]).all():
+                        fac += 10.0
+                        point1 = point_x - fac * (point_y - point_x)
+
+                    fac = 1.0
+                    point2 = point_x.copy()
+                    while (point2 > bbox[0]).all() and (point2 < bbox[1]).all():
+                        fac += 10.0
+                        point2 = point_x + fac * (point_y - point_x)
+
+                    builder.helper.add_data(
+                        {
+                            f"{marker._label}": vector(
+                                point1,
+                                point2,
+                                name=f"{marker._label}",
+                                showlegend=True,
+                                **marker.plot_style,
+                            )
+                        }
+                    )
+
+                else:
+                    logger.info(f"marker type {marker.type} not understood")
+            builder.plot(filename=str(filename))
+        else:
+            raise Exception("Only plotly available for now")
 
     def to_dicts(self):
         """Create a list of dicts from marker class."""
         out_dict = {"morph_name": self._morph_name, "morph_path": self.morph_path, "markers": []}
-        for marker in self._markers:
+        for marker in self.markers:
             _d = marker.to_dict()
             del _d["morph_name"]
             del _d["morph_path"]
             out_dict["markers"].append(_d)
         return out_dict
 
-    def save(self, filepath="."):
+    def save(self, filepath=".", filename=None):
         """Save marker data.
+
+        Args:
+            filepath  (str): path to folder to save marker
+            filename (str): if provided,  path to marker file
 
         TODO: append to the list if file exists.
         """
-        filename = (Path(filepath) / ("markers_" + self.morph_name)).with_suffix(".yaml")
+        if filename is None:
+            filename = (Path(filepath) / ("markers_" + self.morph_name)).with_suffix(".yaml")
         with open(filename, "w") as f:
             yaml.dump(self.to_dicts(), f)
 
@@ -92,7 +138,7 @@ class Marker:
             plot_style (dict): custom dict for ploting arguments
         """
         self._label = label
-        self._type = tpe
+        self._tpe = tpe
         self._data = data
         self._morph_name = morph_name
         self.morph_path = morph_path
@@ -101,9 +147,12 @@ class Marker:
         self._check_valid()
 
     def _set_plot_style(self, plot_style):
-        if plot_style is None:
-            if self._type == "points":
-                self.plot_style = {"color": "black", "width": 10}
+        """Set plotting style."""
+        self.plot_style = {}
+        if self._tpe == "points":
+            self.plot_style = {"color": "black", "width": 10}
+        if plot_style is not None:
+            self.plot_style.update(plot_style)
 
     @property
     def label(self):
@@ -113,7 +162,7 @@ class Marker:
     @property
     def type(self):
         """"""
-        return self._type
+        return self._tpe
 
     @property
     def data(self):
@@ -137,7 +186,7 @@ class Marker:
 
         WIP: so that we can yaml/json easily
         """
-        return self._data.tolist()
+        return np.array(self._data, dtype=float).tolist()
 
     def to_dict(self):
         """Create a dict from marker class."""
@@ -145,6 +194,7 @@ class Marker:
             "morph_name": self._morph_name,
             "morph_path": self.morph_path,
             "label": self._label,
-            "type": self._type,
+            "tpe": self._tpe,
             "data": self.list_data,
+            "plot_style": self.plot_style,
         }
