@@ -8,52 +8,6 @@ logger = logging.getLogger(__name__)
 # pylint: disable=import-outside-toplevel
 
 
-def _plot_points_marker(builder, marker):
-    """Plot point markers"""
-    from plotly_helper.object_creator import scatter
-
-    data = np.array(marker.data)
-    if len(np.shape(data)) == 1:
-        data = data[np.newaxis]
-    plot_data = scatter(data, name=f"{marker.label}", **marker.plot_style)
-    builder.helper.add_data({f"{marker.label}": plot_data})
-
-
-def _bbox(neuron, margin=10):
-    """Get enlarged bbox of neuron for plotting."""
-    from neurom.geom import bounding_box
-
-    bbox = bounding_box(neuron)
-    bbox[0] -= margin * np.ones(3)
-    bbox[1] += margin * np.ones(3)
-    return bbox
-
-
-def _plot_axis_marker(builder, marker, margin=10):
-    """Plot axis marker.
-
-    This marker is a line crossing the whole bbox."""
-
-    from plotly_helper.object_creator import vector
-
-    point_x = np.array(marker.data[0])
-    point_y = np.array(marker.data[1])
-
-    bbox = _bbox(builder.neuron, margin=margin)
-
-    def _get_lim(direction=1):
-        """Find point near bbox limit in directiion of (point_y - point_x)."""
-        fac = 1.0
-        point = point_x.copy()
-        while (point > bbox[0]).all() and (point < bbox[1]).all():
-            fac += 10.0
-            point = point_x - direction * fac * (point_y - point_x)
-        return point
-
-    plot_data = vector(_get_lim(1), _get_lim(-1), name=f"{marker.label}", **marker.plot_style)
-    builder.helper.add_data({f"{marker.label}": plot_data})
-
-
 class MarkerSet:
     """Container of several markers for a single morphology."""
 
@@ -90,6 +44,51 @@ class MarkerSet:
         obj.morph_path = markers.get("morph_path", None)
         return obj
 
+    @staticmethod
+    def _plot_points_marker(builder, marker):
+        """Plot point markers"""
+        from plotly_helper.object_creator import scatter
+
+        data = np.array(marker.data)
+        if len(np.shape(data)) == 1:
+            data = data[np.newaxis]
+        plot_data = scatter(data, name=f"{marker.label}", **marker.plot_style)
+        builder.helper.add_data({f"{marker.label}": plot_data})
+
+    @staticmethod
+    def _plot_axis_marker(builder, marker, margin=10):
+        """Plot axis marker.
+
+        This marker is a line crossing the whole bbox."""
+
+        from plotly_helper.object_creator import vector
+
+        point_x = np.array(marker.data[0])
+        point_y = np.array(marker.data[1])
+
+        def _bbox(neuron, margin=10):
+            """Get enlarged bbox of neuron for plotting."""
+            from neurom.geom import bounding_box
+
+            bbox = bounding_box(neuron)
+            bbox[0] -= margin * np.ones(3)
+            bbox[1] += margin * np.ones(3)
+            return bbox
+
+        bbox = _bbox(builder.neuron, margin=margin)
+
+        def _get_lim(direction=1):
+            """Find point near bbox limit in directiion of (point_y - point_x)."""
+            fac = 1.0
+            point = point_x.copy()
+            while (point > bbox[0]).all() and (point < bbox[1]).all():
+                fac += 10.0
+                point = point_x - direction * fac * (point_y - point_x)
+            return point
+
+        plot_data = vector(_get_lim(1), _get_lim(-1), name=f"{marker.label}", **marker.plot_style)
+        builder.helper.add_data({f"{marker.label}": plot_data})
+
     def plot(self, filename="markers.html", with_plotly=True, plane="3d"):
         """Plot morphology with markers."""
         if with_plotly:
@@ -101,9 +100,9 @@ class MarkerSet:
 
             for marker in self.markers:
                 if marker.type == "points":
-                    _plot_points_marker(builder, marker)
+                    self._plot_points_marker(builder, marker)
                 elif marker.type == "axis":
-                    _plot_axis_marker(builder, marker)
+                    self._plot_axis_marker(builder, marker)
                 else:
                     logger.info("marker type %s not understood", marker.type)
             builder.plot(filename=str(filename))
@@ -192,9 +191,9 @@ class Marker:
 
     def _check_valid(self):
         """Check if the given marker data is valid."""
-        if self.type == 'points':
+        if self.type == "points":
             valid = len(np.shape(self.data)) == 2 or len(np.shape(self.data)) == 1
-        if self.type == 'axis':
+        if self.type == "axis":
             valid = len(np.shape(self.data)) == 2
         if not valid:
             raise Exception("Given marker data is not valid.")
