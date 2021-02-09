@@ -43,3 +43,4 @@ ignore-docstrings=yes
 [TYPECHECK]
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
+ignored-modules=plotly_helper
