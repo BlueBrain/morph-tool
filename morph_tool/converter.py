@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import numpy as np
-from morphio import MorphologyVersion, Option, SomaType
+from morphio import Option, SomaType
 from morphio.mut import Morphology
 from neurom import morphmath
 from numpy.linalg import eig, norm
@@ -250,12 +250,10 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
     output_ext = output_ext[1:]  # Remove the dot
 
     try:
-        converter = {MorphologyVersion.MORPHOLOGY_VERSION_SWC_1: from_swc,
-                     MorphologyVersion.MORPHOLOGY_VERSION_ASC_1: from_h5_or_asc,
-                     MorphologyVersion.MORPHOLOGY_VERSION_H5_1: from_h5_or_asc,
-                     MorphologyVersion.MORPHOLOGY_VERSION_H5_1_1: from_h5_or_asc,
-                     MorphologyVersion.MORPHOLOGY_VERSION_H5_2: from_h5_or_asc
-                     }[neuron.version]
+        converter = {'swc': from_swc,
+                     'asc': from_h5_or_asc,
+                     'h5': from_h5_or_asc,
+                     }[neuron.version[0]]
     except KeyError as e:
         raise Exception(
             'No converter for morphology type: {}'.format(neuron.version)) from e
