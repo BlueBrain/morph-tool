@@ -4,9 +4,10 @@ from scipy.spatial.transform import Rotation as R
 from scipy.linalg import svd
 from scipy.optimize import minimize_scalar
 
-from morph_tool.transform import rotate
 from neurom import COLS
 from morphio import SectionType
+
+from morph_tool.transform import rotate
 
 X, Y, Z = 0, 1, 2
 
@@ -35,7 +36,7 @@ def point_to_section_segment(neuron, point):
     raise ValueError('Cannot find point in morphology that matches: {}'.format(point))
 
 
-def align_pyr_morph(morph, direction=[0.0, 1.0, 0.0]):
+def align_pyr_morph(morph, direction=None):
     """In place alignment of a pyramidal morphology such that apical tree is along 'direction'.
 
     The algorithm is based on SVD decomposititon of the correlation matrix obtained from all points
@@ -44,8 +45,10 @@ def align_pyr_morph(morph, direction=[0.0, 1.0, 0.0]):
 
     Args:
         morph (morphio.Morphology): morphology to align
-        direction (ndarray): 3 vector with final morphology direction
+        direction (ndarray): 3 vector with for final direction, if None, [0, 1, 0] will be used
     """
+    if direction is None:
+        direction = [0.0, 1.0, 0.0]
     apical_points = []
     for section in morph.iter():
         if section.type == SectionType.apical_dendrite:
