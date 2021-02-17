@@ -218,9 +218,9 @@ class MorphDB:
 
     @classmethod
     def from_neurondb(cls,
-                      neurondb: Path,
+                      neurondb: Union[Path, str],
                       label: str = 'default',
-                      morphology_folder: Optional[Path] = None):
+                      morphology_folder: Optional[Union[Path, str]] = None):
         '''Builds a MorphologyDB from a neurondb.(xml|dat) file
         Args:
             neurondb: path to a neurondb.(xml|dat) file
@@ -233,7 +233,7 @@ class MorphDB:
 
         ..note:: missing keys are filled with `True` values
         '''
-        morphology_folder = morphology_folder or neurondb.parent.resolve()
+        morphology_folder = Path(morphology_folder) or Path(neurondb).parent.resolve()
 
         morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
 
@@ -244,7 +244,7 @@ class MorphDB:
 
     @classmethod
     def from_folder(cls,
-                    morphology_folder: Path,
+                    morphology_folder: Union[Path, str],
                     mtypes: Iterable[Tuple[str, str]],
                     label: str = 'default',
                     extension: Optional[str] = None):
@@ -259,7 +259,7 @@ class MorphDB:
         Raises: ValueError if the folder contains multiple files with the same name but
         different extensions and the extension argument has not been provided
         '''
-        files = list(iter_morphology_files(morphology_folder,
+        files = list(iter_morphology_files(Path(morphology_folder),
                                            extensions={extension} if extension else None))
         if not extension:
             duplicates = [item for item, count in
