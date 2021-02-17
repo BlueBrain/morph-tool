@@ -162,7 +162,7 @@ class MorphDB:
         """
         self.df = pd.DataFrame([morph_info.row for morph_info in (morph_info_seq or ())],
                                columns=COLUMNS)
-        self._sanitize_df_types()
+        MorphDB._sanitize_df_types(self.df)
 
     @classmethod
     def _from_neurondb_dat(cls, neurondb, morph_paths, label):
