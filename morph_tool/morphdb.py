@@ -233,7 +233,10 @@ class MorphDB:
 
         ..note:: missing keys are filled with `True` values
         '''
-        morphology_folder = Path(morphology_folder) or Path(neurondb).parent.resolve()
+        if morphology_folder:
+            morphology_folder = Path(morphology_folder)
+        else:
+            morphology_folder = Path(neurondb).parent.resolve()
 
         morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
 
