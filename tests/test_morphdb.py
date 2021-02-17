@@ -174,3 +174,9 @@ def test_check_file_exists():
         DATA_DIR / 'morphdb/from_neurondb/neurondb-only-dat-info.xml')
     original.df.loc[1, 'path'] = Path('/non/existing/path')
     assert_raises(ValueError, original.check_files_exist)
+
+
+def test_hashable():
+    morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
+    df = tested.MorphDB.from_neurondb(morphology_folder / 'neurondb-msubtype.xml').df
+    assert_equal(hash(df), None)

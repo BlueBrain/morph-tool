@@ -162,7 +162,7 @@ class MorphDB:
         """
         self.df = pd.DataFrame([morph_info.row for morph_info in (morph_info_seq or ())],
                                columns=COLUMNS)
-        self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
+        self._sanitize_df_types()
 
     @classmethod
     def _from_neurondb_dat(cls, neurondb, morph_paths, label):
@@ -213,7 +213,7 @@ class MorphDB:
             morph.path = morph_paths.get(morph.name)
 
         obj.df = MorphDB._create_dataframe(morphologies)
-        obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
+        MorphDB._sanitize_df_types(obj.df)
         return obj
 
     @classmethod
@@ -360,7 +360,7 @@ class MorphDB:
     def __iadd__(self, other):
         if isinstance(other, MorphDB):
             self.df = pd.concat([self.df, other.df])
-            self.df = self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
+            MorphDB._sanitize_df_types(self.df)
         else:
             raise TypeError(f'Must be MorphDB or a sequence of MorphInfo, not {type(other)}')
 
@@ -392,5 +392,15 @@ class MorphDB:
                             used as a axoninput
         '''
         df = pd.DataFrame([morph.row for morph in morphologies], columns=COLUMNS)
-        df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
+        MorphDB._sanitize_df_types(df)
         return df
+
+    @staticmethod
+    def _sanitize_df_types(df):
+        '''Set up the proper types for each columns
+
+        Args:
+            df: the dataframe to be sanitized
+        '''
+        df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
+        df["axon_inputs"] = df["axon_inputs"].apply(tuple)
