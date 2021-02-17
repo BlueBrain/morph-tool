@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 
 import morph_tool.morphdb as tested
 import pandas as pd
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_true
 from numpy.testing import assert_array_equal, assert_equal
 from pandas.testing import assert_frame_equal
 
@@ -179,4 +179,4 @@ def test_check_file_exists():
 def test_hashable():
     morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
     db = tested.MorphDB.from_neurondb(morphology_folder / 'neurondb-msubtype.xml')
-    assert_equal(hash(db), 8764646863631)
+    assert_true(hash(db) != 0)
