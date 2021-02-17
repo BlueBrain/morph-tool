@@ -179,4 +179,4 @@ def test_check_file_exists():
 def test_hashable():
     morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
     db = tested.MorphDB.from_neurondb(morphology_folder / 'neurondb-msubtype.xml')
-    assert_equal(db, None)
+    assert_equal(hash(db), None)
