@@ -6,7 +6,7 @@ from scipy.linalg import svd
 from scipy.optimize import minimize_scalar
 
 from neurom import COLS
-from morphio import SectionType
+from morphio import SectionType, IterType
 
 from morph_tool.transform import rotate
 
@@ -82,6 +82,10 @@ def align_pyr_morph(morph, direction=None, method='whole_apical', apical_point=N
 
                     apical_secid = point_to_section_segment(morph, apical_point)[0] - 1
 
+                apical_points = np.vstack(
+                    [section.points
+                     for section in morph.sections[apical_secid].iter(IterType.upstream)]
+                )
                 _points = []
                 for section in root_section.iter():
                     _points.append(section.points)
