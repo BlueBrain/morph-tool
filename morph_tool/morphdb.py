@@ -162,7 +162,7 @@ class MorphDB:
         """
         self.df = pd.DataFrame([morph_info.row for morph_info in (morph_info_seq or ())],
                                columns=COLUMNS)
-        self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
+        MorphDB._sanitize_df_types(self.df)
 
     @classmethod
     def _from_neurondb_dat(cls, neurondb, morph_paths, label):
@@ -213,14 +213,14 @@ class MorphDB:
             morph.path = morph_paths.get(morph.name)
 
         obj.df = MorphDB._create_dataframe(morphologies)
-        obj.df = obj.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
+        MorphDB._sanitize_df_types(obj.df)
         return obj
 
     @classmethod
     def from_neurondb(cls,
-                      neurondb: Path,
+                      neurondb: Union[Path, str],
                       label: str = 'default',
-                      morphology_folder: Optional[Path] = None):
+                      morphology_folder: Optional[Union[Path, str]] = None):
         '''Builds a MorphologyDB from a neurondb.(xml|dat) file
         Args:
             neurondb: path to a neurondb.(xml|dat) file
@@ -233,7 +233,10 @@ class MorphDB:
 
         ..note:: missing keys are filled with `True` values
         '''
-        morphology_folder = morphology_folder or neurondb.parent.resolve()
+        if morphology_folder:
+            morphology_folder = Path(morphology_folder)
+        else:
+            morphology_folder = Path(neurondb).parent.resolve()
 
         morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
 
@@ -244,7 +247,7 @@ class MorphDB:
 
     @classmethod
     def from_folder(cls,
-                    morphology_folder: Path,
+                    morphology_folder: Union[Path, str],
                     mtypes: Iterable[Tuple[str, str]],
                     label: str = 'default',
                     extension: Optional[str] = None):
@@ -259,7 +262,7 @@ class MorphDB:
         Raises: ValueError if the folder contains multiple files with the same name but
         different extensions and the extension argument has not been provided
         '''
-        files = list(iter_morphology_files(morphology_folder,
+        files = list(iter_morphology_files(Path(morphology_folder),
                                            extensions={extension} if extension else None))
         if not extension:
             duplicates = [item for item, count in
@@ -360,7 +363,7 @@ class MorphDB:
     def __iadd__(self, other):
         if isinstance(other, MorphDB):
             self.df = pd.concat([self.df, other.df])
-            self.df = self.df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS})
+            MorphDB._sanitize_df_types(self.df)
         else:
             raise TypeError(f'Must be MorphDB or a sequence of MorphInfo, not {type(other)}')
 
@@ -392,5 +395,15 @@ class MorphDB:
                             used as a axoninput
         '''
         df = pd.DataFrame([morph.row for morph in morphologies], columns=COLUMNS)
-        df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
+        MorphDB._sanitize_df_types(df)
         return df
+
+    @staticmethod
+    def _sanitize_df_types(df):
+        '''Set up the proper types for each columns
+
+        Args:
+            df: the dataframe to be sanitized
+        '''
+        df.astype({key: bool for key in BOOLEAN_REPAIR_ATTRS}, copy=False)
+        df["axon_inputs"] = df["axon_inputs"].apply(tuple)
