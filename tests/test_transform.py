@@ -170,3 +170,34 @@ class TestTransform:
         tested.align(section, [+1, 0, 0])
 
         npt.assert_almost_equal(section.points, [[0., 5., 0.], [+5, 5, 0]])
+
+    def test_align_pyr_morph(self):
+        # Test with apical trunk
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_pyr_morph(morph, [0, 0, 1], method="apical_trunk")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 1,  0,  0],
+             [ 0,  0, -1],
+             [ 0,  1,  0]]
+        )
+
+        # Test with apical root segment
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_pyr_morph(morph, [0, 0, 1], method="first_segment")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 1,  0,  0],
+             [ 0,  0, -1],
+             [ 0,  1,  0]]
+        )
+
+        # Test with whole apical
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_pyr_morph(morph, [0, 0, 1], method="whole_apical")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 9.99998738e-01, -1.12359285e-03, -1.12359357e-03],
+             [-1.12359285e-03,  1.27026415e-06, -9.99999369e-01],
+             [ 1.12359357e-03,  9.99999369e-01,  7.80165554e-09]]
+        )
