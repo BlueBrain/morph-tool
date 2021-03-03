@@ -204,7 +204,9 @@ def align_morphology(
     Returns:
         3x3 array with applied rotation matrix
     """
-    if method not in ['whole', 'trunk', 'first_section', 'first_segment']:
+    if isinstance(method, str) and method not in [
+        'whole', 'trunk', 'first_section', 'first_segment'
+    ]:
         raise NotImplementedError(f"Method {method} is not implementd")
 
     if direction is None:

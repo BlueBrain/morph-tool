@@ -28,4 +28,3 @@ def point_to_section_segment(neuron, point):
             return (section.id + 1, offset[0][0])
 
     raise ValueError('Cannot find point in morphology that matches: {}'.format(point))
-
