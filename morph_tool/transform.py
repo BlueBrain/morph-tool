@@ -106,7 +106,7 @@ def align(section, direction):
     rotate(section, matrix, origin=section.points[0])
 
 
-def _rotation_matrix_from_vectors(vec1, vec2):
+def rotation_matrix_from_vectors(vec1, vec2):
     """ Find the rotation matrix that aligns vec1 to vec2
 
     Picked from: https://stackoverflow.com/a/59204638/3868743
@@ -131,6 +131,7 @@ def _rotation_matrix_from_vectors(vec1, vec2):
     return np.eye(3) + kmat + kmat.dot(kmat) * ((1 - np.dot(vec1, vec2)) / (v_cross_norm ** 2))
 
 
+# pylint: disable=inconsistent-return-statements
 def _get_points(morph, method, neurite_type, target_point):
     """Extract relevant points of dendrite to align the morphology, see align_morphology."""
     _to_type = {'apical': SectionType.apical_dendrite, 'axon': SectionType.axon}
@@ -141,13 +142,12 @@ def _get_points(morph, method, neurite_type, target_point):
 
                 if target_point is not None:
                     target_secid = point_to_section_segment(morph, target_point)[0] - 1
+                    if target_secid is None:
+                        return None
                 elif neurite_type == 'apical':
                     target_secid = apical_point_section_segment(morph)[0]
                 else:
                     raise Exception(f"We don't know how to get target point for {neurite_type}.")
-
-                if target_secid is None:
-                    return None
 
                 return np.vstack(
                     [section.points
@@ -225,7 +225,7 @@ def align_morphology(
     principal_direction = _get_principal_direction(points)
     principal_direction *= np.sign(points.dot(principal_direction).sum())
 
-    rotation_matrix = _rotation_matrix_from_vectors(principal_direction, direction)
+    rotation_matrix = rotation_matrix_from_vectors(principal_direction, direction)
     rotate(morph, rotation_matrix)
 
     return rotation_matrix
