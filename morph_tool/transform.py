@@ -9,6 +9,9 @@ from scipy.spatial.transform import Rotation
 from morphio import SectionType, IterType
 from neurom.morphmath import angle_between_vectors
 
+from morph_tool.spatial import point_to_section_segment
+from morph_tool.apical_point import apical_point_section_segment
+
 logger = logging.getLogger('morph_tool')
 
 
@@ -137,15 +140,10 @@ def _get_points(morph, method, neurite_type, target_point):
             if method == 'trunk':
 
                 if target_point is not None:
-                    from morph_tool.spatial import point_to_section_segment
-
                     target_secid = point_to_section_segment(morph, target_point)[0] - 1
                     if target_secid is None:
                         return None
-
                 elif neurite_type == 'apical':
-                    from morph_tool.apical_point import apical_point_section_segment
-
                     target_secid = apical_point_section_segment(morph)[0]
                 else:
                     raise Exception(f"We don't know how to get target point for {neurite_type}.")
