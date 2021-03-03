@@ -5,13 +5,9 @@ import logging
 import numpy as np
 
 from scipy.spatial.transform import Rotation
-from scipy.linalg import svd
 
 from morphio import SectionType, IterType
 from neurom.morphmath import angle_between_vectors
-
-from morph_tool.apical_point import apical_point_section_segment
-from morph_tool.spatial import point_to_section_segment
 
 logger = logging.getLogger('morph_tool')
 
@@ -107,117 +103,128 @@ def align(section, direction):
     rotate(section, matrix, origin=section.points[0])
 
 
-def rotation_matrix_from_vectors(vec1, vec2):
+def _rotation_matrix_from_vectors(vec1, vec2):
     """ Find the rotation matrix that aligns vec1 to vec2
 
     Picked from: https://stackoverflow.com/a/59204638/3868743
+    Args:
+        vec1: A 3d "source" vector
+        vec2: A 3d "destination" vector
 
-    :param vec1: A 3d "source" vector
-    :param vec2: A 3d "destination" vector
-    :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
+    Returns:
+        A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
     """
-    a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (vec2 / np.linalg.norm(vec2)).reshape(3)
-    v = np.cross(a, b)
-    c = np.dot(a, b)
-    s = np.linalg.norm(v)
-    if s == 0:
+    vec1, vec2 = vec1 / np.linalg.norm(vec1), vec2 / np.linalg.norm(vec2)
+
+    v_cross = np.cross(vec1, vec2)
+    v_cross_norm = np.linalg.norm(v_cross)
+    if v_cross_norm == 0:
         return np.eye(3)
-    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
-    rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
-    return rotation_matrix
+
+    kmat = np.array([[0.0, -v_cross[2], v_cross[1]],
+                     [v_cross[2], 0.0, -v_cross[0]],
+                     [-v_cross[1], v_cross[0], 0.0]])
+
+    return np.eye(3) + kmat + kmat.dot(kmat) * ((1 - np.dot(vec1, vec2)) / (v_cross_norm ** 2))
 
 
-# pylint: disable=too-many-branches
-def align_pyr_morph(morph, direction=None, method='whole_apical', apical_point=None):
-    """In-place alignment of a pyramidal morphology such that apical tree is along 'direction'.
+def _get_points(morph, method, neurite_type, target_point):
+    """Extract relevant points of dendrite to align the morphology, see align_morphology."""
+    _to_type = {'apical': SectionType.apical_dendrite, 'axon': SectionType.axon}
 
-    The base algorithm is based on SVD decomposition of the correlation matrix obtained from
-    points in apical neurites, giving the principal axis of apical dendrite.
-    Currently, three algorithms are implemented, differing in the choice of points:
+    for root_section in morph.root_sections:
+        if root_section.type == _to_type[neurite_type]:
+            if method == 'trunk':
 
-    1) with method='whole_apical': All the points in the apical dendrite are used.
-    2) with method='first_segment': Only the 2 first points in the first section are used.
-    3) with method='apical_trunk': Points in section up to the apical points are used.
+                if target_point is not None:
+                    from morph_tool.spatial import point_to_section_segment
 
-    If no apical is present, no rotation is applied, and the identity rotation is returned.
-    If two apicals are present, the apical accessed in second by Morphio will be used.
+                    target_secid = point_to_section_segment(morph, target_point)[0] - 1
+                    if target_secid is None:
+                        return None
+
+                elif neurite_type == 'apical':
+                    from morph_tool.apical_point import apical_point_section_segment
+
+                    target_secid = apical_point_section_segment(morph)[0]
+                else:
+                    raise Exception(f"We don't know how to get target point for {neurite_type}.")
+
+                return np.vstack(
+                    [section.points
+                     for section in morph.sections[target_secid].iter(IterType.upstream)]
+                )
+            if method == 'first_section':
+                return root_section.points
+
+            if method == 'first_segment':
+                return root_section.points[:2]
+
+            return np.vstack([section.points for section in root_section.iter()])
+
+
+def _get_principal_direction(points):
+    '''Return the principal direction of a point cloud
+    It is the eigen vector of the covariance matrix with the highest eigen value.
+
+    Taken frorm neuror.unravel.'''
+    X = np.copy(np.asarray(points))
+    X -= np.mean(X, axis=0)
+    C = np.dot(X.T, X)
+    w, v = np.linalg.eig(C)
+    return v[:, w.argmax()]
+
+
+def align_morphology(
+    morph, direction=None, method='whole', neurite_type='apical', target_point=None
+):
+    """In-place alignment of a morphology towards a 'direction'.
+
+    The base algorithm is based on eigenvalue decomposition of the correlation matrix obtained
+    from points in specified neurites, giving the principal axis of the neurite.
+    Currently, five algorithms are implemented, differing in the choice of points:
+
+    1) with method='whole': All the points in the apical dendrite are used.
+    2) with method='trunk': Points in section up to the tarrget points are used.
+    3) with method='first_section': Only the points in the first section are used.
+    4) with method='first_segment': Only the points in the first segment are used.
+    5) with method an ndarray or list, we will use it as the direction directly
+
+    If no neurite is present, no rotation is applied, and the identity rotation is returned.
+    If two neurites of same types are present, the first accessed by Morphio will be used.
 
     Args:
         morph (morphio.Morphology): morphology to align
         direction (ndarray): 3-vector for final direction, if None, [0, 1, 0] will be used
         method (str): method for alignment.
-        apical_point (ndarray): position of apical point for method='apical_trunk',
-            if None, it will be estimated
+        neurite_type (str): neurite to consider, can only be apical or axon
+        target_point (ndarray): position of target point for method='trunk',
+            if None and neurite_type='apical', it will be estimated
 
     Returns:
         3x3 array with applied rotation matrix
     """
-    if method not in ['whole_apical', 'apical_trunk', 'first_segment']:
-        raise NotImplementedError(f'Method {method} is not implemented')
+    if method not in ['whole', 'trunk', 'first_section', 'first_segment']:
+        raise NotImplementedError(f"Method {method} is not implementd")
 
     if direction is None:
         direction = [0.0, 1.0, 0.0]
-    apical_points = None
-    apical_root_sections = [
-        sec for sec in morph.root_sections if sec.type == SectionType.apical_dendrite
-    ]
+    else:
+        direction /= np.linalg.norm(direction)
 
-    if len(apical_root_sections) > 1:
-        logger.warning(
-            'The morphology has %s apical dendrites, only the first one will be used.',
-            len(apical_root_sections)
-        )
-    elif len(apical_root_sections) == 0:
-        logger.info('No apical dendrite was found in the morphology.')
-        return None
+    if isinstance(method, (np.ndarray, list)):
+        points = np.array([[0.0, 0.0, 0.0], method])
+    else:
+        points = _get_points(morph, method, neurite_type, target_point)
 
-    root_section = apical_root_sections[0]
-
-    if method == 'apical_trunk':
-        if apical_point is None:
-            apical_secid = apical_point_section_segment(morph)[0]
-        else:
-            apical_secid = point_to_section_segment(morph, apical_point)[0] - 1
-
-        apical_points = np.vstack(
-            [section.points
-             for section in morph.sections[apical_secid].iter(IterType.upstream)]
-        )
-        _points = []
-        for section in root_section.iter():
-            _points.append(section.points)
-            if section.id == apical_secid:
-                break
-        apical_points = np.vstack(_points)
-    elif method == 'first_segment':
-        apical_points = root_section.points[:2]
-    else:  # method == 'whole_apical'
-        apical_points = np.vstack([section.points for section in root_section.iter()])
-
-    if apical_points is None:
+    if points is None:
         logger.info('We did not find an apical point to align the morphology')
         return np.eye(3)
-    if len(apical_points) < 2:
-        logger.info('We did not find enough points in the apical to align the morphology')
-        return np.eye(3)
 
-    if len(apical_points) > 2:
-        # compute covariance matrix
-        cov = apical_points.T.dot(apical_points) / (len(apical_points) - 1)
+    principal_direction = _get_principal_direction(points)
+    principal_direction *= np.sign(points.dot(principal_direction).sum())
 
-        # compute principal direction
-        principal_direction = svd(cov)[2][0]
-        principal_direction *= np.sign(apical_points.dot(principal_direction).sum())
-        principal_direction /= np.linalg.norm(principal_direction)
-    else:
-        principal_direction = apical_points[1] - apical_points[0]
-        principal_direction /= np.linalg.norm(principal_direction)
-
-    direction /= np.linalg.norm(direction)
-
-    rotation_matrix = rotation_matrix_from_vectors(principal_direction, direction)
-
-    # rotate the morphology in place
+    rotation_matrix = _rotation_matrix_from_vectors(principal_direction, direction)
     rotate(morph, rotation_matrix)
 
     return rotation_matrix
