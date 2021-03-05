@@ -153,14 +153,14 @@ def test_features():
     # features.to_csv(DATA_DIR / 'morphdb/from_neurondb/features.csv', index=False)
     expected = pd.read_csv(DATA_DIR / 'morphdb/from_neurondb/features.csv',
                            header=[0, 1])
-    expected['neuron'] = expected['neuron'].fillna('')
-    expected['neuron', 'layer'] = expected['neuron', 'layer'].astype(str)
-    expected['neuron', 'path'] = expected['neuron', 'path'].apply(
+    expected['properties'] = expected['properties'].fillna('')
+    expected['properties', 'layer'] = expected['properties', 'layer'].astype(str)
+    expected['properties', 'path'] = expected['properties', 'path'].apply(
         lambda p: DATA_DIR / 'morphdb/from_neurondb/' / p)
     for key in tested.BOOLEAN_REPAIR_ATTRS:
-        expected['neuron', key] = expected['neuron', key].astype(bool)
-    assert_frame_equal(features.drop(columns=('neuron', 'axon_inputs')),
-                       expected.drop(columns=('neuron', 'axon_inputs')))
+        expected['properties', key] = expected['properties', key].astype(bool)
+    assert_frame_equal(features.drop(columns=('properties', 'axon_inputs')),
+                       expected.drop(columns=('properties', 'axon_inputs')))
 
 
 def test_check_file_exists():
