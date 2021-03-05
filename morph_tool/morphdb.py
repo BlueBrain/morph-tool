@@ -241,9 +241,9 @@ class MorphDB:
         morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
 
         if neurondb.suffix.lower() == '.dat':
-            return cls._from_neurondb_dat(neurondb, morph_paths, label)
+            return cls._from_neurondb_dat(Path(neurondb), morph_paths, label)
         else:
-            return cls._from_neurondb_xml(neurondb, morph_paths, label)
+            return cls._from_neurondb_xml(Path(neurondb), morph_paths, label)
 
     @classmethod
     def from_folder(cls,
@@ -336,12 +336,10 @@ class MorphDB:
             raise ValueError(
                 f'DataFrame has morphologies with undefined filepaths: {missing_morphs}')
 
-        df = self.df.copy().reset_index()
-        df.columns = pd.MultiIndex.from_product((["neuron"], df.columns.values))
-        paths = df['neuron', 'path']
-
-        stats = extract_dataframe(paths, config, n_workers).drop(columns='name', level=1)
-        return df.join(stats, how='inner').drop(columns=('neuron', 'index'))
+        df = self.df.copy().reset_index(drop=True)
+        df.columns = pd.MultiIndex.from_product((["properties"], df.columns.values))
+        stats = extract_dataframe(df['properties', 'path'], config, n_workers)
+        return df.join(stats.drop(columns='name', level=1), how='inner')
 
     def check_files_exist(self):
         '''Raises if `self.df.path` has None values or non existing paths'''
