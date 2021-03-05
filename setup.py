@@ -28,7 +28,7 @@ setup(
         'deprecation>=2.1.0',
         'more-itertools>=8.6.0',
         'morphio>=2.7.0',
-        'neurom>=1.4.15',
+        'neurom>=1.8.0',
         'neuron>=7.8',
         'numpy>=1.14',
         'pandas>=1.0.3',
