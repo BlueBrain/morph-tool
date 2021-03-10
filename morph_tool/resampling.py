@@ -133,6 +133,10 @@ def _parametric_values(values, ids, fractions):
     new_values[-1] = values[-1]
     new_values[1:-1] = values[ids] + fractions * (values[ids + 1] - values[ids])
 
+    # in case the last fraction is close to one, we don't save the last interpolated point
+    if fractions[-1] > 1 - 1e-5:
+        new_values[-2] = new_values[-1]
+        new_values = new_values[:-1]
     return new_values
 
 
