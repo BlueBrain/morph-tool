@@ -37,6 +37,12 @@ If plan to convert folders of morphologies:
 
     pip install morph-tool[parallel]
 
+If plan to use all available functionality:
+
+.. code:: bash
+
+    pip install morph-tool[all]
+
 
 
 Usage
