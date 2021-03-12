@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pathlib import Path
 from mock import Mock
 import numpy as np
@@ -270,3 +271,36 @@ def test_resample_linear_density__astrocyte():
         _assert_allclose_first_last(s1.points, s2_points)
         _assert_allclose_first_last(s1.diameters, s2_diameters)
         _assert_allclose_first_last(s1.perimeters, s2_perimeters)
+
+
+def test_resample_from_linear_density__numerical_innacurracy():
+    """
+    Previous implementation was using arange to calculate the new paths,
+    which led to the accumulation of a numerical error. As a result the
+    last path was numerically smaller that the total length in the resampling
+    function which led in the generation of an extra point.
+    """
+    points = np.array([
+        [-1.474797606, -12.873973846, 1.465831757],
+        [-1.268972993, -13.383681297, 1.386174798],
+        [-1.207281470, -13.681849480, 1.339448690],
+        [-0.772920549, -14.285424232, 1.751677036],
+        [-0.640972078, -14.575642586, 1.706354022],
+        [-0.157932609, -15.903386116, 1.498738170],
+        [0.108525813, -16.787338257, 1.856412053],
+        [0.603999615, -17.670700073, 1.718663454],
+        [1.443708062, -19.519208908, 1.925997615],
+        [1.577559590, -19.740325928, 1.891538978],
+        [2.688630342, -22.260030746, 2.004102230],
+        [3.322759628, -23.588979721, 2.292642832],
+        [4.462557793, -25.080135345, 2.556796074],
+        [4.665114880, -25.744903564, 2.948777676]
+    ])
+
+    total = np.linalg.norm(points[:1] - points[:-1], axis=1).sum()
+
+    ids, fractions = tested._resample_from_linear_density(points, linear_density=1.)
+
+    new_points = tested._parametric_values(points, ids, fractions)
+
+    assert not np.allclose(new_points[-1], new_points[-2])
