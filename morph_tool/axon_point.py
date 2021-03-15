@@ -1,13 +1,13 @@
 """Module to detect the terminal point of the main axon/"""
+import logging
 import numpy as np
 
 from morphio import SectionType, IterType
-import logging
 
 logger = logging.getLogger("morph_tool")
 
 
-def get_axon_point(morph, direction=None, bbox=None):
+def axon_point_section(morph, direction=None, bbox=None):
     """Estimate axon point as the terminal point of the main axon.
 
     This point is defined as the point for which the sum of the angles with the direction vector
