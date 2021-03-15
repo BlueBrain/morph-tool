@@ -10,7 +10,7 @@ from numpy.linalg import eig, norm
 
 from morph_tool import transform
 
-logger = logging.getLogger('morph_tool')
+L = logging.getLogger('morph_tool')
 
 XYZ = slice(3)
 X, Y, Z, R = 0, 1, 2, 3
@@ -89,7 +89,7 @@ def contour2centroid(mean, points):
        most of the comments are from there, so if you want to follow along, it should
        break up the function the same way
     '''
-    logger.info('Converting soma contour into a stack of cylinders')
+    L.info('Converting soma contour into a stack of cylinders')
 
     # find the major axis of the ellipsoid that best fits the shape
     # assuming (falsely in general) that the center is the mean
@@ -142,21 +142,21 @@ def _to_sphere(neuron):
 
 def cylinder_to_cylindrical_contour(neuron):
     '''We convert the cylinder into a circular contour that represents the same sphere'''
-    logger.info('Converting 3 point soma to sperical soma with same surface')
+    L.info('Converting 3 point soma to sperical soma with same surface')
     _to_sphere(neuron)
 
 
 def single_point_sphere_to_circular_contour(neuron):
     '''Transform a single point soma that represents a sphere
     into a circular contour that represents the same sphere'''
-    logger.info('Converting 1-point soma (sperical soma) to circular contour '
+    L.info('Converting 1-point soma (sperical soma) to circular contour '
                 'representing the same sphere')
     _to_sphere(neuron)
 
 
 def soma_to_single_point(soma):
     '''surface preserving cylindrical soma to a single point sphere'''
-    logger.info('Converting soma to a single point sphere, while preserving the surface')
+    L.info('Converting soma to a single point sphere, while preserving the surface')
     neurom_points = np.hstack((soma.points, 0.5 * soma.diameters[:, None]))
     surface_area = sum(morphmath.segment_area(seg)
                        for seg in zip(neurom_points[1:], neurom_points[:-1]))
@@ -171,7 +171,7 @@ def from_swc(neuron, output_ext):
         return neuron
 
     if neuron.soma_type == SomaType.SOMA_CYLINDERS:
-        logger.info('Converting soma stack of cylinders into a contour in the XY plane')
+        L.info('Converting soma stack of cylinders into a contour in the XY plane')
 
         direction = neuron.soma.points[-1] - neuron.soma.points[0]
 
@@ -258,7 +258,7 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
         raise Exception(
             'No converter for morphology type: {}'.format(neuron.version)) from e
 
-    logger.info('Original soma type: %s', neuron.soma_type)
+    L.info('Original soma type: %s', neuron.soma_type)
     new = converter(neuron, output_ext)
 
     if single_point_soma:
@@ -272,11 +272,11 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
     try:
         # pylint: disable=import-outside-toplevel
         from morph_tool.neuron_surface import get_NEURON_surface
-        logger.info('Soma surface as computed by NEURON:\n'
+        L.info('Soma surface as computed by NEURON:\n'
                     'before conversion: %s\n'
                     'after conversion: %s',
                     get_NEURON_surface(input_file),
                     get_NEURON_surface(outputfile))
     except:  # noqa pylint: disable=bare-except
-        logger.info('Final NEURON soma surface check was skipped probably because BluePyOpt'
+        L.info('Final NEURON soma surface check was skipped probably because BluePyOpt'
                     ' or NEURON is not installed')

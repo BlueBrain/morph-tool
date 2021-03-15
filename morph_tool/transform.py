@@ -12,7 +12,7 @@ from neurom.morphmath import angle_between_vectors
 from morph_tool.spatial import point_to_section_segment
 from morph_tool.apical_point import apical_point_section_segment
 
-logger = logging.getLogger('morph_tool')
+L = logging.getLogger('morph_tool')
 
 
 def _apply_recursively(func, obj, origin=(0, 0, 0)):
@@ -219,7 +219,7 @@ def align_morphology(
         points = _get_points(morph, method, neurite_type, target_point)
 
     if points is None:
-        logger.info('We did not find an apical point to align the morphology')
+        L.info('We did not find an apical point to align the morphology')
         return np.eye(3)
 
     principal_direction = _get_principal_direction(points)

@@ -9,7 +9,7 @@ from morphio import SectionType, IterType
 from morph_tool.spatial import point_to_section_segment
 
 
-logger = logging.getLogger('morph_tool')
+L = logging.getLogger('morph_tool')
 
 X, Y, Z = 0, 1, 2
 
@@ -26,7 +26,7 @@ def apical_point_section_segment(neuron):
     point = apical_point_position(neuron)
 
     if point is None:
-        logger.warning('Could not find apical point')
+        L.warning('Could not find apical point')
         return None, None
 
     section, segment = point_to_section_segment(neuron, point)

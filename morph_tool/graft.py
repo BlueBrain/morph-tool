@@ -11,7 +11,7 @@ from morph_tool import NoAxonException, NoDendriteException, MorphToolException
 from morph_tool.transform import translate
 
 
-logger = logging.getLogger('morph_tool')
+L = logging.getLogger('morph_tool')
 
 
 def find_axon(axon_or_donor_axon):
@@ -33,7 +33,7 @@ def find_axon(axon_or_donor_axon):
         raise NoAxonException('No axon found!')
 
     if len(axons) > 1:
-        logger.warning("Found multiple axons (%s), choosing the first one.", len(axons))
+        L.warning("Found multiple axons (%s), choosing the first one.", len(axons))
 
     return axons[0]
 
