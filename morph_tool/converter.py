@@ -150,7 +150,7 @@ def single_point_sphere_to_circular_contour(neuron):
     '''Transform a single point soma that represents a sphere
     into a circular contour that represents the same sphere'''
     L.info('Converting 1-point soma (sperical soma) to circular contour '
-                'representing the same sphere')
+           'representing the same sphere')
     _to_sphere(neuron)
 
 
@@ -273,10 +273,10 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
         # pylint: disable=import-outside-toplevel
         from morph_tool.neuron_surface import get_NEURON_surface
         L.info('Soma surface as computed by NEURON:\n'
-                    'before conversion: %s\n'
-                    'after conversion: %s',
-                    get_NEURON_surface(input_file),
-                    get_NEURON_surface(outputfile))
+               'before conversion: %s\n'
+               'after conversion: %s',
+               get_NEURON_surface(input_file),
+               get_NEURON_surface(outputfile))
     except:  # noqa pylint: disable=bare-except
         L.info('Final NEURON soma surface check was skipped probably because BluePyOpt'
-                    ' or NEURON is not installed')
+               ' or NEURON is not installed')
