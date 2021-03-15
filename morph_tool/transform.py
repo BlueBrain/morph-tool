@@ -139,7 +139,6 @@ def _get_points(morph, method, neurite_type, target_point):
     for root_section in morph.root_sections:
         if root_section.type == _to_type[neurite_type]:
             if method == 'trunk':
-
                 if target_point is not None:
                     target_secid = point_to_section_segment(morph, target_point)[0] - 1
                     if target_secid is None:
@@ -166,7 +165,7 @@ def _get_principal_direction(points):
     '''Return the principal direction of a point cloud
     It is the eigen vector of the covariance matrix with the highest eigen value.
 
-    Taken frorm neuror.unravel.'''
+    Taken from neuror.unravel.'''
     X = np.copy(np.asarray(points))
     X -= np.mean(X, axis=0)
     C = np.dot(X.T, X)
@@ -184,7 +183,7 @@ def align_morphology(
     Currently, five algorithms are implemented, differing in the choice of points:
 
     1) with method='whole': All the points in the apical dendrite are used.
-    2) with method='trunk': Points in section up to the tarrget points are used.
+    2) with method='trunk': Points in section up to the target points are used.
     3) with method='first_section': Only the points in the first section are used.
     4) with method='first_segment': Only the points in the first segment are used.
     5) with method an ndarray or list, we will use it as the direction directly
@@ -195,7 +194,7 @@ def align_morphology(
     Args:
         morph (morphio.Morphology): morphology to align
         direction (ndarray): 3-vector for final direction, if None, [0, 1, 0] will be used
-        method (str): method for alignment.
+        method (str|ndarray): method for alignment.
         neurite_type (str): neurite to consider, can only be apical or axon
         target_point (ndarray): position of target point for method='trunk',
             if None and neurite_type='apical', it will be estimated
