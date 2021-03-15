@@ -2,6 +2,7 @@
 import logging
 import numpy as np
 
+from neurom import COLS
 from morphio import SectionType, IterType
 
 logger = logging.getLogger("morph_tool")
@@ -45,8 +46,10 @@ def axon_point_section(morph, direction=None, bbox=None):
             positions.append(section.points[-1])
 
     if bbox is not None:
-        qualities, positions, ids = np.array(qualities), np.array(positions), np.array(ids)
-        _convert = {"x": 0, "y": 1, "z": 2}
+        qualities = np.array(qualities)
+        positions = np.array(positions)
+        ids = np.array(ids)
+        _convert = {"x": COLS.X, "y": COLS.Y, "z": COLS.Z}
         for axis, bounds in bbox.items():
             bbox_filter = np.where(
                 (positions[:, _convert[axis]] > bounds[0])
