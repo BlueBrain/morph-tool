@@ -81,10 +81,8 @@ def _resample_from_linear_density(points, linear_density):
     n_segments = max(1, int(total_length * linear_density))
 
     # split total length in n_segments of equal length dl
-    dl = total_length / n_segments
-
     # vertex path lengths without including first and last (K-2)
-    new_path_lengths = np.arange(dl, total_length, dl)
+    new_path_lengths = np.arange(1, n_segments) * total_length / n_segments
 
     # ids of the starting points for the parametric equation
     ids = np.searchsorted(path_lengths, new_path_lengths) - 1
