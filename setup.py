@@ -11,6 +11,21 @@ readme_path = Path(__file__).resolve().parent / "README.rst"
 with open(readme_path, encoding='utf-8') as f:
     long_description = f.read()
 
+base_extras = [
+    'bluepyopt>=1.9.37',
+    'click>=6.7',
+    'deprecation>=2.1.0',
+    'more-itertools>=8.6.0',
+    'morphio>=2.7.0',
+    'neurom>=1.8.0',
+    'numpy>=1.14',
+    'pandas>=1.0.3',
+    'xmltodict>=0.12.0',
+]
+plot_extras = ['plotly>=4.1.0']
+parallel_extras = ['dask[bag]>=2.19.0']
+nrn_extras = ['neuron>=7.8']
+
 setup(
     name="morph-tool",
     author="Blue Brain Project, EPFL",
@@ -21,21 +36,12 @@ setup(
     entry_points={
         'console_scripts': ['morph-tool=morph_tool.cli:cli']},
     license="LGPLv3",
-    install_requires=[
-        'bluepyopt>=1.9.37',
-        'click>=6.7',
-        'dask[bag]>=2.19.0',
-        'deprecation>=2.1.0',
-        'more-itertools>=8.6.0',
-        'morphio>=2.7.0',
-        'neurom>=1.8.0',
-        'neuron>=7.8',
-        'numpy>=1.14',
-        'pandas>=1.0.3',
-        'plotly>=4.1.0',
-        'xmltodict>=0.12.0',
-    ],
+    install_requires=base_extras,
     extras_require={
+        'nrn': nrn_extras,
+        'parallel': parallel_extras,
+        'plot': plot_extras,
+        'all': plot_extras + parallel_extras + nrn_extras,
         'docs': ['sphinx', 'sphinx-bluebrain-theme'],
     },
     python_requires='>=3.6',

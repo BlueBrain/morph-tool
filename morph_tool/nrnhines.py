@@ -1,16 +1,21 @@
 """Utils related to the NRN simulator"""
 import logging
-import multiprocessing
 import multiprocessing.pool
 from pathlib import Path
 from typing import List, Sequence, Union
 
 import bluepyopt.ephys as ephys
-import neuron
 import numpy as np
 from neurom import COLS, NeuriteType, iter_sections, load_neuron
 from neurom.core import NeuriteIter
 from numpy.testing import assert_almost_equal
+
+try:
+    import neuron
+except ImportError as e:
+    raise ImportError(
+        'morph-tool[nrn] is not installed. Please install: pip install morph-tool[nrn]'
+    ) from e
 
 L = logging.getLogger(__name__)
 

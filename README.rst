@@ -11,12 +11,39 @@ Currently MorphTool provides:
 
 Installation
 ------------
+It is recommended to install in a fresh virtualenv.
 
-In a fresh virtualenv:
+Base installation:
 
 .. code:: bash
 
     pip install morph-tool
+
+If plan to use `dendrogram` module:
+
+.. code:: bash
+
+    pip install morph-tool[plot]
+
+If plan to use `nrnhines` module:
+
+.. code:: bash
+
+    pip install morph-tool[nrn]
+
+If plan to convert folders of morphologies:
+
+.. code:: bash
+
+    pip install morph-tool[parallel]
+
+If plan to use all available functionality:
+
+.. code:: bash
+
+    pip install morph-tool[all]
+
+
 
 Usage
 -----

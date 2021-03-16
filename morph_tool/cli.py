@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 import click
-import dask.bag as dask_bag
 
 import morph_tool
 from morph_tool import converter
@@ -99,6 +98,14 @@ def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_po
 @click.option('--ncores', help='The number of cores', default=None, type=int)
 def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_point_soma, ncores):
     '''Convert all morphologies in the folder and its subfolders'''
+    # pylint: disable=import-outside-toplevel
+    try:
+        import dask.bag as dask_bag
+    except ImportError as e:
+        raise ImportError(
+            'morph-tool[parallel] is not installed. Run: pip install morph-tool[parallel]'
+        ) from e
+
     if quiet:
         L.setLevel(logging.WARNING)
 
