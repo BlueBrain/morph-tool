@@ -98,6 +98,7 @@ def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_po
 @click.option('--ncores', help='The number of cores', default=None, type=int)
 def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_point_soma, ncores):
     '''Convert all morphologies in the folder and its subfolders'''
+    # pylint: disable=import-outside-toplevel
     try:
         import dask.bag as dask_bag
     except ImportError as e:
