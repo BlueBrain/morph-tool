@@ -9,7 +9,7 @@ from morphio import SectionType, IterType
 from morph_tool.spatial import point_to_section_segment
 
 
-L = logging.getLogger('morph_tool')
+L = logging.getLogger(__name__)
 
 X, Y, Z = 0, 1, 2
 

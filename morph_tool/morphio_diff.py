@@ -1,11 +1,7 @@
 '''This module provides the MorphIO diff functionality that can be used
 to see if two morphologies are the same or not'''
-import logging
-
 import numpy as np
 from morphio import Morphology
-
-logger = logging.getLogger('morph_tool')
 
 
 class DiffResult:

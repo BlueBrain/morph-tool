@@ -11,7 +11,7 @@ from morph_tool import NoAxonException, NoDendriteException, MorphToolException
 from morph_tool.transform import translate
 
 
-L = logging.getLogger('morph_tool')
+L = logging.getLogger(__name__)
 
 
 def find_axon(axon_or_donor_axon):

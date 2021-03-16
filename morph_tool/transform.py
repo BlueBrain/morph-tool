@@ -13,7 +13,7 @@ from neurom.morphmath import angle_between_vectors
 from morph_tool.spatial import point_to_section_segment
 from morph_tool.apical_point import apical_point_section_segment
 
-L = logging.getLogger('morph_tool')
+L = logging.getLogger(__name__)
 
 
 def _apply_recursively(func, obj, origin=(0, 0, 0)):

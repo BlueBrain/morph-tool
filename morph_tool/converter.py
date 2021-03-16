@@ -10,7 +10,7 @@ from numpy.linalg import eig, norm
 
 from morph_tool import transform
 
-L = logging.getLogger('morph_tool')
+L = logging.getLogger(__name__)
 
 XYZ = slice(3)
 X, Y, Z, R = 0, 1, 2, 3
