@@ -1,5 +1,6 @@
 '''Module for spatial related functions'''
 import numpy as np
+
 from neurom import COLS
 
 X, Y, Z = 0, 1, 2
@@ -11,7 +12,7 @@ def point_to_section_segment(neuron, point):
     Only the first point found with the *exact* same coordinates as the point argument is considered
 
     Args:
-        neuron (morphio.Morphology): path to file to examine
+        neuron (morphio.Morphology): neuron object
         point (point): value of the point to find in the h5 file
 
     Returns a tuple (NeuroM section ID, point ID) of the point the matches the input coordinates

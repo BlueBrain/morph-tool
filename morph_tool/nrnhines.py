@@ -12,7 +12,7 @@ from neurom import COLS, NeuriteType, iter_sections, load_neuron
 from neurom.core import NeuriteIter
 from numpy.testing import assert_almost_equal
 
-L = logging.getLogger('morph_tool')
+L = logging.getLogger(__name__)
 
 
 def get_NRN_cell(filename: Path):

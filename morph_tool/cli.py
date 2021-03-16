@@ -11,7 +11,7 @@ from morph_tool import converter
 from morph_tool.utils import iter_morphology_files
 
 logging.basicConfig()
-L = logging.getLogger('morph_tool')
+L = logging.getLogger(__name__)
 L.setLevel(logging.INFO)
 
 REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_path=True)

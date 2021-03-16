@@ -170,3 +170,56 @@ class TestTransform:
         tested.align(section, [+1, 0, 0])
 
         npt.assert_almost_equal(section.points, [[0., 5., 0.], [+5, 5, 0]])
+
+    def test_align_morphology(self):
+        # Test with apical trunk
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="trunk")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 1,  0,  0],
+             [ 0,  0, -1],
+             [ 0,  1,  0]]
+        )
+
+        # Test with apical root section
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="first_section")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 1,  0,  0],
+             [ 0,  0, -1],
+             [ 0,  1,  0]]
+        )
+
+        # Test with apical root segment
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="first_segment")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 1,  0,  0],
+             [ 0,  0, -1],
+             [ 0,  1,  0]]
+        )
+
+        # Test with whole apical
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="whole")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 9.9992979e-01, -8.3787108e-03, -8.3790049e-03],
+             [-8.3787108e-03,  7.0207723e-05, -9.9996489e-01],
+             [ 8.3790049e-03,  9.9996489e-01,  0.0000000e+00]],
+        )
+
+        # Test with custom direction
+        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        rotation_mat = tested.align_morphology(morph, [0, 0, 1], method=[0, 1, 0])
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 1,  0,  0],
+             [ 0,  0, -1],
+             [ 0,  1,  0]]
+        )
+
+
