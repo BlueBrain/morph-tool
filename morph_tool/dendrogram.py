@@ -1,11 +1,17 @@
 '''Dendrogram helper functions and class'''
 import numpy as np
-import plotly.express as px
-from plotly import graph_objects
 from neurom import NeuriteType
 from neurom.core import Neurite, Neuron
 from neurom.view.dendrogram import Dendrogram, layout_dendrogram, move_positions, get_size
 from neurom.view.view import TREE_COLOR
+
+try:
+    import plotly.express as px
+    from plotly import graph_objects
+except ImportError as e:
+    raise ImportError(
+        'morph-tool[plot] is not installed. Please install: pip install morph-tool[plot]'
+    ) from e
 
 POST_SECTION_ID = 'afferent_section_id'
 POST_SECTION_POS = 'afferent_section_pos'
