@@ -2,6 +2,7 @@
 Tools for morphology geometric transformations (translation, rotation, etc).
 """
 import logging
+from enum import Enum
 import numpy as np
 
 from scipy.spatial.transform import Rotation
@@ -106,6 +107,20 @@ def align(section, direction):
     rotate(section, matrix, origin=section.points[0])
 
 
+class AlignMethod(Enum):
+    """Contains possible align methods for align_morphology"""
+
+    WHOLE = 'whole'
+    TRUNK = 'trunk'
+    FIRST_SECTION = 'first_section'
+    FIRST_SEGMENT = 'first_segment'
+
+    @classmethod
+    def values(cls):
+        """Get all possible values."""
+        return list(map(lambda c: c.value, cls))
+
+
 def rotation_matrix_from_vectors(vec1, vec2):
     """ Find the rotation matrix that aligns vec1 to vec2
 
@@ -138,7 +153,7 @@ def _get_points(morph, method, neurite_type, target_point):
 
     for root_section in morph.root_sections:
         if root_section.type == _to_type[neurite_type]:
-            if method == 'trunk':
+            if method == AlignMethod.TRUNK.value:
                 if target_point is not None:
                     target_secid = point_to_section_segment(morph, target_point)[0] - 1
                     if target_secid is None:
@@ -152,10 +167,10 @@ def _get_points(morph, method, neurite_type, target_point):
                     [section.points
                      for section in morph.sections[target_secid].iter(IterType.upstream)]
                 )
-            if method == 'first_section':
+            if method == AlignMethod.FIRST_SECTION.value:
                 return root_section.points
 
-            if method == 'first_segment':
+            if method == AlignMethod.FIRST_SEGMENT.value:
                 return root_section.points[:2]
 
             return np.vstack([section.points for section in root_section.iter()])
@@ -202,9 +217,7 @@ def align_morphology(
     Returns:
         3x3 array with applied rotation matrix
     """
-    if isinstance(method, str) and method not in [
-        'whole', 'trunk', 'first_section', 'first_segment'
-    ]:
+    if isinstance(method, str) and method not in AlignMethod.values():
         raise NotImplementedError(f"Method {method} is not implementd")
 
     if direction is None:
