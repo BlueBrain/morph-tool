@@ -32,15 +32,17 @@ def axon_point_section(morph, direction=None, bbox=None):
     def _get_angle(section, direction):
         """Get angle between section endpoints and direction."""
         return np.arccos(
-            np.dot(direction, section.points[-1] - section.points[0])
-            / (np.linalg.norm(section.points[-1] - section.points[0]))
-        )
+            np.dot(direction, np.diff(section.points, axis=0).T)
+            / np.linalg.norm(np.diff(section.points, axis=0), axis=1)
+        ).mean()
 
     qualities, ids, positions = [], [], []
     for section in morph.iter():
         if section.type == SectionType.axon and not section.children:
             qualities.append(
-                sum(_get_angle(section, direction) for section in section.iter(IterType.upstream))
+                np.mean(
+                    [_get_angle(section, direction) for section in section.iter(IterType.upstream)]
+                )
             )
             ids.append(section.id)
             positions.append(section.points[-1])
