@@ -278,7 +278,24 @@ class NestedPool(multiprocessing.pool.Pool):  # pylint: disable=abstract-method
 
     class Process(multiprocessing.Process):
         """Class that represents a non-daemon process"""
-        daemon = False
+
+        def __init__(self, *args, **kwargs):
+            """Ensures group=None to avoid exception from multiprocessing.
+
+            Note:
+                The exception raised by multiprocessing is:
+                AssertionError: group argument must be None for now
+            """
+            kwargs.pop("group", None)
+            super().__init__(None, *args[1:], **kwargs)
+
+        @property
+        def daemon(self):
+            return False
+
+        @daemon.setter
+        def daemon(self, value):
+            pass
 
 
 def isolate(func):

@@ -60,7 +60,7 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
 
     if len(morph1.root_sections) != len(morph2.root_sections):
         return DiffResult(True,
-                          'Both morphologies have different a different number of root sections')
+                          'Both morphologies have a different number of root sections')
 
     for section1, section2 in zip(morph1.iter(), morph2.iter()):
         for attrib in ['points', 'diameters', 'perimeters']:
@@ -85,7 +85,7 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
                 section1, section2))
         if len(section1.children) != len(section2.children):
             return DiffResult(True,
-                              '{} and {} have different a different number of children'.format(
+                              '{} and {} have a different number of children'.format(
                                   section1, section2))
 
     return DiffResult(False)

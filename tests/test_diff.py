@@ -1,3 +1,4 @@
+from pkg_resources import get_distribution, parse_version
 from os.path import dirname
 from os.path import join as joinp
 
@@ -66,14 +67,17 @@ def test_equality():
     mundane_section(a).append_section(PointLevel([[-6, 5, 0], [4, 5, 6]], [2, 3]))
     result = diff(neuron_ref, a)
     ok_(result)
-    assert_equal(result.info, 'Section(id=1, points=[(0 5 0),..., (-6 5 0)]) and Section(id=1, points=[(0 5 0),..., (-6 5 0)]) have different a different number of children')
+    assert_equal(result.info, 'Section(id=1, points=[(0 5 0),..., (-6 5 0)]) and Section(id=1, points=[(0 5 0),..., (-6 5 0)]) have a different number of children')
 
     a = Morphology(joinp(DATA, 'simple2.asc'))
     a.delete_section(a.root_sections[0])
     result = diff(neuron_ref, a)
     ok_(result)
-    assert_equal(result.info, 'Both morphologies have different a different number of root sections')
+    assert_equal(result.info, 'Both morphologies have a different number of root sections')
 
     result = diff(joinp(DATA, 'single_child.asc'), joinp(DATA, 'not_single_child.asc'))
-    ok_(not result)
+    if parse_version(get_distribution("morphio").version) < parse_version("3"):
+        ok_(not result)
+    else:
+        ok_(result)
     set_ignored_warning([Warning.wrong_duplicate, Warning.only_child], False)
