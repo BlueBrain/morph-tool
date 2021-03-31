@@ -331,7 +331,7 @@ class MorphDB:
         Raises:
             ValueError: if `self.df` has undefined (ie. None) paths
         '''
-        missing_morphs = self.df[self.df.path.isnull()].name.values
+        missing_morphs = self.df[self.df.path.isnull()].name.to_list()
         if missing_morphs:
             raise ValueError(
                 f'DataFrame has morphologies with undefined filepaths: {missing_morphs}')
