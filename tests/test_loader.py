@@ -43,10 +43,19 @@ def test_loader(f_mock):
         mock.call('/dir/test.abc'),
     ])
 
+
 @patch('morphio.Morphology')
 def test_loader_no_cache(f_mock):
     f_mock.configure_mock(side_effect=lambda *args: object())
     loader = tested.MorphLoader('/dir', file_ext='abc', cache_size=0)
+    loader.get('test')
+    loader.get('test')
+    nt.assert_equal(f_mock.call_count, 2)
+
+
+@patch('morphio.mut.Morphology')
+def test_loader_mutable(f_mock):
+    loader = tested.MorphLoader('/dir', file_ext='abc', cache_size=0, mut_morphologies=True)
     loader.get('test')
     loader.get('test')
     nt.assert_equal(f_mock.call_count, 2)
