@@ -60,7 +60,6 @@ def axon_point_section(morph, direction=None, bbox=None):
             ids = ids[bbox_filter]
 
     if len(qualities) > 0:
-        print(sorted(qualities))
         return ids[np.argmin(qualities)]
     else:
         logger.warning("Could not find axon point in bounding box %s, we return None", bbox)
