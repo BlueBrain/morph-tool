@@ -3,7 +3,6 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_equal
 
 import morph_tool.nrnhines as tested
-from multiprocessing.pool import Pool
 
 DATA = Path(__file__).parent / 'data'
 SIMPLE = DATA / 'simple2.asc'
@@ -35,9 +34,9 @@ def test_interpolate_compartments():
 def test_NeuroM_section_to_NRN_compartment_paths():
     mapping = tested.NeuroM_section_to_NRN_compartment_paths(SIMPLE)
 
-    assert_array_almost_equal(mapping[1], [[[0., 0., 0.],
+    assert_array_almost_equal(mapping[0], [[[0., 0., 0.],
                                             [0., 5., 0.]]])
-    assert_array_almost_equal(mapping[2], [[[0., 5., 0.],
+    assert_array_almost_equal(mapping[1], [[[0., 5., 0.],
                                             [-5., 5., 0.],
                                             [-6., 5., 0.]]])
 
