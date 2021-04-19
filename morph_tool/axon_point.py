@@ -31,25 +31,23 @@ def axon_point_section(morph, direction=None, bbox=None):
 
     def _get_angle(section, direction):
         """Get angle between section endpoints and direction."""
-        return np.arccos(
-            np.dot(direction, np.diff(section.points, axis=0).T)
-            / np.linalg.norm(np.diff(section.points, axis=0), axis=1)
-        ).mean()
+        _diff = np.diff(section.points, axis=0)
+        angles = np.arccos(np.dot(direction, _diff.T) / np.linalg.norm(_diff, axis=1))
+        return list(angles[~np.isnan(angles)])  # in case we have duplicate points
 
-    qualities, ids, positions = [], [], []
+    qualities = []
+    ids = []
     for section in morph.iter():
         if section.type == SectionType.axon and not section.children:
-            qualities.append(
-                np.mean(
-                    [_get_angle(section, direction) for section in section.iter(IterType.upstream)]
-                )
-            )
+            _angles = []
+            for _section in section.iter(IterType.upstream):
+                _angles += _get_angle(_section, direction)
+            qualities.append(np.mean(_angles))
             ids.append(section.id)
-            positions.append(section.points[-1])
 
     if bbox is not None:
         qualities = np.array(qualities)
-        positions = np.array(positions)
+        positions = np.array([morph.sections[i].points[-1] for i in ids])
         ids = np.array(ids)
         _convert = {"x": COLS.X, "y": COLS.Y, "z": COLS.Z}
         for axis, bounds in bbox.items():
@@ -62,6 +60,7 @@ def axon_point_section(morph, direction=None, bbox=None):
             ids = ids[bbox_filter]
 
     if len(qualities) > 0:
+        print(sorted(qualities))
         return ids[np.argmin(qualities)]
     else:
         logger.warning("Could not find axon point in bounding box %s, we return None", bbox)
