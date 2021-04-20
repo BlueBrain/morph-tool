@@ -5,7 +5,7 @@ import numpy as np
 from neurom import COLS
 from morphio import SectionType, IterType
 
-logger = logging.getLogger("morph_tool")
+L = logging.getLogger(__name__)
 
 
 def axon_point_section(morph, direction=None, bbox=None):
@@ -24,16 +24,17 @@ def axon_point_section(morph, direction=None, bbox=None):
     Returns:
         MorphIO section ID for which the last point is the axon point
     """
-    if direction is None:
-        direction = [0.0, -1.0, 0.0]
-    else:
-        direction /= np.linalg.norm(direction)
 
     def _get_angle(section, direction):
         """Get angle between section endpoints and direction."""
         _diff = np.diff(section.points, axis=0)
         angles = np.arccos(np.dot(direction, _diff.T) / np.linalg.norm(_diff, axis=1))
         return list(angles[~np.isnan(angles)])  # in case we have duplicate points
+
+    if direction is None:
+        direction = [0.0, -1.0, 0.0]
+    else:
+        direction /= np.linalg.norm(direction)
 
     qualities = []
     ids = []
@@ -62,5 +63,5 @@ def axon_point_section(morph, direction=None, bbox=None):
     if len(qualities) > 0:
         return ids[np.argmin(qualities)]
     else:
-        logger.warning("Could not find axon point in bounding box %s, we return None", bbox)
+        L.warning("Could not find axon point in bounding box %s, we return None", bbox)
         return None

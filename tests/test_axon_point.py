@@ -1,15 +1,14 @@
-import os
-
+from pathlib import Path
 from morphio import Morphology
 from nose.tools import eq_
 from morph_tool import axon_point_section
 
 
-DATA = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
+DATA = Path(__file__).absolute().parents[0] / "data"
 
 
-def test_get_apical_point():
-    morph = Morphology(os.path.join(DATA, "neuron.asc"))
+def test_axon_point_section():
+    morph = Morphology(DATA / "neuron.asc")
 
     eq_(axon_point_section(morph), 98)
     eq_(axon_point_section(morph, direction=[1.0, 0, 0]), 140)
