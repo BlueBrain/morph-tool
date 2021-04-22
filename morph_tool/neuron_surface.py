@@ -1,9 +1,15 @@
 '''A utility module to get the surface as computed by neuron'''
-from bluepyopt.ephys import simulators, morphologies, models  # pylint: disable=import-error
 
 
 def get_NEURON_surface(path):
     '''Return the soma surface computed by the NEURON simulator. Maybe.'''
+    try:
+        # pylint: disable=import-outside-toplevel
+        from bluepyopt.ephys import simulators, morphologies, models  # pylint: disable=import-error
+    except ImportError as e:
+        raise ImportError(
+            'bluepyopt not installed; please use `pip install morph-tool[nrn]`') from e
+
     SIM = simulators.NrnSimulator()
     HOC = SIM.neuron.h
 
