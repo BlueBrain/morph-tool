@@ -4,7 +4,6 @@ import multiprocessing.pool
 from pathlib import Path
 from typing import List, Sequence, Union
 
-import bluepyopt.ephys as ephys
 import numpy as np
 from neurom import COLS, NeuriteType, iter_sections, load_neuron
 from neurom.core import NeuriteIter
@@ -22,6 +21,12 @@ L = logging.getLogger(__name__)
 
 def get_NRN_cell(filename: Path):
     """Returns a NRN cell"""
+    try:
+        # pylint: disable=import-outside-toplevel
+        from bluepyopt import ephys
+    except ImportError as e:
+        raise ImportError(
+            'bluepyopt not installed; please use `pip install morph-tool[nrn]`') from e
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
     cell = ephys.models.CellModel('test', morph=m, mechs=[])

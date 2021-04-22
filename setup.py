@@ -12,7 +12,6 @@ with open(readme_path, encoding='utf-8') as f:
     long_description = f.read()
 
 base_extras = [
-    'bluepyopt>=1.9.37',
     'click>=6.7',
     'deprecation>=2.1.0',
     'more-itertools>=8.6.0',
@@ -24,7 +23,9 @@ base_extras = [
 ]
 plot_extras = ['plotly>=4.1.0']
 parallel_extras = ['dask[bag]>=2.19.0']
-nrn_extras = ['neuron>=7.8']
+nrn_extras = ['neuron>=7.8',
+              'bluepyopt>=1.9.37',
+              ]
 
 setup(
     name="morph-tool",
