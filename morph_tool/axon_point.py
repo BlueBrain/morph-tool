@@ -8,7 +8,7 @@ from morphio import SectionType, IterType
 L = logging.getLogger(__name__)
 
 
-def axon_point_section(morph, direction=None, bbox=None):
+def axon_point_section(morph, direction=None, bbox=None, ignore_axis=2):
     """Estimate axon point as the terminal point of the main axon.
 
     This point is defined as the point for which the sum of the angles with the direction vector
@@ -20,21 +20,25 @@ def axon_point_section(morph, direction=None, bbox=None):
         morph (morphio.Morphology): morphology
         direction (ndarray): estimated direction of main axon, if None [0, -1, 0] is used
         bbox (dict): bbox of the form {'x': [-100, 100], 'y': [-500, -400]}
+        ignore_axis (int): axis to ignore in the angle computation, if None, 3d directions are used
 
     Returns:
         MorphIO section ID for which the last point is the axon point
     """
+    axis = [0, 1, 2]
+    if ignore_axis is not None:
+        axis.pop(ignore_axis)
 
     def _get_angle(section, direction):
         """Get angle between section endpoints and direction."""
-        _diff = np.diff(section.points, axis=0)
-        angles = np.arccos(np.dot(direction, _diff.T) / np.linalg.norm(_diff, axis=1))
+        _diff = np.diff(section.points[:, axis], axis=0)
+        angles = np.arccos(np.dot(direction[axis], _diff.T) / np.linalg.norm(_diff, axis=1))
         return list(angles[~np.isnan(angles)])  # in case we have duplicate points
 
     if direction is None:
-        direction = [0.0, -1.0, 0.0]
+        direction = np.array([0.0, -1.0, 0.0])
     else:
-        direction /= np.linalg.norm(direction)
+        direction = np.array(direction) / np.linalg.norm(direction)
 
     qualities = []
     ids = []
