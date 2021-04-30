@@ -6,7 +6,7 @@ from typing import List, Sequence, Union
 
 import numpy as np
 from neurom import COLS, NeuriteType, iter_sections, load_neuron
-from neurom.core import NeuriteIter
+from neurom.core.types import NeuriteIter
 from numpy.testing import assert_almost_equal
 
 try:
