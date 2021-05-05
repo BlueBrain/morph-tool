@@ -233,17 +233,18 @@ class MorphDB:
 
         ..note:: missing keys are filled with `True` values
         '''
+        neurondb = Path(neurondb)
         if morphology_folder:
             morphology_folder = Path(morphology_folder)
         else:
-            morphology_folder = Path(neurondb).parent.resolve()
+            morphology_folder = neurondb.parent.resolve()
 
         morph_paths = {path.stem: path for path in iter_morphology_files(morphology_folder)}
 
         if neurondb.suffix.lower() == '.dat':
-            return cls._from_neurondb_dat(Path(neurondb), morph_paths, label)
+            return cls._from_neurondb_dat(neurondb, morph_paths, label)
         else:
-            return cls._from_neurondb_xml(Path(neurondb), morph_paths, label)
+            return cls._from_neurondb_xml(neurondb, morph_paths, label)
 
     @classmethod
     def from_folder(cls,
@@ -331,7 +332,7 @@ class MorphDB:
         Raises:
             ValueError: if `self.df` has undefined (ie. None) paths
         '''
-        missing_morphs = self.df[self.df.path.isnull()].name.values
+        missing_morphs = self.df[self.df.path.isnull()].name.to_list()
         if missing_morphs:
             raise ValueError(
                 f'DataFrame has morphologies with undefined filepaths: {missing_morphs}')
