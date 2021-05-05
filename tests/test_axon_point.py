@@ -4,7 +4,7 @@ from nose.tools import eq_
 from morph_tool import axon_point_section
 
 
-DATA = Path(__file__).absolute().parents[0] / "data"
+DATA = Path(__file__).absolute().parent / "data"
 
 
 def test_axon_point_section():

@@ -8,6 +8,13 @@ from morphio import SectionType, IterType
 L = logging.getLogger(__name__)
 
 
+def _get_angle(section, direction, axis):
+    """Get angle between section endpoints and direction."""
+    _diff = np.diff(section.points[:, axis], axis=0)
+    angles = np.arccos(np.dot(direction[axis], _diff.T) / np.linalg.norm(_diff, axis=1))
+    return list(angles[~np.isnan(angles)])  # in case we have duplicate points
+
+
 def axon_point_section(morph, direction=None, bbox=None, ignore_axis=2):
     """Estimate axon point as the terminal point of the main axon.
 
@@ -29,12 +36,6 @@ def axon_point_section(morph, direction=None, bbox=None, ignore_axis=2):
     if ignore_axis is not None:
         axis.pop(ignore_axis)
 
-    def _get_angle(section, direction):
-        """Get angle between section endpoints and direction."""
-        _diff = np.diff(section.points[:, axis], axis=0)
-        angles = np.arccos(np.dot(direction[axis], _diff.T) / np.linalg.norm(_diff, axis=1))
-        return list(angles[~np.isnan(angles)])  # in case we have duplicate points
-
     if direction is None:
         direction = np.array([0.0, -1.0, 0.0])
     else:
@@ -46,7 +47,7 @@ def axon_point_section(morph, direction=None, bbox=None, ignore_axis=2):
         if section.type == SectionType.axon and not section.children:
             _angles = []
             for _section in section.iter(IterType.upstream):
-                _angles += _get_angle(_section, direction)
+                _angles += _get_angle(_section, direction, axis)
             qualities.append(np.mean(_angles))
             ids.append(section.id)
 
