@@ -7,6 +7,7 @@ from nose.tools import ok_, assert_equal, assert_raises
 
 import morphio
 from morph_tool import diff
+from morph_tool.exceptions import MorphToolException
 from morph_tool.converter import convert
 from utils import setup_tempdir
 
@@ -68,9 +69,9 @@ def test_convert_sanitize():
         # needs to have a complex contour soma
         simple = os.path.join(DATA, 'single_child.asc')
         outname = os.path.join(tmp_dir, 'single_child.swc')
-        with assert_raises(morphio._morphio.WriterError) as obj:
+        with assert_raises(MorphToolException) as obj:
             convert(simple, outname, single_point_soma=True)
-        assert 'Please sanitize the morphology first' in str(obj.exception)
+        assert_equal('Use `sanitize` option for converting', str(obj.exception))
 
         convert(simple, outname, single_point_soma=True, sanitize=True)
         m = morphio.Morphology(outname)

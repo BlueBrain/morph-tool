@@ -7,7 +7,7 @@ from morphio import SectionType, SomaType, Section as ImmutSection
 from morphio.mut import Section
 
 
-from morph_tool import NoAxonException, NoDendriteException, MorphToolException
+from morph_tool.exceptions import NoAxonException, NoDendriteException, MorphToolException
 from morph_tool.transform import translate
 
 

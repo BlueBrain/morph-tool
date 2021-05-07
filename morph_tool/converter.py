@@ -4,11 +4,13 @@ from pathlib import Path
 
 import numpy as np
 from morphio import Option, SomaType
+from morphio._morphio import WriterError
 from morphio.mut import Morphology
 from neurom import morphmath
 from numpy.linalg import eig, norm
 
 from morph_tool import transform
+from morph_tool.exceptions import MorphToolException
 
 L = logging.getLogger(__name__)
 
@@ -268,7 +270,10 @@ def convert(input_file,
     if recenter:
         transform.translate(new, -1 * new.soma.center)
 
-    new.write(outputfile)
+    try:
+        new.write(outputfile)
+    except WriterError as e:
+        raise MorphToolException('Use `sanitize` option for converting') from e
 
     try:
         # pylint: disable=import-outside-toplevel
