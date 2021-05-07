@@ -4,11 +4,13 @@ from pathlib import Path
 
 import numpy as np
 from morphio import Option, SomaType
+from morphio._morphio import WriterError  # pylint: disable=no-name-in-module
 from morphio.mut import Morphology
 from neurom import morphmath
 from numpy.linalg import eig, norm
 
 from morph_tool import transform
+from morph_tool.exceptions import MorphToolException
 
 L = logging.getLogger(__name__)
 
@@ -201,14 +203,7 @@ def from_swc(neuron, output_ext):
 
 
 def from_h5_or_asc(neuron, output_ext):
-    '''Convert from ASC/H5
-
-    Only the conversion to SWC requires a special treatment for the soma conversion'''
-
-    if neuron.soma_type not in {SomaType.SOMA_SINGLE_POINT, SomaType.SOMA_SIMPLE_CONTOUR}:
-        raise Exception(
-            'A H5 file morphology is not supposed to have a soma of type: {}'.format(
-                neuron.soma_type))
+    '''Convert from ASC/H5.'''
 
     if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
         if output_ext == 'asc':
@@ -222,7 +217,12 @@ def from_h5_or_asc(neuron, output_ext):
     return neuron
 
 
-def convert(input_file, outputfile, recenter=False, nrn_order=False, single_point_soma=False):
+def convert(input_file,
+            outputfile,
+            recenter=False,
+            nrn_order=False,
+            single_point_soma=False,
+            sanitize=False):
     '''Run the appropriate converter
 
     Args:
@@ -232,12 +232,15 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
         center of gravity of the soma
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
         single_point_soma(bool):For SWC only
+        sanitize(bool):whether to sanitize the morphology
     '''
     kwargs = {}
     if nrn_order:
         kwargs['options'] = Option.nrn_order
 
     neuron = Morphology(input_file, **kwargs)
+    if sanitize:
+        neuron.remove_unifurcations()
 
     output_ext = Path(outputfile).suffix
 
@@ -267,7 +270,10 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
     if recenter:
         transform.translate(new, -1 * new.soma.center)
 
-    new.write(outputfile)
+    try:
+        new.write(outputfile)
+    except WriterError as e:
+        raise MorphToolException('Use `sanitize` option for converting') from e
 
     try:
         # pylint: disable=import-outside-toplevel

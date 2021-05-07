@@ -3,10 +3,11 @@ import numpy as np
 import itertools as it
 import os
 
-from nose.tools import ok_, assert_equal
+from nose.tools import ok_, assert_equal, assert_raises
 
 import morphio
 from morph_tool import diff
+from morph_tool.exceptions import MorphToolException
 from morph_tool.converter import convert
 from utils import setup_tempdir
 
@@ -60,3 +61,18 @@ def test_convert_swc_contour_to_sphere():
 
         #value dumped from NEURON: h.area(0.5, sec=icell.soma[0])
         np.testing.assert_approx_equal(m.soma.surface, 476.0504050847511)
+
+
+def test_convert_sanitize():
+
+    with setup_tempdir('test_convert_sanitize') as tmp_dir:
+        # needs to have a complex contour soma
+        simple = os.path.join(DATA, 'single_child.asc')
+        outname = os.path.join(tmp_dir, 'single_child.swc')
+        with assert_raises(MorphToolException) as obj:
+            convert(simple, outname, single_point_soma=True)
+        assert_equal('Use `sanitize` option for converting', str(obj.exception))
+
+        convert(simple, outname, single_point_soma=True, sanitize=True)
+        m = morphio.Morphology(outname)
+        assert_equal(len(m.sections), 1)

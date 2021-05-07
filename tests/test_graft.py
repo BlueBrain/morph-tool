@@ -3,7 +3,8 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from nose.tools import assert_raises, assert_equal, assert_almost_equal, ok_
 
-from morph_tool import MorphToolException, NoAxonException, diff, graft
+from morph_tool import diff, graft
+from morph_tool.exceptions import MorphToolException, NoAxonException
 
 from morphio.mut import Morphology
 from morphio import PointLevel, SomaType, SectionType, Morphology as ImmutMorphology, Option

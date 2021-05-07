@@ -60,14 +60,14 @@ def soma_surface(input_file, quiet):
               help='recenter the morphology based on the center of gravity of the soma')
 @click.option('--nrn-order', is_flag=True,
               help='whether to traverse the neuron in the NEURON fashion')
-@click.option('--single-point-soma', is_flag=True,
-              help='For SWC files only')
-def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma):
+@click.option('--single-point-soma', is_flag=True, help='For SWC files only')
+@click.option('--sanitize', is_flag=True, help='whether to sanitize the morphology')
+def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma, sanitize):
     '''Convert a single morphology from/to the following formats: ASC, SWC, H5'''
     if quiet:
         L.setLevel(logging.WARNING)
 
-    converter.convert(input_file, output_file, recenter, nrn_order, single_point_soma)
+    converter.convert(input_file, output_file, recenter, nrn_order, single_point_soma, sanitize)
 
 
 def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_point_soma):
