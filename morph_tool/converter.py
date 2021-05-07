@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 from morphio import Option, SomaType
-from morphio._morphio import WriterError
+from morphio._morphio import WriterError  # pylint: disable=no-name-in-module
 from morphio.mut import Morphology
 from neurom import morphmath
 from numpy.linalg import eig, norm

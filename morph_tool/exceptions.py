@@ -1,3 +1,6 @@
+"""Exceptions module"""
+
+
 class MorphToolException(Exception):
     '''MorphTool exception'''
 
