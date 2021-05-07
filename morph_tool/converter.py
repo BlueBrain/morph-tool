@@ -241,6 +241,9 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
 
     output_ext = Path(outputfile).suffix
 
+    if output_ext.lower() == '.swc':
+        neuron.sanitize()
+
     if single_point_soma and output_ext.lower() != '.swc':
         raise Exception('Single point soma is only applicable for swc output')
 
