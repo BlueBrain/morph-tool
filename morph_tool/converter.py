@@ -201,14 +201,7 @@ def from_swc(neuron, output_ext):
 
 
 def from_h5_or_asc(neuron, output_ext):
-    '''Convert from ASC/H5
-
-    Only the conversion to SWC requires a special treatment for the soma conversion'''
-
-    if neuron.soma_type not in {SomaType.SOMA_SINGLE_POINT, SomaType.SOMA_SIMPLE_CONTOUR}:
-        raise Exception(
-            'A H5 file morphology is not supposed to have a soma of type: {}'.format(
-                neuron.soma_type))
+    '''Convert from ASC/H5.'''
 
     if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
         if output_ext == 'asc':
@@ -222,7 +215,12 @@ def from_h5_or_asc(neuron, output_ext):
     return neuron
 
 
-def convert(input_file, outputfile, recenter=False, nrn_order=False, single_point_soma=False):
+def convert(input_file,
+            outputfile,
+            recenter=False,
+            nrn_order=False,
+            single_point_soma=False,
+            sanitize=False):
     '''Run the appropriate converter
 
     Args:
@@ -232,17 +230,17 @@ def convert(input_file, outputfile, recenter=False, nrn_order=False, single_poin
         center of gravity of the soma
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
         single_point_soma(bool):For SWC only
+        sanitize(bool):whether to sanitize the morphology
     '''
     kwargs = {}
     if nrn_order:
         kwargs['options'] = Option.nrn_order
 
     neuron = Morphology(input_file, **kwargs)
+    if sanitize:
+        neuron.remove_unifurcations()
 
     output_ext = Path(outputfile).suffix
-
-    if output_ext.lower() == '.swc':
-        neuron.sanitize()
 
     if single_point_soma and output_ext.lower() != '.swc':
         raise Exception('Single point soma is only applicable for swc output')
