@@ -80,14 +80,14 @@ def _rotate_vector(vec, axis, angle):
     return np.dot(_rotation_around_axis(axis, angle), vec)
 
 
-def _random_direction(axis, angle):
+def _random_direction(axis, angle, rng=np.random):
     '''Returns an direction that makes an theta angle 'angle'
     with 'axis' and that has a random phi angle in [0, 2 pi]'''
     orthogonal = np.cross(axis, [0, 0, 1])
     if np.linalg.norm(orthogonal) < 1e-7:
         orthogonal = np.cross(axis, [0, 1, 0])
 
-    orthogonal = _rotate_vector(orthogonal, axis, np.random.uniform(2 * np.pi))
+    orthogonal = _rotate_vector(orthogonal, axis, rng.uniform(2 * np.pi))
     vec = _rotate_vector(axis, orthogonal, angle)
     vec /= np.linalg.norm(vec)
     return vec
@@ -111,7 +111,7 @@ def _soma_mean_radius(neuron, soma_center):
         return np.mean(np.linalg.norm(neuron.soma.points - soma_center, axis=1))
 
 
-def grafting_position(neuron, axon_or_donor_neuron):
+def grafting_position(neuron, axon_or_donor_neuron, rng=np.random):
     '''Find out where to put the grafted axon
 
     If the neuron to be grafted already has a neuron reuse its starting point
@@ -129,7 +129,8 @@ def grafting_position(neuron, axon_or_donor_neuron):
         return old_axon.points[0]
     except NoAxonException:
         axon_direction = _random_direction(axis=_dendrites_mean_direction(neuron),
-                                           angle=_axon_dendrites_angle(axon_or_donor_neuron))
+                                           angle=_axon_dendrites_angle(axon_or_donor_neuron),
+                                           rng=rng)
         soma_center = np.mean(neuron.soma.points, axis=0)
         axon_start = soma_center + _soma_mean_radius(neuron, soma_center) * axon_direction
         return axon_start
@@ -142,7 +143,7 @@ def delete_old_axons(neuron):
             neuron.delete_section(root_section)
 
 
-def graft_axon(neuron, axon_or_donor_neuron):
+def graft_axon(neuron, axon_or_donor_neuron, rng=np.random):
     '''Graft an axon
     args:
         neuron (morphio.mut.Morphology): Neuron where the axon will be grafted
@@ -154,7 +155,7 @@ def graft_axon(neuron, axon_or_donor_neuron):
     '''
 
     donor_axon = find_axon(axon_or_donor_neuron)
-    position = grafting_position(neuron, axon_or_donor_neuron)
+    position = grafting_position(neuron, axon_or_donor_neuron, rng)
 
     delete_old_axons(neuron)
 
