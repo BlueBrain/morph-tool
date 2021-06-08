@@ -9,6 +9,10 @@ Currently MorphTool provides:
 - A file converter: to convert morphology files from/to the following formats: SWC, ASC, H5
 - A soma area calculator (as computed by NEURON, requires the NEURON python module)
 
+MorphIO v2 and NeuroM v1
+------------------------
+If you want to work with old NeuroM v1 and MorphIO v2, use the version 2.4.7 of morph-tool.
+
 Installation
 ------------
 It is recommended to install in a fresh virtualenv.
