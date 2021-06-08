@@ -26,7 +26,6 @@ def point_to_section_segment(neuron, point):
                           (points[:, Y] == point[COLS.Y]) &
                           (points[:, Z] == point[COLS.Z]))
         if offset[0].size:
-            # Section ids start at 0 in MorphIO
             return section.id, offset[0][0]
 
     raise ValueError('Cannot find point in morphology that matches: {}'.format(point))
