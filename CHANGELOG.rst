@@ -14,6 +14,7 @@ Version 2.5.1
 Version 2.4.7
 -------------
 Use this version if you want to work with NeuroM v1 and MorphIO v2
+
 - Fix upper constrains of MorphIO and NeuroM to keep old release stable
 
 Version 2.4.1
