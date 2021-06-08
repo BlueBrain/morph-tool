@@ -6,3 +6,4 @@
 
    Home <self>
    morphdb
+   changelog
