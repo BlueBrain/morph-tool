@@ -21,7 +21,8 @@ def apical_point_section_segment(neuron):
         neuron (morphio.Morphology): a morphology
 
     Returns:
-        a tuple (MorphIO section ID, point ID) of the apical point
+        Tuple: (NeuroM/MorphIO section ID, point ID) of the apical point. Since NeuroM v2, section
+        ids of NeuroM and MorphIO are the same excluding soma.
     '''
     point = apical_point_position(neuron)
 
@@ -30,7 +31,6 @@ def apical_point_section_segment(neuron):
         return None, None
 
     section, segment = point_to_section_segment(neuron, point)
-    section -= 1  # MorphIO ID = NeuroM ID - 1
     return section, segment
 
 
