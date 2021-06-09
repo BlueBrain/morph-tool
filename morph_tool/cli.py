@@ -21,18 +21,6 @@ def cli():
     '''The CLI entry point'''
 
 
-@cli.group()
-def convert():
-    '''Convert a file format between its different representation.
-
-    A special care has been given to the soma conversion as each file format
-    has its own representation of the soma.
-    While the soma shape cannot be preserved during the conversion,
-    the soma surface should be.
-
-    More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458'''
-
-
 @cli.command(short_help='Get soma surface as computed by NEURON')
 @click.argument('input_file', type=REQUIRED_PATH)
 @click.option('--quiet/--no-quiet', default=False)
@@ -50,6 +38,18 @@ def soma_surface(input_file, quiet):
         - if you are on the cluster, you can try: module load nix/hpc/neuron
         - otherwise, get it here: https://github.com/neuronsimulator/nrn and compile it...'''
                           ) from e
+
+
+@cli.group()
+def convert():
+    '''Convert a file format between its different representation.
+
+    A special care has been given to the soma conversion as each file format
+    has its own representation of the soma.
+    While the soma shape cannot be preserved during the conversion,
+    the soma surface should be.
+
+    More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458'''
 
 
 @convert.command(short_help='Convert a single morphology')
@@ -70,14 +70,14 @@ def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma,
     converter.convert(input_file, output_file, recenter, nrn_order, single_point_soma, sanitize)
 
 
-def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_point_soma):
+def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_point_soma, sanitize):
     '''Function to be passed to dask.bag.map
 
     Attempts a conversion and returns the path if it failed
     '''
     try:
         converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
-                          recenter, nrn_order, single_point_soma)
+                          recenter, nrn_order, single_point_soma, sanitize)
         return None
     except:  # noqa, pylint: disable=bare-except
         return str(path)
@@ -95,8 +95,17 @@ def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_po
               help='whether to traverse the neuron in the NEURON fashion')
 @click.option('--single-point-soma', is_flag=True,
               help='For SWC files only')
+@click.option('--sanitize', is_flag=True, help='whether to sanitize the morphologies')
 @click.option('--ncores', help='The number of cores', default=None, type=int)
-def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_point_soma, ncores):
+def folder(input_dir,  # pylint: disable=too-many-arguments
+           output_dir,
+           extension,
+           quiet,
+           recenter,
+           nrn_order,
+           single_point_soma,
+           sanitize,
+           ncores):
     '''Convert all morphologies in the folder and its subfolders'''
     # pylint: disable=import-outside-toplevel
     try:
@@ -116,7 +125,8 @@ def folder(input_dir, output_dir, extension, quiet, recenter, nrn_order, single_
         extension=extension,
         recenter=recenter,
         nrn_order=nrn_order,
-        single_point_soma=single_point_soma)
+        single_point_soma=single_point_soma,
+        sanitize=sanitize)
     failed_conversions = list(filter(None, failed_conversions))
 
     if failed_conversions:
