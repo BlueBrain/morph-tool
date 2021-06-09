@@ -231,8 +231,8 @@ def convert(input_file,
         recenter(bool): whether to recenter the morphology based on the
         center of gravity of the soma
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
-        single_point_soma(bool):For SWC only
-        sanitize(bool):whether to sanitize the morphology
+        single_point_soma(bool): For SWC only
+        sanitize(bool): whether to sanitize the morphology
     '''
     kwargs = {}
     if nrn_order:
