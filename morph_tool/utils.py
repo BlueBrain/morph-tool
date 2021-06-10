@@ -1,10 +1,10 @@
 '''Utils'''
-from deprecation import deprecated
 from functools import partial
 from pathlib import Path
 from typing import Optional
 import re
 
+from deprecation import deprecated
 import morphio
 import pandas as pd
 from morph_tool.spatial import point_to_section_segment
