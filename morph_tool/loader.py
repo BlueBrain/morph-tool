@@ -57,6 +57,7 @@ def get_incomplete_sections(morph_path, tag="Incomplete"):
     Returns:
         list: list of morphio sections ids with this tag
     """
+    # pylint: disable=import-outside-toplevel
     from morph_tool.spatial import point_to_section_segment
 
     if not str(morph_path).lower().endswith('.asc'):
@@ -68,7 +69,7 @@ def get_incomplete_sections(morph_path, tag="Incomplete"):
     with open(morph_path, "rb") as morph:
         _last_point = None
 
-        for i, line in enumerate(morph):
+        for line in morph:
             # skip badly encoded lines (not part of the morphology)
             try:
                 _line = bytearray(line).decode()
