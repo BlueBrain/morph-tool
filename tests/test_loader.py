@@ -1,9 +1,12 @@
 import nose.tools as nt
+from pathlib import Path
 
 import mock
 from mock import patch
 
 import morph_tool.loader as tested
+
+DATA = Path(__file__).absolute().parent / "data"
 
 
 def test_ensure_startswith_point():
@@ -50,3 +53,7 @@ def test_loader_no_cache(f_mock):
     loader.get('test')
     loader.get('test')
     nt.assert_equal(f_mock.call_count, 2)
+
+def test_get_incomplete_sections():
+    nt.assert_equal(tested.get_incomplete_sections(DATA / "simple.asc"), [])
+    nt.assert_equal(tested.get_incomplete_sections(DATA / "test_tag.asc"), [2, 5])

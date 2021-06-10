@@ -59,7 +59,7 @@ def get_incomplete_sections(morph_path, tag="Incomplete"):
     """
     from morph_tool.spatial import point_to_section_segment
 
-    if not morph_path.lower().endswith('.asc'):
+    if not str(morph_path).lower().endswith('.asc'):
         raise Exception("This only works on .asc files")
 
     neuron = morphio.Morphology(morph_path)
