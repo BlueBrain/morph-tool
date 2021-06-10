@@ -177,3 +177,8 @@ def test_neurondb_dataframe_with_path():
 
     assert_array_equal([p.stem if p is not None else None for p in df.path],
                        ['C270106A', None, 'a_neuron', None])
+
+
+def test_get_incomplete_sections():
+    assert_equal(tested.get_incomplete_sections(DATA / "simple.asc"), [])
+    assert_equal(tested.get_incomplete_sections(DATA / "test_tag.asc"), [2, 5])
