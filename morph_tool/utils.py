@@ -111,7 +111,7 @@ def get_incomplete_sections(asc_morph_file, tag='Incomplete'):
             if tag in line:
                 for parsed_line in parsed_lines[::-1]:
                     match = re.match(
-                        r'^[\s]*\(\s*(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s*\)',
+                        r'^\s*\(\s*(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s*\)',
                         parsed_line)
                     if match:
                         point = [float(match.group(i)) for i in range(1, 5)]
