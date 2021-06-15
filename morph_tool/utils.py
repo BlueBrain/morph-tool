@@ -110,9 +110,19 @@ def get_incomplete_sections(asc_morph_file, tag='Incomplete'):
 
             if tag in line:
                 for parsed_line in parsed_lines[::-1]:
-                    match = re.match(
-                        r'^\s*\(\s*(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s*\)',
-                        parsed_line)
+                    match = re.match(r'''
+                    ^\s*  # only whitespace at the start 
+                    \(\s* # point starts
+                    (-?\d+.?\d*) # X coordinate
+                    \s+ # delimeter between X an Y
+                    (-?\d+.?\d*) # Y coordinate
+                    \s+ # delimeter between Y an Z
+                    (-?\d+.?\d*) # Z coordinate
+                    \s+ # delimeter between Z an D
+                    (-?\d+.?\d*) # D diameter
+                    \s*
+                    \) # end of point''',
+                                     parsed_line, re.VERBOSE)
                     if match:
                         point = [float(match.group(i)) for i in range(1, 5)]
                         incomplete_sections.append(point_to_section_segment(m, point)[0])
