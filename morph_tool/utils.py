@@ -111,7 +111,7 @@ def get_incomplete_sections(asc_morph_file, tag='Incomplete'):
             if tag in line:
                 for parsed_line in parsed_lines[::-1]:
                     match = re.match(r'''
-                    ^\s*  # only whitespace at the start 
+                    ^\s*  # only whitespace at the start
                     \(\s* # point starts
                     (-?\d+.?\d*) # X coordinate
                     \s+ # delimeter between X an Y
