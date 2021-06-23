@@ -1,12 +1,9 @@
 import nose.tools as nt
-from pathlib import Path
 
 import mock
 from mock import patch
 
 import morph_tool.loader as tested
-
-DATA = Path(__file__).absolute().parent / "data"
 
 
 def test_ensure_startswith_point():
