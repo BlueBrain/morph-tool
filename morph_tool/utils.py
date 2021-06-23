@@ -2,12 +2,9 @@
 from functools import partial
 from pathlib import Path
 from typing import Optional
-import re
 
-from deprecation import deprecated
-import morphio
 import pandas as pd
-from morph_tool.spatial import point_to_section_segment
+from deprecation import deprecated
 
 
 def is_morphology(filename, extensions=None):
@@ -77,47 +74,3 @@ def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) ->
         columns.append('path')
     df = df[columns]
     return df
-
-
-def get_incomplete_sections(asc_morph_file, tag='Incomplete'):
-    """Find sections that contain incomplete tags.
-
-    Incomplete tags mark cut leaves of a section.
-
-    Args:
-        asc_morph_file (str|Path): path to an ascii morphology file
-        tag (str): tag to detect, 'Incomplete' by default.
-
-    Returns:
-        list: MorphIO sections ids with this tag.
-    """
-    if Path(asc_morph_file).suffix.lower() != '.asc':
-        raise ValueError('Incomplete sections can be get only from an ".asc" file')
-
-    m = morphio.Morphology(asc_morph_file)
-    incomplete_sections = []
-
-    with open(asc_morph_file, "rb") as f:
-        lines = f.readlines()
-        parsed_lines = []
-        for line in lines:
-            try:
-                # skip badly encoded lines (not part of the morphology)
-                line = bytearray(line).decode()
-            except UnicodeDecodeError:
-                continue
-            parsed_lines.append(line)
-
-            if tag in line:
-                for parsed_line in parsed_lines[::-1]:
-                    match = re.match(
-                        r'[\s]*\(\s*(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s+(-?\d+.?\d*)\s*\)',
-                        parsed_line)
-                    if match:
-                        point = [float(match.group(i)) for i in range(1, 5)]
-                        incomplete_sections.append(point_to_section_segment(m, point)[0])
-                        break
-                else:
-                    raise ValueError(f'No points before "{tag}" tag. Please check your morphology.')
-
-    return incomplete_sections
