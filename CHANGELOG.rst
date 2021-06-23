@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 2.6.1
+-------------
+- Revert "Introduce a function to get section ids of sections with cut leaves" (#78)
+
+Version 2.6.0
+-------------
+- Add sanitize to folder convert (#75)
+- move MorphToolException back into package init.py so as not to break api (#75)
+- Introduce a function to get section ids of sections with cut leaves (#76)
+
 Version 2.5.1
 -------------
 - Update to use NeuroM v2 (#62)
