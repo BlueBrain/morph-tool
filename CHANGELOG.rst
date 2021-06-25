@@ -1,8 +1,10 @@
 Changelog
 =========
 
-Version 2.6.1
+Version 2.7.0
 -------------
+- Fix compatibility with numpy>=1.21 (#80)
+- Add missing entries of CHANGELOG (#79)
 - Revert "Introduce a function to get section ids of sections with cut leaves" (#78)
 
 Version 2.6.0
