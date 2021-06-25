@@ -87,7 +87,7 @@ def _random_direction(axis, angle, rng=np.random):
     if np.linalg.norm(orthogonal) < 1e-7:
         orthogonal = np.cross(axis, [0, 1, 0])
 
-    orthogonal = _rotate_vector(orthogonal, axis, rng.uniform(2 * np.pi))
+    orthogonal = _rotate_vector(orthogonal, axis, rng.uniform(low=0., high=2. * np.pi))
     vec = _rotate_vector(axis, orthogonal, angle)
     vec /= np.linalg.norm(vec)
     return vec
