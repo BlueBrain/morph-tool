@@ -34,23 +34,24 @@ def test_find_axon():
 
 
 def test_graft():
-    m = Morphology(os.path.join(_path, 'simple2.swc'))
-    new_axon = graft.find_axon(m)
+    for rng in [np.random, np.random.default_rng(0)]:
+        m = Morphology(os.path.join(_path, 'simple2.swc'))
+        new_axon = graft.find_axon(m)
 
-    neuron = Morphology(os.path.join(_path, 'simple.swc'))
-    graft.graft_axon(neuron, new_axon)
+        neuron = Morphology(os.path.join(_path, 'simple.swc'))
+        graft.graft_axon(neuron, new_axon)
 
-    grafted_axon = graft.find_axon(neuron)
-    points = np.vstack([section.points for section in grafted_axon.iter()])
+        grafted_axon = graft.find_axon(neuron)
+        points = np.vstack([section.points for section in grafted_axon.iter()])
 
-    assert_array_equal(points,
-                       np.array([[ 0. ,  0. ,  0. ],
-                                 [ 1. ,  2. ,  0. ],
-                                 [ 1. ,  2. ,  0. ],
-                                 [ 3. ,  4.5,  0. ],
-                                 [ 1. ,  2. ,  0. ],
-                                 [-5. , -4. ,  0. ],
-                                 [-5. , -4. ,  1. ]], dtype=np.float32))
+        assert_array_equal(points,
+                           np.array([[ 0. ,  0. ,  0. ],
+                                     [ 1. ,  2. ,  0. ],
+                                     [ 1. ,  2. ,  0. ],
+                                     [ 3. ,  4.5,  0. ],
+                                     [ 1. ,  2. ,  0. ],
+                                     [-5. , -4. ,  0. ],
+                                     [-5. , -4. ,  1. ]], dtype=np.float32))
 
 
 def test_random_direction():
@@ -95,8 +96,8 @@ def test_graft_axon_on_synthesized_cell():
     graft.graft_axon(synthesized_cell, donor_neuron)
     axon = graft.find_axon(synthesized_cell)
     assert_array_almost_equal(axon.points,
-                              [[5.110419, 5.486378, 4.9647303],
-                               [5.110419, 1.486378, 4.9647303]])
+                              [[5.1272364, 5.4825425, 4.9689593],
+                               [5.1272364, 1.4825425, 4.9689593]])
 
 def test_self_graft():
     '''Grafting a neuron with its own neuron'''
