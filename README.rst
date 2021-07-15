@@ -282,13 +282,13 @@ Dendrogram
 ~~~~~~~~~~
 
 Draw NeuroM dendrogram with synapses on it. Synapses must be represented as a DataFrame. See
-:py:func:`morph_tool.plot.dendrogram.draw`.
+`dendrogram <https://morph-tool.readthedocs.io/en/latest/morph_tool.plot.dendrogram.html>`__.
 
 Morphology
 ~~~~~~~~~~
 
 Draw NeuroM morphology with synapses on it. Synapses must be represented as a DataFrame. See
-:py:func:`morph_tool.plot.morphology.draw`.
+`morphology <https://morph-tool.readthedocs.io/en/latest/morph_tool.plot.morphology.html>`__.
 
 
 Contributing
