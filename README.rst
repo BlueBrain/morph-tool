@@ -1,3 +1,5 @@
+|docs|
+
 MorphTool
 =========
 
@@ -12,6 +14,14 @@ Currently MorphTool provides:
 MorphIO v2 and NeuroM v1
 ------------------------
 If you want to work with old NeuroM v1 and MorphIO v2, use the version 2.4.7 of morph-tool.
+
+Documentation
+-------------
+
+MorphIO documentation is built and hosted on `readthedocs <https://morph-tool.readthedocs.org/>`__.
+
+* `latest snapshot <https://morph-tool.readthedocs.org/en/latest/>`_
+* `latest release <https://morph-tool.readthedocs.org/en/stable/>`_
 
 Installation
 ------------
@@ -301,3 +311,7 @@ morph-tool is licensed under the terms of the GNU Lesser General Public License 
 Refer to COPYING.LESSER and COPYING for details.
 
 Copyright (c) 2018-2021 Blue Brain Project/EPFL
+
+.. |docs| image:: https://readthedocs.org/projects/morph-tool/badge/?version=latest
+             :target: https://morph-tool.readthedocs.io/
+             :alt: documentation status

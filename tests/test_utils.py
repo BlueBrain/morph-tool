@@ -47,8 +47,7 @@ def test_find_morph():
     folder = DATA / 'test-neurondb-with-path'
     assert_equal(tested.find_morph(folder, 'not-here.h5'),
                  None)
-    assert_equal(tested.find_morph(folder, 'C270106A'),
-                 folder / 'C270106A.h5')
+    assert tested.find_morph(folder, 'C270106A').samefile(folder / 'C270106A.h5')
     assert_equal(tested.find_morph(folder, 'C270106C.wrongext'),
                  None)
 

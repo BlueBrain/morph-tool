@@ -160,7 +160,7 @@ def test_features():
     for key in tested.BOOLEAN_REPAIR_ATTRS:
         expected['properties', key] = expected['properties', key].astype(bool)
     assert_frame_equal(features.drop(columns=('properties', 'axon_inputs')),
-                       expected.drop(columns=('properties', 'axon_inputs')))
+                       expected.drop(columns=('properties', 'axon_inputs')), check_dtype=False)
 
 
 def test_check_file_exists():
