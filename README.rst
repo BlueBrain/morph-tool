@@ -259,35 +259,27 @@ Splitting this section into 3 compartments would results in the following paths:
     [2.        , 2.        ]]
 
 
-Dendrogram with synapses
-------------------------
+Plot morphologies with synapses
+-------------------------------
 
-This functionality is available only when the package is installed with **dendrogram** extras:
+This functionality is available only when the package is installed with **plot** extras:
 
 .. code:: bash
 
-    pip install morph-tool
+    pip install morph-tool[plot]
 
-Draw NeuroM dendrogram with synapses on it. Synapses must be represented as a DataFrame. Required
-columns in this dataframe are:
+Dendrogram
+~~~~~~~~~~
 
-.. code:: python
+Draw NeuroM dendrogram with synapses on it. Synapses must be represented as a DataFrame. See
+:py:func:`morph_tool.plot.dendrogram.draw`.
 
-    from morph_tool import dendrogram
-    required_columns = [dendrogram.SOURCE_NODE_ID, dendrogram.TARGET_NODE_ID,
-                        dendrogram.POST_SECTION_ID, dendrogram.POST_SECTION_POS,
-                        dendrogram.PRE_SECTION_ID, dendrogram.PRE_SECTION_POS]
+Morphology
+~~~~~~~~~~
 
-or equivalently
+Draw NeuroM morphology with synapses on it. Synapses must be represented as a DataFrame. See
+:py:func:`morph_tool.plot.morphology.draw`.
 
-.. code:: python
-
-    required_columns = ['@source_node', '@target_node',
-                        'afferent_section_id', 'afferent_section_pos',
-                        'efferent_section_id', 'efferent_section_pos']
-
-
-For usage examples look at ``examples/dendrogram.py``.
 
 Contributing
 ------------

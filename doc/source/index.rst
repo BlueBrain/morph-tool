@@ -6,4 +6,5 @@
 
    Home <self>
    morphdb
+   api
    changelog

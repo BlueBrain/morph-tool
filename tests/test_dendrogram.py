@@ -7,7 +7,7 @@ from plotly.offline import plot
 
 from nose.tools import assert_raises
 
-from morph_tool import dendrogram
+from morph_tool.plot import dendrogram
 
 DATA = Path(__file__).resolve().parent / 'data'
 
