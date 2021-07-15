@@ -35,8 +35,8 @@ def _add_coords(synapse, morphology):
     """Adds coordinates and direction fields to ``synapses`` via ``apply`` function."""
     is_pre = PRE_SECTION_ID in synapse.index and not pd.isnull(synapse[PRE_SECTION_ID])
     is_post = POST_SECTION_ID in synapse.index and not pd.isnull(synapse[POST_SECTION_ID])
-    assert is_pre ^ is_post, 'Synapse must have either afferent or efferent section ids for the ' \
-                             'morphology. It cant have both at the same time.'
+    assert is_pre != is_post, 'Synapse must have either afferent or efferent section ids for the ' \
+                              'morphology. It cant have both at the same time.'
 
     if is_post:
         sec_id = int(synapse[POST_SECTION_ID])
