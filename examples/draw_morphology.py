@@ -9,7 +9,7 @@ def example_afferent():
     neuron = nm.load_neuron('dendrogram_plain_example.swc')
     data = np.array([
         [4, 0, 0.81408846, 'additional value'],
-        [5, 0, 0.145983203, 'additional value'],
+        [6, 2, 0.545983203, 'additional value'],
         [1, 0, 0.4290702, 'additional value'],
     ])
     columns = [consts.POST_SECTION_ID, consts.POST_SEGMENT_ID, consts.POST_SEGMENT_OFFSET,
@@ -24,7 +24,7 @@ def example_efferent():
     neuron = nm.load_neuron('dendrogram_plain_example.swc')
     data = np.array([
         [4, 0, 0.81408846, 'additional value'],
-        [5, 0, 0.145983203, 'additional value'],
+        [6, 2, 0.645983203, 'additional value'],
         [1, 0, 0.4290702, 'additional value'],
     ])
     columns = [consts.PRE_SECTION_ID, consts.PRE_SEGMENT_ID, consts.PRE_SEGMENT_OFFSET,
@@ -39,7 +39,7 @@ def example_afferent_efferent():
     neuron = nm.load_neuron('dendrogram_plain_example.swc')
     data = np.array([
         [4, 0, 0.81408846, np.nan, np.nan, np.nan],
-        [5, 0, 0.145983203, np.nan, np.nan, np.nan],
+        [6, 2, 0.145983203, np.nan, np.nan, np.nan],
         [np.nan, np.nan, np.nan, 1, 0, 0.4290702],
         [np.nan, np.nan, np.nan, 1, 0, 0.29180855],
         [np.nan, np.nan, np.nan, 1, 0, 0.68261607],
@@ -74,7 +74,7 @@ def circuit_example():
 
 
 if __name__ == '__main__':
-    circuit_example()
+    # circuit_example()
     # example_afferent()
-    # example_efferent()
+    example_efferent()
     # example_afferent_efferent()

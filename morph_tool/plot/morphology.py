@@ -8,7 +8,7 @@ from pandas import Categorical
 from pandas.core.dtypes.common import is_integer_dtype
 from plotly import express
 
-from neurom import morphmath
+from neurom import morphmath, COLS
 from neurom.view.plotly import get_figure
 from morph_tool.plot.consts import (PRE_SECTION_ID, PRE_SEGMENT_ID, PRE_SEGMENT_OFFSET,
                                     POST_SECTION_ID, POST_SEGMENT_ID, POST_SEGMENT_OFFSET)
@@ -49,6 +49,17 @@ def _add_coords(synapse, morphology):
         seg_ofst = float(synapse[PRE_SEGMENT_OFFSET])
         synapse['direction'] = 'efferent'
 
+    if sec_id == 0:
+        # synapse is on soma
+        p = morphology.soma.points[0]
+        synapse['x'], synapse['y'], synapse['z'] = p[COLS.XYZ]
+        # place synapse on surface of soma along Z axes so it won't be hidden by soma on the plot
+        synapse['z'] += p[COLS.R]
+        return synapse
+
+    # NeuroM morphology counts sections from 0. Synapses count sections from 1 because section
+    # id 0 is for soma.
+    sec_id -= 1
     sec = morphology.sections[sec_id]
     assert sec_id == sec.id, f'Error. Synapse with section id {sec_id} must map to the same ' \
                              f'section id in `morphology` arg but maps to {sec.id}.'
