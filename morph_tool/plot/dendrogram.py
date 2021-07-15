@@ -14,7 +14,9 @@ except ImportError as e:
         'morph-tool[plot] is not installed. Please install: pip install morph-tool[plot]'
     ) from e
 
-from morph_tool.plot.consts import *
+from morph_tool.plot.consts import (SOURCE_NODE_ID, TARGET_NODE_ID,
+                                    POST_SECTION_ID, POST_SECTION_POS,
+                                    PRE_SECTION_ID, PRE_SECTION_POS)
 
 
 class SynDendrogram(Dendrogram):

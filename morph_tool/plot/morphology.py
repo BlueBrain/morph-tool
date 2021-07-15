@@ -10,7 +10,8 @@ from plotly import express
 
 from neurom import morphmath
 from neurom.view.plotly import get_figure
-from morph_tool.plot.consts import *
+from morph_tool.plot.consts import (PRE_SECTION_ID, PRE_SEGMENT_ID, PRE_SEGMENT_OFFSET,
+                                    POST_SECTION_ID, POST_SEGMENT_ID, POST_SEGMENT_OFFSET)
 
 REQUIRED_PRE_COLUMNS = {PRE_SECTION_ID, PRE_SEGMENT_ID, PRE_SEGMENT_OFFSET}
 REQUIRED_POST_COLUMNS = {POST_SECTION_ID, POST_SEGMENT_ID, POST_SEGMENT_OFFSET}
@@ -18,7 +19,7 @@ REQUIRED_POST_COLUMNS = {POST_SECTION_ID, POST_SEGMENT_ID, POST_SEGMENT_OFFSET}
 
 def _validate_synapses(synapses):
     def _is_int(*columns):
-        return all([is_integer_dtype(synapses[c].dtype) for c in columns])
+        return all(is_integer_dtype(synapses[c].dtype) for c in columns)
 
     is_pre = REQUIRED_PRE_COLUMNS.issubset(synapses.columns)
     is_post = REQUIRED_POST_COLUMNS.issubset(synapses.columns)
@@ -96,6 +97,3 @@ def draw(morphology, synapses):
     fig.add_traces(figure_dict['data'])
     fig.update_layout(figure_dict['layout'])
     return fig
-
-
-draw.__doc__ = draw.__doc__.format(REQUIRED_PRE_COLUMNS, REQUIRED_POST_COLUMNS)
