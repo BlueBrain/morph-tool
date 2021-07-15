@@ -1,12 +1,16 @@
 """Constants for names that are required to be in columns of ``synapses`` arg of
-``morph_tool.plot`` package.
+``morph_tool.plot`` package. These constants are the same as edge properties of `Sonata
+<https://github.com/AllenInstitute/sonata/blob/master/docs/SONATA_DEVELOPER_GUIDE.md#
+edges---optional-reserved-attributes>`__. So you can use these constants, their values as plain
+strings or constants from `bluepysnap <https://github.com/BlueBrain/snap/>`__ library:
 
-You either use these constants for columns names of ``synapses`` arg or you can use their
-values directly as plain strings.
-
-An example from ``examples`` directory::
+An example of using constants or plain strings:
     .. literalinclude:: ../../../examples/dendrogram.py
         :pyobject: plain_example
+
+An example of using with a circuit and bluepysnap constants:
+    .. literalinclude:: ../../../examples/dendrogram.py
+        :pyobject: circuit_example
 
 """
 

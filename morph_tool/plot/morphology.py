@@ -81,6 +81,10 @@ def draw(morphology, synapses):
         .. literalinclude:: ../../../examples/draw_morphology.py
             :pyobject: example_afferent_efferent
 
+    Circuit synapses example
+        .. literalinclude:: ../../../examples/draw_morphology.py
+            :pyobject: circuit_example
+
     """
     _validate_synapses(synapses)
     synapses['direction'] = Categorical(['None'] * len(synapses),

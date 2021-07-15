@@ -57,7 +57,7 @@ def circuit_example():
     from bluepysnap.sonata_constants import Edge
     from bluepysnap.bbp import Synapse
     circuit = Circuit('/path/to/sonata_circuit_config.json')
-    # you can use `bluepysnap.sonata_constants.Edge` instead of `dendrogram` for position constants
+    # you can use `bluepysnap.sonata_constants.Edge` instead of `morph_tool.draw.consts`
     edge_properties = [
         Edge.SOURCE_NODE_ID, Edge.TARGET_NODE_ID,
         Edge.POST_SECTION_ID, Edge.POST_SECTION_POS,

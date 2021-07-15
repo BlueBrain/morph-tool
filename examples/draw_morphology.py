@@ -52,7 +52,29 @@ def example_afferent_efferent():
     fig.show()
 
 
+def circuit_example():
+    """Example that shows how to plot a morphology with synapses from a Sonata circuit.
+
+    To make this example work, you would need a proper SONATA circuit.
+    """
+    from bluepysnap import Circuit
+    from bluepysnap.bbp import Synapse
+    circuit = Circuit('/path/to/sonata_circuit_config.json')
+    edge_properties = [
+        'afferent_section_id', 'afferent_segment_id', 'afferent_segment_offset',
+        Synapse.U_SYN, Synapse.D_SYN, Synapse.F_SYN, Synapse.G_SYNX,
+    ]
+    morph_id = 110
+    synapses = circuit.edges['default'].afferent_edges(morph_id, edge_properties)
+    morph_filepath = circuit.nodes['All'].morph.get_filepath(morph_id)
+    neuron = nm.load_neuron(morph_filepath)
+
+    fig = morphology.draw(neuron, synapses)
+    fig.show()
+
+
 if __name__ == '__main__':
-    example_afferent()
+    circuit_example()
+    # example_afferent()
     # example_efferent()
     # example_afferent_efferent()
