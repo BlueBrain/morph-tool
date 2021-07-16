@@ -3,6 +3,7 @@ Changelog
 
 Version 2.8.0
 -------------
+- use isclose in spatial point_to_section_segment (#84)
 - Add functionality to plot morphologies with synapses. Move all plot functionality under
   ``plot`` package. (#82)
 
