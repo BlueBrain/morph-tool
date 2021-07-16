@@ -22,9 +22,9 @@ def point_to_section_segment(neuron, point):
 
     for section in neuron.iter():
         points = section.points
-        offset = np.where((points[:, X] == point[COLS.X]) &
-                          (points[:, Y] == point[COLS.Y]) &
-                          (points[:, Z] == point[COLS.Z]))
+        offset = np.where(np.allclose(points[:, X], point[COLS.X]) &
+                          np.allclose(points[:, Y], point[COLS.Y]) &
+                          np.allclose(points[:, Z], point[COLS.Z]))
         if offset[0].size:
             return section.id, offset[0][0]
 
