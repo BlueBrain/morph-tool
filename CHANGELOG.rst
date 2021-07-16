@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 2.8.0
+-------------
+- Add functionality to plot morphologies with synapses. Move all plot functionality under
+  ``plot`` package. (#82)
+
 Version 2.7.0
 -------------
 - Fix compatibility with numpy>=1.21 (#80)

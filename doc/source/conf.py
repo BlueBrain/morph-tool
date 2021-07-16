@@ -24,6 +24,9 @@ from pkg_resources import get_distribution
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -83,6 +86,11 @@ pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
+
+autosummary_generate = True
+autosummary_imported_members = False
+autosummary_mock_imports = ['neuron', 'plotly']
+autodoc_default_options = {'members': True}
 
 
 # -- Options for HTML output ---------------------------------------------------

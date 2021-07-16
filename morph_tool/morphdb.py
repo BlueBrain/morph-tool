@@ -179,14 +179,14 @@ class MorphDB:
             obj.df['mtype_no_subtype'] = fulltypes[0]
             obj.df['msubtype'] = fulltypes[1]
         else:
-            obj.df['mtype_no_subtype'] = obj.df.mtype
+            obj.df['mtype_no_subtype'] = obj.df['mtype']
             obj.df['msubtype'] = ''
 
         obj.df['label'] = label
         for missing_col in set(COLUMNS) - set(obj.df.columns):
             obj.df[missing_col] = None
             obj.df.layer = obj.df.layer.astype('str')
-            obj.df['path'] = obj.df.name.map(morph_paths)
+            obj.df['path'] = obj.df['name'].map(morph_paths)
             obj.df = obj.df.reindex(columns=COLUMNS)
         for key in BOOLEAN_REPAIR_ATTRS:
             obj.df[key] = True
@@ -339,7 +339,7 @@ class MorphDB:
 
         df = self.df.copy().reset_index(drop=True)
         df.columns = pd.MultiIndex.from_product((["properties"], df.columns.values))
-        stats = extract_dataframe(df['properties', 'path'], config, n_workers)
+        stats = extract_dataframe(df.loc[:, ('properties', 'path')], config, n_workers)
         return df.join(stats.drop(columns='name', level=1), how='inner')
 
     def check_files_exist(self):
@@ -349,7 +349,7 @@ class MorphDB:
             raise ValueError(
                 f'DataFrame has morphologies with undefined filepaths: {missing_morphs}')
 
-        for path in self.df.path:
+        for path in self.df['path']:
             if not path.exists():
                 raise ValueError(f'Non existing path: {path}')
 

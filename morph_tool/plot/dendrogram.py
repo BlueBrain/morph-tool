@@ -1,9 +1,10 @@
-'''Dendrogram helper functions and class'''
+"""Module for drawing dendrograms with synapses."""
 import numpy as np
 from neurom import NeuriteType
 from neurom.core import Neurite, Neuron
 from neurom.view.dendrogram import Dendrogram, layout_dendrogram, move_positions, get_size
 from neurom.view.view import TREE_COLOR
+from pandas.core.dtypes.common import is_integer_dtype
 
 try:
     import plotly.express as px
@@ -13,12 +14,9 @@ except ImportError as e:
         'morph-tool[plot] is not installed. Please install: pip install morph-tool[plot]'
     ) from e
 
-POST_SECTION_ID = 'afferent_section_id'
-POST_SECTION_POS = 'afferent_section_pos'
-TARGET_NODE_ID = '@target_node'
-PRE_SECTION_ID = 'efferent_section_id'
-PRE_SECTION_POS = 'efferent_section_pos'
-SOURCE_NODE_ID = '@source_node'
+from morph_tool.plot.consts import (SOURCE_NODE_ID, TARGET_NODE_ID,
+                                    POST_SECTION_ID, POST_SECTION_POS,
+                                    PRE_SECTION_ID, PRE_SECTION_POS)
 
 
 class SynDendrogram(Dendrogram):
@@ -145,21 +143,30 @@ def _get_synapse_colormap(synapses):
     return {id_: color_list[idx % len(color_list)] for idx, id_ in enumerate(node_id_set)}
 
 
-def draw(neuron, synapses=None, neuron_node_id=None):
+def draw(morphology, synapses=None, neuron_node_id=None):
     """Draw dendrogram with synapses.
 
     Args:
-        neuron (Neurite|Neuron): a Neurite or a Neuron instance of NeuroM package.
+        morphology (Neurite|Neuron): a Neuron instance of NeuroM package.
         synapses (DataFrame): synapses dataframe.
-        neuron_node_id (int|None): node id of ``neuron``. If None then it is taken from
+        neuron_node_id (int|None): node id of ``morphology``. If None then it is taken from
             ``synapses[TARGET_NODE_ID]``.
 
     Returns:
         plotly.graph_objects.Figure: plotly figure
+
+    Example
+        .. literalinclude:: ../../../examples/dendrogram.py
+            :pyobject: plain_example
+
     """
-    synapses = synapses.astype({'@target_node': int, '@source_node': int,
-                                'afferent_section_id': int, 'efferent_section_id': int})
-    dendrogram = SynDendrogram(neuron)
+    assert (is_integer_dtype(synapses[TARGET_NODE_ID].dtype) and
+            is_integer_dtype(synapses[SOURCE_NODE_ID].dtype) and
+            is_integer_dtype(synapses[POST_SECTION_ID].dtype) and
+            is_integer_dtype(synapses[PRE_SECTION_ID].dtype)), \
+        'Section ids and nodes columns of `synapses` arg must be integers'
+
+    dendrogram = SynDendrogram(morphology)
     positions = layout_dendrogram(dendrogram, np.array([0, 0]))
     w, h = get_size(positions)
     positions = move_positions(positions, np.array([.5 * w, 0]))
