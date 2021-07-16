@@ -3,7 +3,7 @@ Changelog
 
 Version 2.8.0
 -------------
-- Use numpy.isclose in spatial point_to_section_segment (#84)
+- Use numpy.isclose in spatial ``point_to_section_segment``. Add new keyword arguments ``rtol``,``atol`` to ``point_to_section_segment``.  (#84)
 - Add functionality to plot morphologies with synapses. Move all plot functionality under
   ``plot`` package. (#82)
 
