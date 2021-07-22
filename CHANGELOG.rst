@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 2.8.1
+-------------
+- use pytest instead of nosetests
+
 Version 2.8.0
 -------------
 - Use numpy.isclose in spatial ``point_to_section_segment``. Add new keyword arguments ``rtol``,``atol`` to ``point_to_section_segment``.  (#84)

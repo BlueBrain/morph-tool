@@ -1,16 +1,7 @@
 '''Module providing utility functions for the tests'''
-import re
 import shutil
-import sys
 import tempfile
 from contextlib import contextmanager
-from functools import partial
-from io import StringIO
-from pprint import pformat
-
-from nose.tools import assert_raises, ok_
-
-from morphio import Morphology, set_ignored_warning
 
 
 @contextmanager

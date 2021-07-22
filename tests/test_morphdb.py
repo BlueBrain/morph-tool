@@ -1,11 +1,10 @@
-
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import morph_tool.morphdb as tested
 import pandas as pd
-from nose.tools import assert_raises, assert_true
-from numpy.testing import assert_array_equal, assert_equal
+import pytest
+from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
 DATA_DIR = Path(__file__).parent / 'data'
@@ -13,7 +12,7 @@ DATA_DIR = Path(__file__).parent / 'data'
 
 def test_MorphInfo():
     morph = tested.MorphInfo(name='a', mtype='b', layer='c')
-    assert_equal(str(morph),
+    assert (str(morph) ==
                  """MorphInfo(name='a', mtype='b', layer='c', label=None)""")
 
 
@@ -30,16 +29,15 @@ def test_from_folder():
     assert_frame_equal(actual.drop(columns='axon_inputs'),
                        expected.drop(columns='axon_inputs'),)
 
-    assert_raises(ValueError,
-                  tested.MorphDB.from_folder,
-                  DATA_DIR / 'morphdb/from_folder_duplicates',
-                  mtypes=[('a', 'L1_DAC'), ('simple2', 'typeB:withsubtype')])
+    with pytest.raises(ValueError):
+        tested.MorphDB.from_folder(DATA_DIR / 'morphdb/from_folder_duplicates',
+                                   mtypes=[('a', 'L1_DAC'), ('simple2', 'typeB:withsubtype')])
 
     db = tested.MorphDB.from_folder(
         DATA_DIR / 'morphdb/from_folder_duplicates',
         mtypes=[('a', 'L1_DAC')],
         extension='swc')
-    assert_equal(len(db.df), 1)
+    assert len(db.df) == 1
 
 
 def test_from_neurondb():
@@ -61,7 +59,7 @@ def test_single_axon_input():
         DATA_DIR / 'morphdb/from_neurondb/single-axon-input.neurondb',
         label='release-1').df
 
-    assert_equal(actual.axon_inputs.iloc[0], ['C270106A'])
+    assert actual.axon_inputs.iloc[0] == ('C270106A',)
 
 
 def test_read_msubtype():
@@ -100,7 +98,8 @@ def test_add():
     assert_array_equal(total.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
                                        'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
 
-    assert_raises(TypeError, original.__add__, None)
+    with pytest.raises(TypeError):
+        original.__add__(None)
 
 
 def test_iadd():
@@ -121,7 +120,8 @@ def test_iadd():
     assert_array_equal(original.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
                                           'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
 
-    assert_raises(TypeError, original.__iadd__, None)
+    with pytest.raises(TypeError):
+        original.__iadd__(None)
 
 
 def test_write_neurondb_xml():
@@ -139,14 +139,15 @@ def test_write_neurondb_xml():
 def test_load_raises():
     original = tested.MorphDB.from_neurondb(
         DATA_DIR / 'morphdb/from_neurondb/neurondb-only-dat-info.xml')
-    assert_raises(ValueError, original.write, Path('neurondb.wrong-format'))
+    with pytest.raises(ValueError):
+        original.write(Path('neurondb.wrong-format'))
 
 
 def test_features():
     original = tested.MorphDB.from_neurondb(
         DATA_DIR / 'morphdb/from_neurondb/neurondb-only-dat-info.xml')
-    assert_raises(ValueError, original.features,
-                  {'neurite': {'section_lengths': ['max']}})
+    with pytest.raises(ValueError):
+        original.features({'neurite': {'section_lengths': ['max']}})
 
     original.df = original.df[~original.df.path.isnull()]
     features = original.features({'neurite': {'section_lengths': ['max']}})
@@ -167,16 +168,18 @@ def test_check_file_exists():
     # A null path should raise
     original = tested.MorphDB.from_neurondb(
         DATA_DIR / 'morphdb/from_neurondb/neurondb-only-dat-info.xml')
-    assert_raises(ValueError, original.check_files_exist)
+    with pytest.raises(ValueError):
+        original.check_files_exist()
 
     # A non existing path should raise
     original = tested.MorphDB.from_neurondb(
         DATA_DIR / 'morphdb/from_neurondb/neurondb-only-dat-info.xml')
     original.df.loc[1, 'path'] = Path('/non/existing/path')
-    assert_raises(ValueError, original.check_files_exist)
+    with pytest.raises(ValueError):
+        original.check_files_exist()
 
 
 def test_hashable():
     morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
     db = tested.MorphDB.from_neurondb(morphology_folder / 'neurondb-msubtype.xml')
-    assert_true(hash(db) != 0)
+    assert hash(db) != 0

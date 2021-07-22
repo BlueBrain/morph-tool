@@ -1,16 +1,16 @@
-import os
+from pathlib import Path
 import numpy as np
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-from nose.tools import assert_raises, assert_equal, assert_almost_equal, ok_
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_almost_equal
+import pytest
 
 from morph_tool import diff, graft
 from morph_tool.exceptions import MorphToolException, NoAxonException
 
 from morphio.mut import Morphology
-from morphio import PointLevel, SomaType, SectionType, Morphology as ImmutMorphology, Option
+from morphio import PointLevel, SectionType, Morphology as ImmutMorphology
 
-_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
-SIMPLE = Morphology(os.path.join(_path, 'simple.swc'))
+DATA = Path(__file__).parent / 'data'
+SIMPLE = Morphology(DATA / 'simple.swc')
 
 
 def test_find_axon():
@@ -19,26 +19,25 @@ def test_find_axon():
                        [[0, 0, 0], [0, -4, 0]])
 
     # section is not an axon
-    with assert_raises(MorphToolException):
+    with pytest.raises(MorphToolException):
         dendrite = SIMPLE.root_sections[0]
         graft.find_axon(dendrite)
 
     # no axon found
-    with assert_raises(MorphToolException) as obj:
-        graft.find_axon(Morphology(os.path.join(_path, 'no_axon.swc')))
-    assert_equal(str(obj.exception), 'No axon found!')
+    with pytest.raises(MorphToolException, match='No axon found!'):
+        graft.find_axon(Morphology(DATA / 'no_axon.swc'))
 
     # first axon is chosen
-    axon = graft.find_axon(Morphology(os.path.join(_path, 'two_axons.asc')))
+    axon = graft.find_axon(Morphology(DATA / 'two_axons.asc'))
     assert_array_equal(axon.points, [[0, 0, 0], [0, -4, 0]])
 
 
 def test_graft():
     for rng in [np.random, np.random.default_rng(0)]:
-        m = Morphology(os.path.join(_path, 'simple2.swc'))
+        m = Morphology(DATA / 'simple2.swc')
         new_axon = graft.find_axon(m)
 
-        neuron = Morphology(os.path.join(_path, 'simple.swc'))
+        neuron = Morphology(DATA / 'simple.swc')
         graft.graft_axon(neuron, new_axon)
 
         grafted_axon = graft.find_axon(neuron)
@@ -65,34 +64,34 @@ def test_random_direction():
 
 
 def test_dendrites_mean_direction():
-    donor_neuron = Morphology(os.path.join(_path, 'simple3.asc'))
+    donor_neuron = Morphology(DATA / 'simple3.asc')
     assert_array_equal(graft._dendrites_mean_direction(donor_neuron),
                        np.array([0.6666667, 4.6666665, 3.       ],
                                 dtype=np.float32))
 
     no_dendrite = Morphology()
     no_dendrite.append_root_section(PointLevel([[0,0,0], [1,1,1]], [1, 1]), SectionType.axon)
-    with assert_raises(MorphToolException) as obj:
+    with pytest.raises(MorphToolException):
         graft._dendrites_mean_direction(no_dendrite)
 
 def test_soma_mean_radius():
     m = Morphology()
     m.soma.points = [[0,0,0], [1,0,0], [1,1,0], [0,1,0]]
-    assert_equal(graft._soma_mean_radius(m, [0.5, 0.5, 0]),
-                 0.7071067811865476)
+    assert (graft._soma_mean_radius(m, [0.5, 0.5, 0]) == 0.7071067811865476)
 
 
 def test_axon_dendrites_angle():
-    assert_almost_equal(graft._axon_dendrites_angle(SIMPLE), np.pi, places=5)
+    assert_almost_equal(graft._axon_dendrites_angle(SIMPLE), np.pi, decimal=5)
 
 
 def test_graft_axon_on_synthesized_cell():
     np.random.seed(0)
     # donor neuron is empty
-    assert_raises(NoAxonException, graft.graft_axon, SIMPLE, Morphology())
+    with pytest.raises(NoAxonException):
+        graft.graft_axon(SIMPLE, Morphology())
 
-    donor_neuron = Morphology(os.path.join(_path, 'simple3.asc'))
-    synthesized_cell = Morphology(os.path.join(_path, 'synthesized_cell.asc'))
+    donor_neuron = Morphology(DATA / 'simple3.asc')
+    synthesized_cell = Morphology(DATA / 'synthesized_cell.asc')
     graft.graft_axon(synthesized_cell, donor_neuron)
     axon = graft.find_axon(synthesized_cell)
     assert_array_almost_equal(axon.points,
@@ -101,14 +100,14 @@ def test_graft_axon_on_synthesized_cell():
 
 def test_self_graft():
     '''Grafting a neuron with its own neuron'''
-    filename = os.path.join(_path, 'neuron.asc')
+    filename = DATA / 'neuron.asc'
     new_axon = graft.find_axon(ImmutMorphology(filename))
 
     neuron = Morphology(filename)
     graft.graft_axon(neuron, new_axon)
 
     expected = Morphology(filename)
-    ok_(not diff(expected, neuron))
+    assert not diff(expected, neuron)
 
 
 def test_hotfix_h5_duplicate():
