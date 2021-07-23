@@ -1,5 +1,4 @@
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import morph_tool.morphdb as tested
 import pandas as pd
@@ -72,16 +71,15 @@ def test_read_msubtype():
                                                  columns=columns))
 
 
-def test_write_neurondb_dat():
+def test_write_neurondb_dat(tmpdir):
     morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
     original = tested.MorphDB.from_neurondb(morphology_folder / 'neurondb-msubtype.xml')
 
-    with TemporaryDirectory() as temp_dir:
-        path = Path(temp_dir, f'neurondb.dat')
-        original.write(path)
+    path = Path(tmpdir, f'neurondb.dat')
+    original.write(path)
 
-        new = tested.MorphDB.from_neurondb(path, morphology_folder=morphology_folder)
-        assert_frame_equal(original.df, new.df)
+    new = tested.MorphDB.from_neurondb(path, morphology_folder=morphology_folder)
+    assert_frame_equal(original.df, new.df)
 
 
 def test_add():
@@ -124,16 +122,15 @@ def test_iadd():
         original.__iadd__(None)
 
 
-def test_write_neurondb_xml():
+def test_write_neurondb_xml(tmpdir):
     morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
     original = tested.MorphDB.from_neurondb(morphology_folder / 'neurondb-msubtype.xml')
 
-    with TemporaryDirectory() as temp_dir:
-        path = Path(temp_dir, 'neurondb.xml')
-        original.write(path)
+    path = Path(tmpdir, 'neurondb.xml')
+    original.write(path)
 
-        new = tested.MorphDB.from_neurondb(path, morphology_folder=morphology_folder)
-        assert_frame_equal(original.df, new.df)
+    new = tested.MorphDB.from_neurondb(path, morphology_folder=morphology_folder)
+    assert_frame_equal(original.df, new.df)
 
 
 def test_load_raises():

@@ -1,7 +1,6 @@
 from pathlib import Path
 from click.testing import CliRunner
 from morph_tool.cli import cli
-from utils import setup_tempdir
 from morphio import set_maximum_warnings
 
 DATA = Path(__file__).parent / 'data'
@@ -18,23 +17,23 @@ def test_cli():
                                  str(DATA / 'simple.swc')])
     assert result.exit_code == 1
 
-def test_convert():
+
+def test_convert_file(tmpdir):
     set_maximum_warnings(0)
-    with setup_tempdir('test-convert-file') as tmp_dir:
-        runner = CliRunner()
-        filename = Path(DATA, 'simple.asc')
-        output_name = Path(tmp_dir, 'simple.h5')
-        result = runner.invoke(cli, ['convert', 'file', str(filename), str(output_name)])
-        assert result.exit_code == 0, result.exception
-        assert output_name.exists()
+    runner = CliRunner()
+    filename = Path(DATA, 'simple.asc')
+    output_name = Path(tmpdir, 'simple.h5')
+    result = runner.invoke(cli, ['convert', 'file', str(filename), str(output_name)])
+    assert result.exit_code == 0, result.exception
+    assert output_name.exists()
 
 
-    with setup_tempdir('test-convert-folder') as tmp_dir:
-        runner = CliRunner()
-        result = runner.invoke(cli, ['convert', 'folder', '-ext', 'swc',
-                                     str(DATA / 'input-convert'), tmp_dir])
-        assert result.exit_code == 0, result.exc_info
+def test_convert_folder(tmpdir):
+    runner = CliRunner()
+    result = runner.invoke(cli, ['convert', 'folder', '-ext', 'swc',
+                                 str(DATA / 'input-convert'), str(tmpdir)])
+    assert result.exit_code == 0, result.exc_info
 
-        n_converted_files = len(list(Path(tmp_dir).rglob('**/*.swc')))
+    n_converted_files = len(list(Path(tmpdir).rglob('**/*.swc')))
 
-        assert n_converted_files == 2
+    assert n_converted_files == 2
