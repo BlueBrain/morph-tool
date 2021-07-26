@@ -1,6 +1,6 @@
 from pathlib import Path
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_equal
+from numpy.testing import assert_array_almost_equal
 
 import morph_tool.nrnhines as tested
 
@@ -14,7 +14,7 @@ def test_interpolate_compartments():
                        [1, 2, 0],
                        [2, 2, 0]])
     paths = tested._compartment_paths(points, 3)
-    assert_equal(len(paths), 3)
+    assert len(paths) == 3
 
     assert_array_almost_equal(paths[0],
                               [[0., 0., 0.],
@@ -43,14 +43,14 @@ def test_NeuroM_section_to_NRN_compartment_paths():
 
 def test_point_to_section_end():
     cell = tested.get_NRN_cell(SIMPLE)
-    assert_equal(tested.point_to_section_end(cell.icell.all, [-8, 10, 0]),
+    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 0]) ==
                  6)
 
-    assert_equal(tested.point_to_section_end(cell.icell.all, [-8, 10, 2]),
+    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 2]) ==
                  None)
 
-    assert_equal(tested.point_to_section_end(cell.icell.all, [-8, 10, 2],
-                                             atol=10),
+    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 2],
+                                             atol=10) ==
                  3)
 
 
@@ -78,4 +78,4 @@ def test_isolate():
                                            (SIMPLE, [-8, 10, 0]),
                                            (SIMPLE, [-8, 10, 0]),
                                            (SIMPLE, [-8, 10, 0]), ]))
-    assert_equal(result, [6] * 4)
+    assert result == [6] * 4

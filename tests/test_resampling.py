@@ -1,11 +1,9 @@
-from copy import deepcopy
 from pathlib import Path
 from mock import Mock
 import numpy as np
 from numpy import testing as npt
 from morphio import Morphology
 from morph_tool import resampling as tested
-from morph_tool.morphio_diff import diff
 
 
 DATA_DIR = Path(__file__).resolve().parent / 'data'

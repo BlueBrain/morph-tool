@@ -1,6 +1,5 @@
-import os
-
-import nose.tools as nt
+from pathlib import Path
+import pytest
 
 import numpy as np
 import numpy.testing as npt
@@ -10,16 +9,12 @@ import morphio
 import morph_tool.transform as tested
 
 
-TEST_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def _test_data_path(filename):
-    return os.path.join(TEST_DIR, 'data', filename)
+DATA = Path(__file__).parent / 'data'
 
 
 class TestTransform:
     def setup(self):
-        self.morph = morphio.mut.Morphology(_test_data_path('simple.asc'))
+        self.morph = morphio.mut.Morphology(DATA / 'simple.asc')
 
     def test_sanity(self):
         """ Ensure test data is what we expect it to be. """
@@ -73,10 +68,8 @@ class TestTransform:
 
     def test_translate_3(self):
         """ Check translation vector. """
-        nt.assert_raises(
-            ValueError,
-            tested.translate, self.morph, np.identity(4)
-        )
+        with pytest.raises(ValueError):
+            tested.translate(self.morph, np.identity(4))
 
     def test_rotate_1(self):
         """ Rotate whole morphology inplace. """
@@ -116,10 +109,8 @@ class TestTransform:
 
     def test_rotate_2(self):
         """ Check rotation matrix shape. """
-        nt.assert_raises(
-            ValueError,
-            tested.rotate, self.morph, np.identity(4)
-        )
+        with pytest.raises(ValueError):
+            tested.rotate(self.morph, np.identity(4))
 
     def test_transform_1(self):
         """ Transform whole morphology inplace. """
@@ -141,10 +132,8 @@ class TestTransform:
 
     def test_transform_2(self):
         """ Check transform matrix shape. """
-        nt.assert_raises(
-            ValueError,
-            tested.transform, self.morph, np.identity(3)
-        )
+        with pytest.raises(ValueError):
+            tested.transform(self.morph, np.identity(3))
 
 
     def test_align(self):
@@ -173,7 +162,7 @@ class TestTransform:
 
     def test_align_morphology(self):
         # Test with apical trunk
-        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        morph = morphio.mut.Morphology(DATA / 'apical_test.h5')
         rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="trunk")
         npt.assert_almost_equal(
             rotation_mat,
@@ -183,7 +172,7 @@ class TestTransform:
         )
 
         # Test with apical root section
-        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        morph = morphio.mut.Morphology(DATA / 'apical_test.h5')
         rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="first_section")
         npt.assert_almost_equal(
             rotation_mat,
@@ -193,7 +182,7 @@ class TestTransform:
         )
 
         # Test with apical root segment
-        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        morph = morphio.mut.Morphology(DATA / 'apical_test.h5')
         rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="first_segment")
         npt.assert_almost_equal(
             rotation_mat,
@@ -203,7 +192,7 @@ class TestTransform:
         )
 
         # Test with whole apical
-        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        morph = morphio.mut.Morphology(DATA / 'apical_test.h5')
         rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="whole")
         npt.assert_almost_equal(
             rotation_mat,
@@ -213,7 +202,7 @@ class TestTransform:
         )
 
         # Test with custom direction
-        morph = morphio.mut.Morphology(_test_data_path('apical_test.h5'))
+        morph = morphio.mut.Morphology(DATA / 'apical_test.h5')
         rotation_mat = tested.align_morphology(morph, [0, 0, 1], method=[0, 1, 0])
         npt.assert_almost_equal(
             rotation_mat,

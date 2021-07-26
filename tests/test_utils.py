@@ -4,7 +4,7 @@ from pathlib import Path
 import morph_tool.utils as tested
 import pandas as pd
 from mock import patch
-from nose.tools import assert_equal, assert_raises, ok_
+import pytest
 from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
@@ -12,30 +12,30 @@ DATA = Path(__file__).resolve().parent / 'data'
 
 
 def test_is_morphology():
-    ok_(tested.is_morphology('a.swc'))
-    ok_(tested.is_morphology('a.asc'))
-    ok_(tested.is_morphology('a.h5'))
-    ok_(not tested.is_morphology('a.blah'))
-    ok_(tested.is_morphology('a.blah', extensions={'blah'}))
+    assert tested.is_morphology('a.swc')
+    assert tested.is_morphology('a.asc')
+    assert tested.is_morphology('a.h5')
+    assert not tested.is_morphology('a.blah')
+    assert tested.is_morphology('a.blah', extensions={'blah'})
 
 
 def test_iter_morphology_files():
-    assert_equal(set(tested.iter_morphology_files(DATA / 'folder')),
+    assert (set(tested.iter_morphology_files(DATA / 'folder')) ==
                  {DATA / 'folder' / 'a.h5',
                   DATA / 'folder' / 'b.swc'})
 
-    assert_equal(set(tested.iter_morphology_files(str(DATA / 'folder'))),
+    assert (set(tested.iter_morphology_files(str(DATA / 'folder'))) ==
                  {DATA / 'folder' / 'a.h5',
                   DATA / 'folder' / 'b.swc'})
 
-    assert_equal(set(tested.iter_morphology_files(DATA / 'folder', recursive=True)),
+    assert (set(tested.iter_morphology_files(DATA / 'folder', recursive=True)) ==
                  {DATA / 'folder' / 'a.h5',
                   DATA / 'folder' / 'b.swc',
                   DATA / 'folder' / 'subfolder' / 'g.SWC',
                   DATA / 'folder' / 'subfolder' / 'e.h5',
                   })
 
-    assert_equal(set(tested.iter_morphology_files(str(DATA / 'folder'), recursive=True)),
+    assert (set(tested.iter_morphology_files(str(DATA / 'folder'), recursive=True)) ==
                  {DATA / 'folder' / 'a.h5',
                   DATA / 'folder' / 'b.swc',
                   DATA / 'folder' / 'subfolder' / 'g.SWC',
@@ -45,10 +45,10 @@ def test_iter_morphology_files():
 
 def test_find_morph():
     folder = DATA / 'test-neurondb-with-path'
-    assert_equal(tested.find_morph(folder, 'not-here.h5'),
+    assert (tested.find_morph(folder, 'not-here.h5') ==
                  None)
     assert tested.find_morph(folder, 'C270106A').samefile(folder / 'C270106A.h5')
-    assert_equal(tested.find_morph(folder, 'C270106C.wrongext'),
+    assert (tested.find_morph(folder, 'C270106C.wrongext') ==
                  None)
 
 
@@ -69,7 +69,8 @@ def test_neurondb_dataframe():
 
     assert_frame_equal(df, expected)
 
-    assert_raises(FileNotFoundError, tested.neurondb_dataframe, DATA / 'neurondb.wrongext')
+    with pytest.raises(FileNotFoundError):
+        tested.neurondb_dataframe(DATA / 'neurondb.wrongext')
 
 
 def test_neurondb_dataframe_no_repair():
@@ -158,16 +159,17 @@ def test_neurondb_dataframe_use_axon():
     for use_axon in ['True', 'true', '']:
         with patch.object(Path, 'open', mock_path_content(neurondb_template.format(use_axon))):
             df = tested.neurondb_dataframe(neurondb)
-            assert_equal(df.loc[0, 'use_axon'], True)
+            assert df.loc[0, 'use_axon'] == True
 
     for use_axon in ['False', 'false']:
         with patch.object(Path, 'open', mock_path_content(neurondb_template.format(use_axon))):
             df = tested.neurondb_dataframe(neurondb)
-            assert_equal(df.loc[0, 'use_axon'], False)
+            assert df.loc[0, 'use_axon'] == False
 
     for use_axon in ['tRuE', 'fals', 0, 1, 'mickael jackson']:
         with patch.object(Path, 'open', mock_path_content(neurondb_template.format(use_axon))):
-            assert_raises(ValueError, tested.neurondb_dataframe, neurondb)
+            with pytest.raises(ValueError):
+                tested.neurondb_dataframe(neurondb)
 
 
 def test_neurondb_dataframe_with_path():

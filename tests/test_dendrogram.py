@@ -5,7 +5,7 @@ import pandas as pd
 from bluepysnap.sonata_constants import Edge
 from plotly.offline import plot
 
-from nose.tools import assert_raises
+import pytest
 
 from morph_tool.plot import dendrogram
 
@@ -57,6 +57,5 @@ def test_implicit_valid_neuron_node_id():
 
 def test_implicit_invalid_neuron_node_id():
     neuron_node_id = 1
-    with assert_raises(ValueError) as cm:
+    with pytest.raises(ValueError, match='neuron_node_id'):
         dendrogram.draw(_create_test_neuron(), _create_test_synapses([neuron_node_id, 2]))
-    assert 'neuron_node_id' in cm.exception.args[0].lower()
