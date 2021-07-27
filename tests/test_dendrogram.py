@@ -13,7 +13,7 @@ DATA = Path(__file__).resolve().parent / 'data'
 
 
 def _create_test_neuron():
-    return nm.load_neuron(DATA / 'simple.swc')
+    return nm.load_morphology(DATA / 'simple.swc')
 
 
 def _create_test_synapses(target_node_ids):

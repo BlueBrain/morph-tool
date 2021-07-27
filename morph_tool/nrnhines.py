@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Sequence, Union
 
 import numpy as np
-from neurom import COLS, NeuriteType, iter_sections, load_neuron
+from neurom import COLS, NeuriteType, iter_sections, load_morphology
 from neurom.core.types import NeuriteIter
 from numpy.testing import assert_almost_equal
 
@@ -79,7 +79,7 @@ def _validate_section_mapping(NeuroM_cell, NRN_cell, mapping):
 
 def NeuroM_section_to_NRN_section(filename: Path):
     """Returns a mapping from NeuroM section IDs to NRN ones"""
-    NeuroM_cell = load_neuron(filename)
+    NeuroM_cell = load_morphology(filename)
     NRN_cell = get_NRN_cell(filename)
 
     mapping = dict()
@@ -230,7 +230,7 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
             [2.        , 2.        , 0.        ]])]
     """
 
-    NeuroM_cell = load_neuron(morph_path)
+    NeuroM_cell = load_morphology(morph_path)
     NRN_neuron = get_NRN_cell(morph_path)
     NRN_sections = list(NRN_neuron.icell.all)
 

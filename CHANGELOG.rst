@@ -3,6 +3,7 @@ Changelog
 
 Version 2.8.1
 -------------
+- use NeuroM dependency of version >= 3.0
 - use pytest instead of nosetests
 
 Version 2.8.0
