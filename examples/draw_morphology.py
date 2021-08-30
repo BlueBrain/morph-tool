@@ -6,7 +6,7 @@ from morph_tool.plot import consts
 
 
 def example_afferent():
-    neuron = nm.load_neuron('dendrogram_plain_example.swc')
+    m = nm.load_morphology('dendrogram_plain_example.swc')
     data = np.array([
         [4, 0, 0.81408846, 'additional value'],
         [6, 2, 0.545983203, 'additional value'],
@@ -16,12 +16,12 @@ def example_afferent():
                'additional_data']
     synapses = pd.DataFrame(data, columns=columns)
 
-    fig = morphology.draw(neuron, synapses)
+    fig = morphology.draw(m, synapses)
     fig.show()
 
 
 def example_efferent():
-    neuron = nm.load_neuron('dendrogram_plain_example.swc')
+    m = nm.load_morphology('dendrogram_plain_example.swc')
     data = np.array([
         [4, 0, 0.81408846, 'additional value'],
         [6, 2, 0.645983203, 'additional value'],
@@ -31,12 +31,12 @@ def example_efferent():
                'additional_data']
     synapses = pd.DataFrame(data, columns=columns)
 
-    fig = morphology.draw(neuron, synapses)
+    fig = morphology.draw(m, synapses)
     fig.show()
 
 
 def example_afferent_efferent():
-    neuron = nm.load_neuron('dendrogram_plain_example.swc')
+    m = nm.load_morphology('dendrogram_plain_example.swc')
     data = np.array([
         [4, 0, 0.81408846, np.nan, np.nan, np.nan],
         [6, 2, 0.145983203, np.nan, np.nan, np.nan],
@@ -48,7 +48,7 @@ def example_afferent_efferent():
                consts.PRE_SECTION_ID, consts.PRE_SEGMENT_ID, consts.PRE_SEGMENT_OFFSET]
     synapses = pd.DataFrame(data, columns=columns)
 
-    fig = morphology.draw(neuron, synapses)
+    fig = morphology.draw(m, synapses)
     fig.show()
 
 
@@ -67,9 +67,9 @@ def circuit_example():
     morph_id = 110
     synapses = circuit.edges['default'].afferent_edges(morph_id, edge_properties)
     morph_filepath = circuit.nodes['All'].morph.get_filepath(morph_id)
-    neuron = nm.load_neuron(morph_filepath)
+    m = nm.load_morphology(morph_filepath)
 
-    fig = morphology.draw(neuron, synapses)
+    fig = morphology.draw(m, synapses)
     fig.show()
 
 

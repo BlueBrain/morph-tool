@@ -9,7 +9,7 @@ from pandas.core.dtypes.common import is_integer_dtype
 from plotly import express
 
 from neurom import morphmath, COLS
-from neurom.view.plotly import get_figure
+from neurom.view.plotly_impl import get_figure
 from morph_tool.plot.consts import (PRE_SECTION_ID, PRE_SEGMENT_ID, PRE_SEGMENT_OFFSET,
                                     POST_SECTION_ID, POST_SEGMENT_ID, POST_SEGMENT_OFFSET)
 

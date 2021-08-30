@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Sequence, Union
 
 import numpy as np
-from neurom import COLS, NeuriteType, iter_sections, load_neuron
+from neurom import COLS, NeuriteType, iter_sections, load_morphology
 from neurom.core.types import NeuriteIter
 from numpy.testing import assert_almost_equal
 
@@ -79,10 +79,10 @@ def _validate_section_mapping(NeuroM_cell, NRN_cell, mapping):
 
 def NeuroM_section_to_NRN_section(filename: Path):
     """Returns a mapping from NeuroM section IDs to NRN ones"""
-    NeuroM_cell = load_neuron(filename)
+    NeuroM_cell = load_morphology(filename)
     NRN_cell = get_NRN_cell(filename)
 
-    mapping = dict()
+    mapping = {}
 
     NRN_sections = list(NRN_cell.icell.all)
 
@@ -136,7 +136,7 @@ def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positio
                                        compartment boundary belongs
         boundaries_positions (List): the 3D positions of the compartment boundaries
     """
-    compartment_points = list()
+    compartment_points = []
     for i, (segment_id_start, position) in enumerate(
             zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])):
         compartment = [position]
@@ -173,7 +173,7 @@ def _compartment_paths(points, n_compartments):
 
     boundaries_segment_ids = (np.searchsorted(
         cumulative_pathlength, pathlengths_at_compartment_boundaries, side='right') - 1).tolist()
-    boundaries_positions = list()
+    boundaries_positions = []
     for segment_id, boundary_pathlength in zip(boundaries_segment_ids,
                                                pathlengths_at_compartment_boundaries):
 
@@ -230,13 +230,13 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
             [2.        , 2.        , 0.        ]])]
     """
 
-    NeuroM_cell = load_neuron(morph_path)
+    NeuroM_cell = load_morphology(morph_path)
     NRN_neuron = get_NRN_cell(morph_path)
     NRN_sections = list(NRN_neuron.icell.all)
 
     mapping = NeuroM_section_to_NRN_section(morph_path)
 
-    NeuroM_to_compartment_position_mapping = dict()
+    NeuroM_to_compartment_position_mapping = {}
 
     for section in NeuroM_cell.sections:
         if section.type == NeuriteType.soma:

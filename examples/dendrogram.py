@@ -26,8 +26,8 @@ def plain_example():
     synapses = pd.DataFrame(columns=required_synapse_properties, data=data)
     synapses = synapses.astype({'@target_node': int, '@source_node': int,
                                 'afferent_section_id': int, 'efferent_section_id': int})
-    neuron = nm.load_neuron('dendrogram_plain_example.swc')
-    fig = dendrogram.draw(neuron, synapses, 116)
+    m = nm.load_morphology('dendrogram_plain_example.swc')
+    fig = dendrogram.draw(m, synapses, 116)
     fig.show()
 
     # If you want to show additional data with synapses then just use additional columns in you
@@ -44,7 +44,7 @@ def plain_example():
     ])
     synapses_data = pd.DataFrame(columns=synapse_data_properties, data=data)
     synapses = pd.concat([synapses, synapses_data], axis=1)
-    fig = dendrogram.draw(neuron, synapses, 116)
+    fig = dendrogram.draw(m, synapses, 116)
     fig.show()
 
 
@@ -71,9 +71,9 @@ def circuit_example():
     synapses = pd.concat([synapses1, synapses2])
 
     morph_filepath = circuit.nodes['default'].morph.get_filepath(target_node_id)
-    neuron = nm.load_neuron(morph_filepath)
+    m = nm.load_morphology(morph_filepath)
 
-    fig = dendrogram.draw(neuron, synapses, target_node_id)
+    fig = dendrogram.draw(m, synapses, target_node_id)
     fig.show()
 
 

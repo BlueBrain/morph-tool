@@ -28,7 +28,7 @@ def find_morph(folder: Path, stem: str) -> Optional[Path]:
 
     If no morphology is found, returns None
     '''
-    for ext in {'.asc', '.ASC', '.h5', '.H5', '.swc', '.SWC'}:
+    for ext in ('.asc', '.ASC', '.h5', '.H5', '.swc', '.SWC'):
         path = folder / (stem + ext)
         if path.exists():
             return path

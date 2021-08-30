@@ -1,9 +1,9 @@
 """Module for drawing dendrograms with synapses."""
 import numpy as np
 from neurom import NeuriteType
-from neurom.core import Neurite, Neuron
+from neurom.core import Neurite, Morphology
 from neurom.view.dendrogram import Dendrogram, layout_dendrogram, move_positions, get_size
-from neurom.view.view import TREE_COLOR
+from neurom.view.matplotlib_impl import TREE_COLOR
 from pandas.core.dtypes.common import is_integer_dtype
 
 try:
@@ -24,7 +24,7 @@ class SynDendrogram(Dendrogram):
 
     def __init__(self, neurom_section):
         super().__init__(neurom_section)
-        if isinstance(neurom_section, Neuron):
+        if isinstance(neurom_section, Morphology):
             self.section_id = -1
             self.children = [
                 SynDendrogram(neurite.root_node) for neurite in neurom_section.neurites]
@@ -147,7 +147,7 @@ def draw(morphology, synapses=None, neuron_node_id=None):
     """Draw dendrogram with synapses.
 
     Args:
-        morphology (Neurite|Neuron): a Neuron instance of NeuroM package.
+        morphology (Neurite|Morphology): a Morphology instance of NeuroM package.
         synapses (DataFrame): synapses dataframe.
         neuron_node_id (int|None): node id of ``morphology``. If None then it is taken from
             ``synapses[TARGET_NODE_ID]``.
