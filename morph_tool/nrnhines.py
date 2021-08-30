@@ -82,7 +82,7 @@ def NeuroM_section_to_NRN_section(filename: Path):
     NeuroM_cell = load_morphology(filename)
     NRN_cell = get_NRN_cell(filename)
 
-    mapping = dict()
+    mapping = {}
 
     NRN_sections = list(NRN_cell.icell.all)
 
@@ -136,7 +136,7 @@ def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positio
                                        compartment boundary belongs
         boundaries_positions (List): the 3D positions of the compartment boundaries
     """
-    compartment_points = list()
+    compartment_points = []
     for i, (segment_id_start, position) in enumerate(
             zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])):
         compartment = [position]
@@ -173,7 +173,7 @@ def _compartment_paths(points, n_compartments):
 
     boundaries_segment_ids = (np.searchsorted(
         cumulative_pathlength, pathlengths_at_compartment_boundaries, side='right') - 1).tolist()
-    boundaries_positions = list()
+    boundaries_positions = []
     for segment_id, boundary_pathlength in zip(boundaries_segment_ids,
                                                pathlengths_at_compartment_boundaries):
 
@@ -236,7 +236,7 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
 
     mapping = NeuroM_section_to_NRN_section(morph_path)
 
-    NeuroM_to_compartment_position_mapping = dict()
+    NeuroM_to_compartment_position_mapping = {}
 
     for section in NeuroM_cell.sections:
         if section.type == NeuriteType.soma:
