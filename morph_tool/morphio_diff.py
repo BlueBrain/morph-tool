@@ -1,17 +1,16 @@
-"""This module provides the MorphIO diff functionality that can be used
-to see if two morphologies are the same or not"""
+"""Functionality that can be used to see if two morphologies are the same or not."""
 import numpy as np
 from morphio import Morphology
 
 
 class DiffResult:
-    """
-    An object that, when casted as a boolean, is equivalent to True when morphologies differ
-    Additional information about why they differ is stored in DiffResult.info
+    """An object that, when casted as a boolean, is equivalent to True when morphologies differ.
+
+    Additional information about why they differ is stored in DiffResult.info.
     """
 
     def __init__(self, is_different, info=None):
-        """The DiffResult ctor
+        """The DiffResult constructor.
 
         Args:
             is_different (bool): are the morphologies different
@@ -21,21 +20,19 @@ class DiffResult:
         self.info = info
 
     def __bool__(self):
-        """Returns True if morphologies differ"""
+        """Returns True if morphologies differ."""
         return self._is_different
 
     def __nonzero__(self):
-        """Returns True if morphologies differ, but for python 2"""
+        """Returns True if morphologies differ, but for python 2."""
         return self.__bool__()
 
 
 def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
-    """
-    Returns a DiffResult object that is equivalent to True when morphologies differ
+    """Returns a DiffResult object that is equivalent to True when morphologies differ.
+
     Additional information about why they differ is stored in DiffResult.info
-
     Morphologies with different formats can be compared.
-
     Morphologies are considered different if one of the following property differ:
     - number of root sections
     - sections type
@@ -43,7 +40,6 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
     - sections diameter array
     - sections perimeter array
     - sections number of children
-
     The soma are NOT taken into consideration
 
     Args:
@@ -52,7 +48,6 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
         rtol (float): the relative tolerance used for comparing points (see numpy.isclose help)
         atol (float): the absolute tolerance used for comparing points (see numpy.isclose help)
     """
-
     if not isinstance(morph1, Morphology):
         morph1 = Morphology(morph1)
     if not isinstance(morph2, Morphology):

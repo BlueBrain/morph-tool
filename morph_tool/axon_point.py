@@ -1,4 +1,4 @@
-"""Module to detect the terminal point of the main axon/"""
+"""Module to detect the terminal point of the main axon."""
 import logging
 import numpy as np
 

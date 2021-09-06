@@ -1,4 +1,4 @@
-"""Utils related to the NRN simulator"""
+"""Utils related to the NRN simulator."""
 import logging
 import multiprocessing.pool
 from pathlib import Path
@@ -20,7 +20,7 @@ L = logging.getLogger(__name__)
 
 
 def get_NRN_cell(filename: Path):
-    """Returns a NRN cell"""
+    """Returns a NRN cell."""
     try:
         # pylint: disable=import-outside-toplevel
         from bluepyopt import ephys
@@ -45,7 +45,7 @@ def _zero_length_section(section, epsilon=1e-8):
 
 
 def _validate_section(nrn_neuron, nrm_neuron, nrm_idx, nrn_idx):
-    """raise if the mapping NeuroM_section_to_NRN_section is not correct"""
+    """Raise if the mapping NeuroM_section_to_NRN_section is not correct."""
     NRN_sections = list(nrn_neuron.icell.all)
 
     nrm_s = nrm_neuron.sections[nrm_idx]
@@ -72,13 +72,13 @@ def _validate_section(nrn_neuron, nrm_neuron, nrm_idx, nrn_idx):
 
 
 def _validate_section_mapping(NeuroM_cell, NRN_cell, mapping):
-    """raise if the mapping NeuroM_section_to_NRN_section is not correct"""
+    """Raise if the mapping NeuroM_section_to_NRN_section is not correct."""
     for nrm_idx, nrn_idx in mapping.items():
         _validate_section(NRN_cell, NeuroM_cell, nrm_idx, nrn_idx)
 
 
 def NeuroM_section_to_NRN_section(filename: Path):
-    """Returns a mapping from NeuroM section IDs to NRN ones"""
+    """Returns a mapping from NeuroM section IDs to NRN ones."""
     NeuroM_cell = load_morphology(filename)
     NRN_cell = get_NRN_cell(filename)
 
@@ -87,7 +87,7 @@ def NeuroM_section_to_NRN_section(filename: Path):
     NRN_sections = list(NRN_cell.icell.all)
 
     def is_soma(NRN_section):
-        """Is the NRN section a soma section"""
+        """Is the NRN section a soma section."""
         return NRN_section.name().endswith('.soma[0]')
 
     # Skip soma if exists
@@ -127,8 +127,7 @@ def NeuroM_section_to_NRN_section(filename: Path):
 
 
 def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positions):
-    """
-    Returns the path of each compartment based on its starting and ending position
+    """Returns the path of each compartment based on its starting and ending position.
 
     Args:
         points (numpy.array): a 3D array of the section points
@@ -158,13 +157,12 @@ def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positio
 
 
 def _compartment_paths(points, n_compartments):
-    """
-    Returns the list of paths (list of 3D points) that form each compartment
+    """Returns the list of paths (list of 3D points) that form each compartment.
+
     Args:
         points (numpy.array): a 3D array of points
         n_compartments (int): the number of compartments
     """
-
     segments_directions = np.diff(points, axis=0)
     segment_lengths = np.linalg.norm(segments_directions, axis=1)
     cumulative_pathlength = np.append(0, np.cumsum(segment_lengths))
@@ -194,7 +192,7 @@ def _compartment_paths(points, n_compartments):
 
 
 def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
-    """Returns a dictionary NeuroM section id -> path of each compartment for the section
+    """Returns a dictionary NeuroM section id -> path of each compartment for the section.
 
     Path are formed by following the section points until the pathlength of the compartment is
     reached.
@@ -229,7 +227,6 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
             [1.        , 2.        , 0.        ],
             [2.        , 2.        , 0.        ]])]
     """
-
     NeuroM_cell = load_morphology(morph_path)
     NRN_neuron = get_NRN_cell(morph_path)
     NRN_sections = list(NRN_neuron.icell.all)
@@ -254,10 +251,10 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
                          point: List[float],
                          atol: float = 1e-08,
                          rtol: float = 1e-05) -> Union[None, int]:
-    """Returns the index of the first found section whose end is at a distance less than
-    EPSILON from POINT. If no section satisfies this requirement, returns None
+    """Returns the index of the first section whose end is close to ``point``.
 
-    The iteration order is given by the section index.
+    The distance between the end and ``point`` must be less than EPSILON from POINT. If no section
+    satisfies this requirement, returns None. The iteration order is given by the section index.
 
     Args:
         sections: a sequence of sections
@@ -279,10 +276,10 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
 
 
 class NestedPool(multiprocessing.pool.Pool):  # pylint: disable=abstract-method
-    """Class that represents a MultiProcessing nested pool"""
+    """Class that represents a MultiProcessing nested pool."""
 
     class Process(multiprocessing.Process):
-        """Class that represents a non-daemon process"""
+        """Class that represents a non-daemon process."""
 
         def __init__(self, *args, **kwargs):
             """Ensures group=None to avoid exception from multiprocessing.
@@ -296,11 +293,12 @@ class NestedPool(multiprocessing.pool.Pool):  # pylint: disable=abstract-method
 
         @property
         def daemon(self):
+            """Stub method. Always returns False."""
             return False
 
         @daemon.setter
         def daemon(self, value):
-            pass
+            """Stub method. Does not do anything."""
 
 
 def isolate(func):

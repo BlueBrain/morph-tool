@@ -1,6 +1,4 @@
-"""
-Caching morphology loader.
-"""
+"""Caching morphology loader."""
 
 import os
 
@@ -20,16 +18,16 @@ def _ensure_startswith_point(file_ext):
 
 
 class MorphLoader(object):
-    """
-    Caching morphology loader.
-
-    Args:
-        base_dir: path to directory with morphology files
-        file_ext: file extension to look for
-        cache_size: size of LRU cache (if `None`, the cache can grow without bound,
-            if 0, no lru_cache is used)
-    """
+    """Caching morphology loader."""
     def __init__(self, base_dir, file_ext, cache_size=None):
+        """Constructor.
+
+        Args:
+            base_dir: path to directory with morphology files
+            file_ext: file extension to look for
+            cache_size: size of LRU cache (if `None`, the cache can grow without bound,
+                if 0, no lru_cache is used)
+        """
         self.base_dir = base_dir
         self.file_ext = _ensure_startswith_point(file_ext)
         if cache_size == 0:

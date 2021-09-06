@@ -1,9 +1,9 @@
-"""Provides two classes to work with neurondb files
+"""Provides two classes to work with neurondb files.
+
 The main use is to provide a neuronDB loader and a method to retrieve
 information as a dataframe.
 
 Example:
-
 old_release = MorphDB.from_neurondb(Path("/realease/one/neuronDB.xml"), label='old-release')
 new_release = MorphDB.from_neurondb(Path("/realease/two/neuronDB.xml"), label='new-release')
 total = old_release + new_release
@@ -49,6 +49,7 @@ COLUMNS = ['name', 'mtype', 'msubtype', 'mtype_no_subtype',
 
 class MorphInfo:
     """A class the contains information about a morphology.
+
     Its role is to abstract away the raw data.
     """
 
@@ -56,7 +57,7 @@ class MorphInfo:
 
     def __init__(self, name: str, mtype: str, layer: Optional[Union[str, int]] = None,
                  **kwargs):
-        """MorphInfo ctor:
+        """A MorphInfo constructor.
 
         Upon initialization, all repair attributes are set to True.
 
@@ -96,7 +97,8 @@ class MorphInfo:
 
     @classmethod
     def _from_xmldict(cls, item: Dict[str, Any]):
-        """MorphInfo ctor.
+        """A MorphInfo constructor.
+
         Args:
             item: A dictionary that represents the content of the XML file.
                   The only mandatory keys are [name, mtype, layer]
@@ -108,7 +110,8 @@ class MorphInfo:
         )
 
         def is_true(repair: Dict[str, Any], key: str) -> bool:
-            """Parse a string representing a boolean repair flag and returns its boolean value
+            """Parse a string representing a boolean repair flag and returns its boolean value.
+
             Unless clearly stated as false, missing tags default to True
             - According to Eilif, an empty use_axon (corresponding to a null in the database)
               means that the axon is supposed to be used
@@ -145,12 +148,14 @@ class MorphInfo:
         return [getattr(self, attr) for attr in COLUMNS]
 
     def __repr__(self):
+        """Overloaded method."""
         return (f'MorphInfo(name={self.name!r}, mtype={self.mtype!r}, layer={self.layer!r}, '
                 f'label={self.label!r})')
 
 
 class MorphDB:
     """A MorphInfo container.
+
     It takes care of maintaining uniqueness of the MorphInfo element
     and methods to write neurondb to various format (xml, dat, csv)
     """
@@ -167,7 +172,7 @@ class MorphDB:
 
     @classmethod
     def _from_neurondb_dat(cls, neurondb, morph_paths, label):
-        """Private constructor from neuronDB.dat files
+        """Private constructor from neuronDB.dat files.
 
         The equivalent public method is MorphDB.from_neurondb
         """
@@ -222,7 +227,8 @@ class MorphDB:
                       neurondb: Union[Path, str],
                       label: str = 'default',
                       morphology_folder: Optional[Union[Path, str]] = None):
-        """Builds a MorphologyDB from a neurondb.(xml|dat) file
+        """Builds a MorphologyDB from a neurondb.(xml|dat) file.
+
         Args:
             neurondb: path to a neurondb.(xml|dat) file
             label: a unique label to mark all morphologies coming from this neurondb
@@ -253,7 +259,7 @@ class MorphDB:
                     mtypes: Iterable[Tuple[str, str]],
                     label: str = 'default',
                     extension: Optional[str] = None):
-        """Factory method to create a MorphDB object from a folder containing morphologies
+        """Factory method to create a MorphDB object from a folder containing morphologies.
 
         Args:
             morphology_folder: a folder containing morphologies
@@ -284,7 +290,7 @@ class MorphDB:
                        for name, mtype in mtypes)
 
     def _to_xmldict(self):
-        """Transform the data to a xmldict compatible dictionary"""
+        """Transform the data to a xmldict compatible dictionary."""
         def get_repair_attr(morph, attr):
             if attr == 'axon_inputs':
                 return 'axon_sources', {'axoninput': getattr(morph, attr)}
@@ -305,7 +311,7 @@ class MorphDB:
         }}
 
     def write(self, output_path: Union[Path, str]):
-        """Write the neurondb file to XML or DAT format
+        """Write the neurondb file to XML or DAT format.
 
         Args:
             output_path: the output path
@@ -323,7 +329,7 @@ class MorphDB:
                              ' Should be one of: (xml,csv,dat)')
 
     def features(self, config: Dict, n_workers=1):
-        """Returns a dataframe containing morphometrics and neurondb information
+        """Returns a dataframe containing morphometrics and neurondb information.
 
         Args:
             config: a NeuroM morph_stas config.
@@ -347,7 +353,7 @@ class MorphDB:
         return df.join(stats.drop(columns='name', level=1), how='inner')
 
     def check_files_exist(self):
-        """Raises if `self.df.path` has None values or non existing paths"""
+        """Raises if `self.df.path` has None values or non existing paths."""
         missing_morphs = self.df[self.df.path.isnull()].name.values
         if missing_morphs:
             raise ValueError(
@@ -358,12 +364,14 @@ class MorphDB:
                 raise ValueError(f'Non existing path: {path}')
 
     def __add__(self, other):
+        """Overloaded method."""
         obj = MorphDB()
         obj += self
         obj += other
         return obj
 
     def __iadd__(self, other):
+        """Overloaded method."""
         if isinstance(other, MorphDB):
             self.df = pd.concat([self.df, other.df])
             MorphDB._sanitize_df_types(self.df)
@@ -374,7 +382,9 @@ class MorphDB:
 
     @staticmethod
     def _create_dataframe(morphologies: List[MorphInfo]):
-        """Returns a pandas.DataFrame view of the data with the following columns:
+        """Creates a dataframe.
+
+        The dataframe has the following columns:
            'name': the morpho name (without extension)
            'mtype': the mtype with its subtype
            'msubtype': the msubtype (the part of the mtype after the ":")
@@ -403,7 +413,7 @@ class MorphDB:
 
     @staticmethod
     def _sanitize_df_types(df):
-        """Set up the proper types for each columns
+        """Set up the proper types for each columns.
 
         Args:
             df: the dataframe to be sanitized

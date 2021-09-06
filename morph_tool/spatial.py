@@ -1,4 +1,4 @@
-"""Module for spatial related functions"""
+"""Module for spatial related functions."""
 import numpy as np
 
 from neurom import COLS
@@ -18,7 +18,6 @@ def point_to_section_segment(neuron, point, rtol=1e-05, atol=1e-08):
         Tuple: (NeuroM/MorphIO section ID, point ID) of the point the matches the input coordinates.
         Since NeuroM v2, section ids of NeuroM and MorphIO are the same excluding soma.
     """
-
     for section in neuron.iter():
         points = section.points
         offset = np.where(

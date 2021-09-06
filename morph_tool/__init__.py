@@ -1,4 +1,4 @@
-"""Implementation of the morphology file converter"""
+"""Implementation of the morphology file converter."""
 from morphio import LogLevel, Morphology
 
 from morph_tool.apical_point import apical_point_position, apical_point_section_segment

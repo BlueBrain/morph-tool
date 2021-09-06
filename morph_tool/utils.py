@@ -1,4 +1,4 @@
-"""Utils"""
+"""Utils."""
 from functools import partial
 from pathlib import Path
 from typing import Optional
@@ -8,13 +8,13 @@ from deprecation import deprecated
 
 
 def is_morphology(filename, extensions=None):
-    """Returns True if the extension is supported"""
+    """Returns True if the extension is supported."""
     extensions = extensions or {'asc', 'h5', 'swc'}
     return Path(filename).suffix[1:].lower() in extensions
 
 
 def iter_morphology_files(folder, recursive=False, extensions=None):
-    """Iterator that returns path to morphology files"""
+    """Iterator that returns path to morphology files."""
     extensions = extensions or {'asc', 'h5', 'swc'}
     if recursive:
         files = Path(folder).rglob('*')
@@ -56,9 +56,11 @@ def _ensure_list(data):
 
 @deprecated(details='Use `morph_tool.morphdb.MorphDB` instead.')
 def neurondb_dataframe(neurondb: Path, morphology_dir: Optional[Path] = None) -> pd.DataFrame:
-    """Returns a DataFrame: [name, layer, mtype, use_axon, (optional) path]
+    """Returns a DataFrame.
 
-    If read from an XML, additional columns maybe be present
+    The expected columns: name, layer, mtype, use_axon, (optional) path. If read from an XML,
+    additional columns maybe be present.
+
     Args:
         neurondb: the neurondb.(dat|xml) file
         morphology_dir: (Optional) If passed, a column with the path to each morphology file

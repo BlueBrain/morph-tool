@@ -1,13 +1,16 @@
-"""Resampling functionality for morphio morphologies. It allows for the
-generation of new points on the morphology skeleton with different density
+"""Resampling functionality for morphio morphologies.
+
+It allows for the generation of new points on the morphology skeleton with different density.
 """
 import morphio
 import numpy as np
 
 
 def _accumulated_path_lengths(points):
-    """Return the accumulated path lengths along the polygonal line joining
-    the consecutive points, starting with the point of index 0
+    """Return the accumulated path lengths.
+
+    Accumulates along the polygonal line joining the consecutive points, starting with the point
+    of index 0.
 
     Args:
         points (np.ndarray): (N, 3) array of 3D points
@@ -28,9 +31,11 @@ def _accumulated_path_lengths(points):
 
 
 def _resample_from_linear_density(points, linear_density):
-    """Given a polyline of consecutive points that form segments, it creates
-    a new sampling of K points (or point properties) on the same polyline. K
-    is determined from the linear density as points per micron.
+    """Creates a new sampling of K points.
+
+    Given a polyline of consecutive points that form segments, it creates a new sampling of K
+    points (or point properties) on the same polyline. K is determined from the linear density
+    as points per micron.
 
     Each new point / property is determined via two values: a starting point
     at positional id i in the points array i and a fraction along the segment formed
@@ -68,7 +73,6 @@ def _resample_from_linear_density(points, linear_density):
         new_diams = diams[ids] + fractions * (diams[ids + 1] - diams[ids])
 
     Notes:
-
         It doesn't not return the ids and fractions for first and last points in
         the new resampling, because they should remain unchanged. Therefore, the
         total number of ids and fractions is K-2.
@@ -95,12 +99,11 @@ def _resample_from_linear_density(points, linear_density):
 
 
 def _parametric_values(values, ids, fractions):
-    """It creates a new array of values, where the start and end
-    values remain unchanged and the in-between values are calculated
+    """Creates a new array of values.
+
+    The start and the end values remain unchanged and the in-between values are calculated
     from the parametric equation:
-
     v'[k] = v[ids[k]] + fractions[k] * (v[ids[k] + 1] - v[ids[k]])
-
     See _resample_from_linear_density for more details on ids and fractions
 
     Args:
@@ -136,6 +139,7 @@ def _parametric_values(values, ids, fractions):
 
 def _resample_neuron_section(section, linear_density):
     """Resample in-place the section data based on linear density.
+
     Args:
         section (Section): Mutable morphology's section
         linear_density (float): Number of points per micron
@@ -148,6 +152,7 @@ def _resample_neuron_section(section, linear_density):
 
 def _resample_astrocyte_section(section, linear_density):
     """Resample in-place the section data based on linear density.
+
     Args:
         section (Section): Mutable morphology's section
         linear_density (float): Number of points per micron
@@ -160,9 +165,7 @@ def _resample_astrocyte_section(section, linear_density):
 
 
 def _dispatch_section_function(cell_family):
-    """Returns section function depending on the cell_family
-    of the morphology
-    """
+    """Returns section function depending on the cell_family of the morphology."""
     return {
         morphio.CellFamily.NEURON: _resample_neuron_section,
         morphio.CellFamily.GLIA: _resample_astrocyte_section
@@ -170,11 +173,10 @@ def _dispatch_section_function(cell_family):
 
 
 def resample_linear_density(obj, linear_density):
-    """Returns a new morphology with new points and point properties,
-    the number of which depends on the linear_density. The new
-    values are linearly interpolated from the old ones.
+    """Returns a new morphology with new points and point properties.
 
-    This function is useful for use cases where morphologies have too
+    The number of points depends on the linear_density. The new values are linearly interpolated
+    from the old ones. This function is useful for use cases where morphologies have too
     many points and a resampling with fewer points/properties is required.
 
     Args:

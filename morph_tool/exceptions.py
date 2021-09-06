@@ -1,13 +1,13 @@
-"""Exceptions module"""
+"""Exceptions module."""
 
 
 class MorphToolException(Exception):
-    """MorphTool exception"""
+    """MorphTool exception."""
 
 
 class NoAxonException(MorphToolException):
-    """MorphTool exception"""
+    """MorphTool exception."""
 
 
 class NoDendriteException(MorphToolException):
-    """MorphTool exception"""
+    """MorphTool exception."""
