@@ -1,8 +1,8 @@
-'''A utility module to get the surface as computed by neuron'''
+"""A utility module to get the surface as computed by neuron"""
 
 
 def get_NEURON_surface(path):
-    '''Return the soma surface computed by the NEURON simulator. Maybe.'''
+    """Return the soma surface computed by the NEURON simulator. Maybe."""
     try:
         # pylint: disable=import-outside-toplevel
         from bluepyopt.ephys import simulators, morphologies, models  # pylint: disable=import-error

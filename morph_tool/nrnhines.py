@@ -254,7 +254,7 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
                          point: List[float],
                          atol: float = 1e-08,
                          rtol: float = 1e-05) -> Union[None, int]:
-    '''Returns the index of the first found section whose end is at a distance less than
+    """Returns the index of the first found section whose end is at a distance less than
     EPSILON from POINT. If no section satisfies this requirement, returns None
 
     The iteration order is given by the section index.
@@ -264,7 +264,7 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
         point: the points's 3D coordinates
         atol: absolute tolerance
         rtol: relative tolerance
-    '''
+    """
     point = np.asarray(point)
 
     for index, section in enumerate(sections):

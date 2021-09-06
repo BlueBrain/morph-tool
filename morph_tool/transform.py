@@ -86,8 +86,8 @@ def translate(obj, shift):
 
 
 def align(section, direction):
-    '''Rotate a section (and all its descendents) so that its initial segment is oriented along
-    "direction"'''
+    """Rotate a section (and all its descendents) so that its initial segment is oriented along
+    ``direction``."""
     section_dir = section.points[1] - section.points[0]
     alpha = angle_between_vectors(section_dir, direction)
     if alpha < 1e-8:
@@ -177,10 +177,10 @@ def _get_points(morph, method, neurite_type, target_point):
 
 
 def _get_principal_direction(points):
-    '''Return the principal direction of a point cloud
+    """Return the principal direction of a point cloud
     It is the eigen vector of the covariance matrix with the highest eigen value.
 
-    Taken from neuror.unravel.'''
+    Taken from ``neuror.unravel``."""
     X = np.copy(np.asarray(points))
     X -= np.mean(X, axis=0)
     C = np.dot(X.T, X)
