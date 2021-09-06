@@ -1,4 +1,4 @@
-'''The morph-tool command line launcher'''
+"""The morph-tool command line launcher."""
 import logging
 import sys
 from pathlib import Path
@@ -18,14 +18,14 @@ REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_p
 
 @click.group()
 def cli():
-    '''The CLI entry point'''
+    """The CLI entry point."""
 
 
 @cli.command(short_help='Get soma surface as computed by NEURON')
 @click.argument('input_file', type=REQUIRED_PATH)
 @click.option('--quiet/--no-quiet', default=False)
 def soma_surface(input_file, quiet):
-    '''Get soma surface as computed by NEURON'''
+    """Get soma surface as computed by NEURON."""
     # pylint: disable=import-outside-toplevel
     from morph_tool.neuron_surface import get_NEURON_surface
     if quiet:
@@ -34,22 +34,23 @@ def soma_surface(input_file, quiet):
     try:
         click.echo('Soma surface: {}'.format(get_NEURON_surface(input_file)))
     except ImportError as e:
-        raise ImportError('''the NEURON module is not installed.
+        raise ImportError("""the NEURON module is not installed.
         - if you are on the cluster, you can try: module load nix/hpc/neuron
-        - otherwise, get it here: https://github.com/neuronsimulator/nrn and compile it...'''
+        - otherwise, get it here: https://github.com/neuronsimulator/nrn and compile it..."""
                           ) from e
 
 
 @cli.group()
 def convert():
-    '''Convert a file format between its different representation.
+    """Convert a file format between its different representation.
 
     A special care has been given to the soma conversion as each file format
     has its own representation of the soma.
     While the soma shape cannot be preserved during the conversion,
     the soma surface should be.
 
-    More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458'''
+    More information at: https://bbpteam.epfl.ch/project/issues/browse/NSETM-458
+    """
 
 
 @convert.command(short_help='Convert a single morphology')
@@ -63,7 +64,7 @@ def convert():
 @click.option('--single-point-soma', is_flag=True, help='For SWC files only')
 @click.option('--sanitize', is_flag=True, help='whether to sanitize the morphology')
 def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma, sanitize):
-    '''Convert a single morphology from/to the following formats: ASC, SWC, H5'''
+    """Convert a single morphology from/to the following formats: ASC, SWC, H5."""
     if quiet:
         L.setLevel(logging.WARNING)
 
@@ -71,10 +72,10 @@ def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma,
 
 
 def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_point_soma, sanitize):
-    '''Function to be passed to dask.bag.map
+    """Function to be passed to dask.bag.map.
 
     Attempts a conversion and returns the path if it failed
-    '''
+    """
     try:
         converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
                           recenter, nrn_order, single_point_soma, sanitize)
@@ -106,7 +107,7 @@ def folder(input_dir,  # pylint: disable=too-many-arguments
            single_point_soma,
            sanitize,
            ncores):
-    '''Convert all morphologies in the folder and its subfolders'''
+    """Convert all morphologies in the folder and its subfolders."""
     # pylint: disable=import-outside-toplevel
     try:
         import dask.bag as dask_bag
@@ -143,8 +144,7 @@ def folder(input_dir,  # pylint: disable=too-many-arguments
               'See https://numpy.org/doc/stable/reference/generated/numpy.allclose.html')
 @click.option('--quiet/--no-quiet', default=False)
 def diff(morph1, morph2, rtol, atol, quiet):
-    '''
-    Compare two morphology files.
+    """Compare two morphology files.
 
     Return exit code 0 if morphology objects stored in `file1` and `file2`
     are deemed identical by MorphIO; and exit code 1 otherwise.
@@ -152,7 +152,7 @@ def diff(morph1, morph2, rtol, atol, quiet):
     Morphologies with different formats can be compared.
 
     MORPH1 and MORPH2 can be either filenames or morphio.Morpholgy objects
-    '''
+    """
     if quiet:
         L.setLevel(logging.WARNING)
 

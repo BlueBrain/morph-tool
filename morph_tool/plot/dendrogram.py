@@ -23,6 +23,7 @@ class SynDendrogram(Dendrogram):
     """Dendrogram that keeps track of ``neurom_section.id`` that was used to create it."""
 
     def __init__(self, neurom_section):
+        """Create a dendrogram."""
         super().__init__(neurom_section)
         if isinstance(neurom_section, Morphology):
             self.section_id = -1

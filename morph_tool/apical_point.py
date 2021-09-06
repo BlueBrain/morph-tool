@@ -1,4 +1,4 @@
-'''Module to retrieve the position of the apical point'''
+"""Module to retrieve the position of the apical point."""
 import logging
 import numpy as np
 
@@ -15,7 +15,7 @@ X, Y, Z = 0, 1, 2
 
 
 def apical_point_section_segment(neuron):
-    '''find the apical point's section and segment
+    """Find the apical point's section and segment.
 
     Args:
         neuron (morphio.Morphology): a morphology
@@ -23,7 +23,7 @@ def apical_point_section_segment(neuron):
     Returns:
         Tuple: (NeuroM/MorphIO section ID, point ID) of the apical point. Since NeuroM v2, section
         ids of NeuroM and MorphIO are the same excluding soma.
-    '''
+    """
     point = apical_point_position(neuron)
 
     if point is None:
@@ -35,11 +35,10 @@ def apical_point_section_segment(neuron):
 
 
 def apical_point_position(neuron, tuft_percent=20):
-    '''Attempt to find the apical point in 'tufted' neurons
+    """Attempt to find the apical point in 'tufted' neurons.
 
-    The algorithm is a simplification of:
-https://bbpcode.epfl.ch/source/xref/analysis/Pneumatk/pneumatk/__tools__/ \
-    Tree/methods/get_apical_point_index.py
+    The algorithm is a simplification of https://bbpcode.epfl.ch/source/xref/analysis/Pneumatk/
+    pneumatk/__tools__/ Tree/methods/get_apical_point_index.py
 
     Consider a neuron:
 
@@ -61,14 +60,13 @@ https://bbpcode.epfl.ch/source/xref/analysis/Pneumatk/pneumatk/__tools__/ \
     cells, ex: C050398B-I4.)
 
     Args:
-        neuron (morphio.Morphology): a neuron
-        tuft_percent: percentage of the 'height' of the apical dendrite that
-        would enclose the tuft, only leaves in this volume are considered as
-        endpoints
+        neuron (morphio.Morphology): a neuron morphology
+        tuft_percent: percentage of the 'height' of the apical dendrite that would enclose the
+            tuft, only leaves in this volume are considered as endpoints
 
     Returns:
-        neurom.core.point if point is found, or None if it isn't
-    '''
+        neurom.core.dataformat.Point: a point if it is found, or None otherwise
+    """
     apical = [root for root in neuron.root_sections
               if SectionType.apical_dendrite == root.type]
 

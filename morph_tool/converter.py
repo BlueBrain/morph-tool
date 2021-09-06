@@ -1,4 +1,4 @@
-'''A morphology converter that tries to keep the soma surface equal'''
+"""A morphology converter that tries to keep the soma surface equal."""
 import logging
 from pathlib import Path
 
@@ -20,7 +20,7 @@ cX, cY, cXY = np.s_[:, X], np.s_[:, Y], np.s_[:, :Z]
 
 
 def contourcenter(xyz):
-    '''python implementation of NEURON code: lib/hoc/import3d/import3d_sec.hoc '''
+    """Python implementation of NEURON code lib/hoc/import3d/import3d_sec.hoc."""
     POINTS = 101
 
     points = np.vstack((np.diff(xyz[:, [X, Y]], axis=0), xyz[0, [X, Y]]))
@@ -37,12 +37,11 @@ def contourcenter(xyz):
 
 
 def get_sides(points, major, minor):
-    '''
-    Circular permutation of the points so that the point with the largest
-    coordinate along the major axis becomes the last point
-    tobj = major.c.mul(d.x[i])  ###### uneeded? line 1191
-    '''
+    """Circular permutation of the points.
 
+    So that the point with the largest coordinate along the major axis becomes the last point
+    ``tobj = major.c.mul(d.x[i])``  ###### unneeded? line 1191
+    """
     major_coord, minor_coord = np.dot(points, major), np.dot(points, minor)
 
     imax = np.argmax(major_coord)
@@ -58,16 +57,15 @@ def get_sides(points, major, minor):
 
 
 def make_convex(sides, rads):
-    '''Keep only points that make path convex'''
+    """Keep only points that make path convex."""
     def convex_idx(m):
-        '''Return index to elements of m that make it convex
+        """Return index to elements of m that make it convex.
 
         Note: not efficient at the moment
         # now we have the two sides without the min and max points (rads[0]=0)
         # we hope both sides now monotonically increase, i.e. convex
         # make it convex
-
-        '''
+        """
         idx = np.ones_like(m, dtype=bool)
         last_val = m[-1]
         for i in range(len(m) - 2, -1, -1):
@@ -86,11 +84,11 @@ def make_convex(sides, rads):
 
 
 def contour2centroid(mean, points):
-    '''this follows the function in
-            lib/hoc/import3d/import3d_gui.hoc
-       most of the comments are from there, so if you want to follow along, it should
-       break up the function the same way
-    '''
+    """This follows the function in lib/hoc/import3d/import3d_gui.hoc.
+
+    Most of the comments are from there, so if you want to follow along, it should
+    break up the function the same way.
+    """
     L.info('Converting soma contour into a stack of cylinders')
 
     # find the major axis of the ellipsoid that best fits the shape
@@ -129,8 +127,11 @@ def contour2centroid(mean, points):
 
 
 def _to_sphere(neuron):
-    '''Convert a 3-pts cylinder or a 1-pt sphere into a circular
-    contour that represents the same sphere'''
+    """To a circular contour soma.
+
+    Convert a 3-pts cylinder or a 1-pt sphere into a circular contour that represents the same
+    sphere.
+    """
     radius = neuron.soma.diameters[0] / 2.
     N = 20
     points = np.zeros((N, 3))
@@ -143,21 +144,24 @@ def _to_sphere(neuron):
 
 
 def cylinder_to_cylindrical_contour(neuron):
-    '''We convert the cylinder into a circular contour that represents the same sphere'''
+    """We convert the cylinder into a circular contour that represents the same sphere."""
     L.info('Converting 3 point soma to sperical soma with same surface')
     _to_sphere(neuron)
 
 
 def single_point_sphere_to_circular_contour(neuron):
-    '''Transform a single point soma that represents a sphere
-    into a circular contour that represents the same sphere'''
+    """Single point soma to contour soma.
+
+    Transform a single point soma that represents a sphere into a circular contour that represents
+    the same sphere.
+    """
     L.info('Converting 1-point soma (sperical soma) to circular contour '
            'representing the same sphere')
     _to_sphere(neuron)
 
 
 def soma_to_single_point(soma):
-    '''surface preserving cylindrical soma to a single point sphere'''
+    """Surface preserving cylindrical soma to a single point sphere."""
     L.info('Converting soma to a single point sphere, while preserving the surface')
     neurom_points = np.hstack((soma.points, 0.5 * soma.diameters[:, None]))
     surface_area = sum(morphmath.segment_area(seg)
@@ -168,7 +172,7 @@ def soma_to_single_point(soma):
 
 
 def from_swc(neuron, output_ext):
-    '''Convert to SWC'''
+    """Convert to SWC."""
     if output_ext == 'swc':
         return neuron
 
@@ -203,8 +207,7 @@ def from_swc(neuron, output_ext):
 
 
 def from_h5_or_asc(neuron, output_ext):
-    '''Convert from ASC/H5.'''
-
+    """Convert from ASC/H5."""
     if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
         if output_ext == 'asc':
             single_point_sphere_to_circular_contour(neuron)
@@ -223,7 +226,7 @@ def convert(input_file,
             nrn_order=False,
             single_point_soma=False,
             sanitize=False):
-    '''Run the appropriate converter
+    """Run the appropriate converter.
 
     Args:
         input_file(str): path to input file
@@ -233,7 +236,7 @@ def convert(input_file,
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
         single_point_soma(bool): For SWC only
         sanitize(bool): whether to sanitize the morphology
-    '''
+    """
     kwargs = {}
     if nrn_order:
         kwargs['options'] = Option.nrn_order

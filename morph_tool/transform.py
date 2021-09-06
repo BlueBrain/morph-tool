@@ -1,6 +1,4 @@
-"""
-Tools for morphology geometric transformations (translation, rotation, etc).
-"""
+"""Tools for morphology geometric transformations (translation, rotation, etc)."""
 import logging
 from enum import Enum
 import numpy as np
@@ -26,8 +24,7 @@ def _apply_recursively(func, obj, origin=(0, 0, 0)):
 
 
 def transform(obj, A):
-    """
-    Apply transformation matrix `A` to a given morphology object.
+    """Apply transformation matrix `A` to a given morphology object.
 
     Args:
         obj: Morphology / Section
@@ -46,8 +43,7 @@ def transform(obj, A):
 
 
 def rotate(obj, A, origin=(0, 0, 0)):
-    """
-    Apply rotation matrix `A` to a given morphology object.
+    """Apply rotation matrix `A` to a given morphology object.
 
     Args:
         obj: Morphology / Section
@@ -67,8 +63,7 @@ def rotate(obj, A, origin=(0, 0, 0)):
 
 
 def translate(obj, shift):
-    """
-    Apply translation to a given morphology object.
+    """Apply translation to a given morphology object.
 
     Args:
         obj: Morphology / Section
@@ -86,8 +81,7 @@ def translate(obj, shift):
 
 
 def align(section, direction):
-    '''Rotate a section (and all its descendents) so that its initial segment is oriented along
-    "direction"'''
+    """Rotate a section (and all its descendents) so its initial segment is along ``direction``."""
     section_dir = section.points[1] - section.points[0]
     alpha = angle_between_vectors(section_dir, direction)
     if alpha < 1e-8:
@@ -108,7 +102,7 @@ def align(section, direction):
 
 
 class AlignMethod(Enum):
-    """Contains possible align methods for align_morphology"""
+    """Contains possible align methods for align_morphology."""
 
     WHOLE = 'whole'
     TRUNK = 'trunk'
@@ -122,7 +116,7 @@ class AlignMethod(Enum):
 
 
 def rotation_matrix_from_vectors(vec1, vec2):
-    """ Find the rotation matrix that aligns vec1 to vec2
+    """Find the rotation matrix that aligns vec1 to vec2.
 
     Picked from: https://stackoverflow.com/a/59204638/3868743
     Args:
@@ -177,10 +171,11 @@ def _get_points(morph, method, neurite_type, target_point):
 
 
 def _get_principal_direction(points):
-    '''Return the principal direction of a point cloud
-    It is the eigen vector of the covariance matrix with the highest eigen value.
+    """Return the principal direction of a point cloud.
 
-    Taken from neuror.unravel.'''
+    It is the eigen vector of the covariance matrix with the highest eigen value. Taken from
+    ``neuror.unravel``.
+    """
     X = np.copy(np.asarray(points))
     X -= np.mean(X, axis=0)
     C = np.dot(X.T, X)

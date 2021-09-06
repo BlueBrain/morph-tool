@@ -1,4 +1,6 @@
-"""Module for plotting functions. In order to use it, you must install morph-tool as:
+"""Module for plotting functions.
+
+In order to use it, you must install morph-tool as:
 
 .. code:: bash
 

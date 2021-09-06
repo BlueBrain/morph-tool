@@ -1,5 +1,4 @@
-'''What we call grafting is the process of taking one piece of a neuron and
-putting it on another neuron.'''
+"""Grafting is the process of taking one piece of a neuron and putting it on another neuron."""
 import logging
 
 import numpy as np
@@ -19,7 +18,6 @@ def find_axon(axon_or_donor_axon):
 
     If the number of axons found is greater than 1, then return the first axon.
     """
-
     if isinstance(axon_or_donor_axon, (ImmutSection, Section)):
         if axon_or_donor_axon.type == SectionType.axon:
             return axon_or_donor_axon
@@ -58,31 +56,30 @@ def _axon_dendrites_angle(neuron):
 
 def _rotation_around_axis(axis, angle):
     """Returns a rotation matrix around the selected axis by an angle."""
-    d = np.array(axis, dtype=np.float) / np.linalg.norm(axis)
+    d = np.array(axis, dtype=float) / np.linalg.norm(axis)
 
     sn = np.sin(angle)
     cs = np.cos(angle)
 
-    eye = np.eye(3, dtype=np.float)
+    eye = np.eye(3, dtype=d.dtype)
     skew = np.array([[0, -d[2], d[1]],
                      [d[2], 0, -d[0]],
-                     [-d[1], d[0], 0]], dtype=np.float)
+                     [-d[1], d[0], 0]], dtype=d.dtype)
 
     mtx = eye + sn * skew + (1. - cs) * np.linalg.matrix_power(skew, 2)
     return mtx
 
 
 def _rotate_vector(vec, axis, angle):
-    """Rotates the input vector vec
-       by a selected angle
-       around a specific axis.
-    """
+    """Rotates ``vec`` by a selected ``angle`` around a specific ``axis``."""
     return np.dot(_rotation_around_axis(axis, angle), vec)
 
 
 def _random_direction(axis, angle, rng=np.random):
-    '''Returns an direction that makes an theta angle 'angle'
-    with 'axis' and that has a random phi angle in [0, 2 pi]'''
+    """Returns a direction that makes an ``angle`` with ``axis``.
+
+    And that has a random phi angle in [0, 2 pi].
+    """
     orthogonal = np.cross(axis, [0, 0, 1])
     if np.linalg.norm(orthogonal) < 1e-7:
         orthogonal = np.cross(axis, [0, 1, 0])
@@ -94,7 +91,7 @@ def _random_direction(axis, angle, rng=np.random):
 
 
 def _section_initial_direction(section):
-    '''Returns the section initial direction'''
+    """Returns the section initial direction."""
     direction = section.points[1] - section.points[0]
 
     # In case of duplicate points, we skip first point
@@ -104,7 +101,7 @@ def _section_initial_direction(section):
 
 
 def _soma_mean_radius(neuron, soma_center):
-    '''Returns the soma mean radius'''
+    """Returns the soma mean radius."""
     if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
         return neuron.soma.diameters[0] / 2.
     else:
@@ -112,10 +109,9 @@ def _soma_mean_radius(neuron, soma_center):
 
 
 def grafting_position(neuron, axon_or_donor_neuron, rng=np.random):
-    '''Find out where to put the grafted axon
+    """Find out where to put the grafted axon.
 
-    If the neuron to be grafted already has a neuron reuse its starting point
-
+    If the neuron to be grafted already has a neuron reuse its starting point.
     Otherwise try to mimic the position of the axon with respect to dendrites in
     the donor axon. The position is choosen in order to
     preserve the direction between the axon initial segment direction
@@ -123,7 +119,7 @@ def grafting_position(neuron, axon_or_donor_neuron, rng=np.random):
 
     Returns:
         The position where to graft the neuron
-    '''
+    """
     try:
         old_axon = find_axon(neuron)
         return old_axon.points[0]
@@ -137,23 +133,23 @@ def grafting_position(neuron, axon_or_donor_neuron, rng=np.random):
 
 
 def delete_old_axons(neuron):
-    '''Delete all axons'''
+    """Delete all axons."""
     for root_section in neuron.root_sections:
         if root_section.type == SectionType.axon:
             neuron.delete_section(root_section)
 
 
 def graft_axon(neuron, axon_or_donor_neuron, rng=np.random):
-    '''Graft an axon
-    args:
+    """Graft an axon.
+
+    This is a very simple implementation. No check are performed and the new axon is simply
+    translated at the place where the old axon was.
+
+    Args:
         neuron (morphio.mut.Morphology): Neuron where the axon will be grafted
         axon_or_donor_neuron (morphio.Morphology): An axon or a neuron with an axon
-
-    This is a very simple implementation.
-    No check are performed and the new axon is simply
-    translated at the place where the old axon was.
-    '''
-
+        rng (np.random): function for random generation
+    """
     donor_axon = find_axon(axon_or_donor_neuron)
     position = grafting_position(neuron, axon_or_donor_neuron, rng)
 

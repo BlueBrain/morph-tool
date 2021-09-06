@@ -1,4 +1,6 @@
-"""Constants for names that are required to be in columns of ``synapses`` arg of
+"""Constants module.
+
+Constants for names that are required to be in columns of ``synapses`` arg of
 ``morph_tool.plot`` package. These constants are the same as edge properties of `Sonata
 <https://github.com/AllenInstitute/sonata/blob/master/docs/SONATA_DEVELOPER_GUIDE.md#
 edges---optional-reserved-attributes>`__. So you can use these constants, their values as plain
