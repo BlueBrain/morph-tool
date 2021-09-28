@@ -37,7 +37,10 @@ class SynDendrogram(Dendrogram):
 
 
 def _draw_polygon(coords, color):
-    path = 'M' + ' L'.join('{:.2f},{:.2f}'.format(coord[0], coord[1]) for coord in coords) + ' Z'
+    path = ('M' +
+            ' L'.join(f'{coord[0]:.2f},{coord[1]:.2f}' for coord in coords) +
+            ' Z'
+            )
 
     return graph_objects.layout.Shape(
         opacity=0.4, type="path", path=path, fillcolor=color, line_color=color)

@@ -322,7 +322,7 @@ class MorphDB:
             self.df[['name', 'layer', 'mtype']].to_csv(output_path, sep=' ', header=False,
                                                        index=False)
         elif ext == '.xml':
-            with output_path.open('w') as fd:
+            with output_path.open('w', encoding='utf-8') as fd:
                 fd.write(xmltodict.unparse(self._to_xmldict(), pretty=True))
         else:
             raise ValueError(f'Unsupported neurondb extensions ({ext}).'

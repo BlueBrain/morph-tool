@@ -61,10 +61,11 @@ def _validate_section(nrn_neuron, nrm_neuron, nrm_idx, nrn_idx):
     nrn_pts = [nrn_s.x3d(0), nrn_s.y3d(0), nrn_s.z3d(0)]
     nrm_pts = nrm_s.points[0, COLS.XYZ]
 
-    err_msg = ('ERROR Section mismatch: NRN ID ({}) != NeuroM ID ({})'
-               'NRN section:\n{}\n\nNeuroM section:\n{}'.format(
-                   nrn_idx, nrm_idx,
-                   nrn_pts, nrm_pts))
+    err_msg = (f'ERROR Section mismatch: NRN ID ({nrn_idx}) != NeuroM ID ({nrm_idx})'
+               'NRN section:\n'
+               f'{nrn_pts}\n\n'
+               'NeuroM section:\n'
+               f'{nrm_pts}')
     assert_almost_equal(nrn_pts,
                         nrm_pts,
                         decimal=2,

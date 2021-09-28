@@ -22,7 +22,7 @@ def find_axon(axon_or_donor_axon):
         if axon_or_donor_axon.type == SectionType.axon:
             return axon_or_donor_axon
         else:
-            raise MorphToolException('The section: {} is not an axon'.format(axon_or_donor_axon))
+            raise MorphToolException(f'The section: {axon_or_donor_axon} is not an axon')
 
     axons = [root for root in axon_or_donor_axon.root_sections
              if root.type == SectionType.axon]

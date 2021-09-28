@@ -62,9 +62,11 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
             val1, val2 = getattr(section1, attrib), getattr(section2, attrib)
             if val1.shape != val2.shape:
                 return DiffResult(True,
-                                  'Attributes Section.{} of:\n'
-                                  '{}\n{}\nhave different shapes: {} vs {}'.format(
-                                      attrib, section1, section2, val1.shape, val2.shape))
+                                  f'Attributes Section.{attrib} of:\n'
+                                  f'{section1}\n'
+                                  f'{section2}\n'
+                                  f'have different shapes: {val1.shape} vs {val2.shape}'
+                                  )
             is_close = np.isclose(val1, val2, rtol=rtol, atol=atol)
             if not is_close.all():
                 first_diff_index = np.where(~is_close)[0][0]
@@ -76,11 +78,10 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
                                   f'Vector {attrib} differs at index {first_diff_index}: '
                                   f'{val1[first_diff_index]} != {val2[first_diff_index]}')
         if section1.type != section2.type:
-            return DiffResult(True, '{} and {} have different section types'.format(
-                section1, section2))
+            return DiffResult(True,
+                              f'{section1} and {section2} have different section types')
         if len(section1.children) != len(section2.children):
             return DiffResult(True,
-                              '{} and {} have a different number of children'.format(
-                                  section1, section2))
+                              f'{section1} and {section2} have a different number of children')
 
     return DiffResult(False)
