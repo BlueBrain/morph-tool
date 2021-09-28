@@ -32,7 +32,7 @@ def soma_surface(input_file, quiet):
         L.setLevel(logging.WARNING)
 
     try:
-        click.echo('Soma surface: {}'.format(get_NEURON_surface(input_file)))
+        click.echo(f'Soma surface: {get_NEURON_surface(input_file)}')
     except ImportError as e:
         raise ImportError("""the NEURON module is not installed.
         - if you are on the cluster, you can try: module load nix/hpc/neuron

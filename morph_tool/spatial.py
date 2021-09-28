@@ -26,4 +26,4 @@ def point_to_section_segment(neuron, point, rtol=1e-05, atol=1e-08):
         if offset[0].size:
             return section.id, offset[0][0]
 
-    raise ValueError('Cannot find point in morphology that matches: {}'.format(point))
+    raise ValueError(f'Cannot find point in morphology that matches: {point}')

@@ -200,8 +200,7 @@ def from_swc(neuron, output_ext):
             single_point_sphere_to_circular_contour(neuron)
     else:
         raise Exception(
-            'A SWC morphology is not supposed to have a soma of type: {}'.format(
-                neuron.soma_type))
+            f'A SWC morphology is not supposed to have a soma of type: {neuron.soma_type}')
 
     return neuron
 
@@ -262,7 +261,7 @@ def convert(input_file,
                      }[neuron.version[0]]
     except KeyError as e:
         raise Exception(
-            'No converter for morphology type: {}'.format(neuron.version)) from e
+            f'No converter for morphology type: {neuron.version}') from e
 
     L.info('Original soma type: %s', neuron.soma_type)
     new = converter(neuron, output_ext)
