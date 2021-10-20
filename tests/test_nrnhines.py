@@ -8,6 +8,12 @@ DATA = Path(__file__).parent / "data"
 SIMPLE = DATA / "simple2.asc"
 
 
+def test_get_segment_resistance_distances():
+    dists = tested.get_segment_resistance_distances(DATA / "neuron.asc")
+    assert_array_almost_equal(dists[0][:2], [0.0, 0.0013397])
+    assert_array_almost_equal(dists[1][:2], [0.03909698, 0.04153088])
+
+
 def test_get_section_resistance_distance_matrix():
     conds = tested.get_section_resistance_distance_matrix(DATA / "neuron.asc")
     assert_array_almost_equal(conds[0, :2], [0.0, 0.03909698])

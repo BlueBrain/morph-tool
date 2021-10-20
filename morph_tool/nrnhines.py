@@ -6,6 +6,7 @@ from typing import List, Sequence, Union
 
 import numpy as np
 from neurom import COLS, NeuriteType, iter_sections, load_morphology
+from neurom import morphmath
 from neurom.core.types import NeuriteIter
 from numpy.testing import assert_almost_equal
 
@@ -19,7 +20,26 @@ except ImportError as e:
 L = logging.getLogger(__name__)
 
 
+def get_segment_resistance_distances(filename):
+    """Compute resistance distance between soma and NeuroM segments.
+
+    This is done via linear interpolation on sections.
+    """
+
+    effective_resistance = get_section_resistance_distance_matrix(filename)
+    sec_eff_dists = effective_resistance[0]
+    seg_eff_dists = []
+    morph = load_neuron(filename)
+    for section in morph.iter():
+        eff_orig = sec_eff_dists[section.parent.id + 1] if not section.is_root else 0
+        eff_term = sec_eff_dists[section.id + 1]
+        dists = morphmath.interval_lengths(section.points, prepend_zero=True).cumsum()
+        seg_eff_dists.append(np.interp(dists, [0, dists[-1]], [eff_orig, eff_term]))
+    return seg_eff_dists
+
+
 def get_section_resistance_distance_matrix(filename):
+    """Compute resistance distnace matrix between NeuroM sections."""
     cell = get_NRN_cell(filename)
     morph = load_morphology(filename)
     m = NeuroM_section_to_NRN_section(filename)
@@ -34,7 +54,7 @@ def get_section_resistance_distance_matrix(filename):
         for j in adj:
             adjacency[i + 1, j + 1] = conductances[j]
             adjacency[j + 1, i + 1] = conductances[j]
-    print(adjacency.sum(1))
+
     laplacian = np.diag(adjacency.sum(1)) - adjacency
     linv = np.linalg.pinv(laplacian)
     effective_resistance = np.zeros(shape=np.shape(laplacian))
@@ -44,6 +64,17 @@ def get_section_resistance_distance_matrix(filename):
     return effective_resistance
 
 
+def create_NRN_morphology(filename):
+    cell = get_NRN_cell(filename)
+    morph = load_neuron(filename)
+    m = NeuroM_section_to_NRN_section(filename)
+    NRN_sections = list(cell.icell.all)
+    for section in morph.iter():
+        sec = NRN_sections[m[section.id]]
+        for seg in sec:
+            print(sec.n3d())
+
+
 def get_NRN_cell(filename: Path):
     """Returns a NRN cell."""
     try:
@@ -51,7 +82,7 @@ def get_NRN_cell(filename: Path):
         from bluepyopt import ephys
     except ImportError as e_:
         raise ImportError(
-            'bluepyopt not installed; please use `pip install morph-tool[nrn]`'
+            "bluepyopt not installed; please use `pip install morph-tool[nrn]`"
         ) from e_
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
