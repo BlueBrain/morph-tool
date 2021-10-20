@@ -29,7 +29,7 @@ def get_segment_resistance_distances(filename):
     effective_resistance = get_section_resistance_distance_matrix(filename)
     sec_eff_dists = effective_resistance[0]
     seg_eff_dists = []
-    morph = load_neuron(filename)
+    morph = load_morphology(filename)
     for section in morph.iter():
         eff_orig = sec_eff_dists[section.parent.id + 1] if not section.is_root else 0
         eff_term = sec_eff_dists[section.id + 1]
@@ -62,17 +62,6 @@ def get_section_resistance_distance_matrix(filename):
         for j in range(len(effective_resistance)):
             effective_resistance[i, j] = linv[i, i] + linv[j, j] - 2 * linv[i, j]
     return effective_resistance
-
-
-def create_NRN_morphology(filename):
-    cell = get_NRN_cell(filename)
-    morph = load_neuron(filename)
-    m = NeuroM_section_to_NRN_section(filename)
-    NRN_sections = list(cell.icell.all)
-    for section in morph.iter():
-        sec = NRN_sections[m[section.id]]
-        for seg in sec:
-            print(sec.n3d())
 
 
 def get_NRN_cell(filename: Path):
