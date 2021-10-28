@@ -28,13 +28,13 @@ def get_segment_resistance_distances(filename):
 
     effective_resistance = get_section_resistance_distance_matrix(filename)
     sec_eff_dists = effective_resistance[0]
-    seg_eff_dists = []
+    seg_eff_dists = {}
     morph = load_morphology(filename)
     for section in morph.iter():
         eff_orig = sec_eff_dists[section.parent.id + 1] if not section.is_root else 0
         eff_term = sec_eff_dists[section.id + 1]
         dists = morphmath.interval_lengths(section.points, prepend_zero=True).cumsum()
-        seg_eff_dists.append(np.interp(dists, [0, dists[-1]], [eff_orig, eff_term]))
+        seg_eff_dists[section.id] = np.interp(dists, [0, dists[-1]], [eff_orig, eff_term])[1:]
     return seg_eff_dists
 
 
