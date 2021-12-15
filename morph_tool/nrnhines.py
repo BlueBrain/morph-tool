@@ -201,32 +201,32 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
     Args:
         morph_path: the morphology path
 
-
     1) Compute the cumulative pathlength along the section segments_directions
     2) Get the compartment pathlengths (compartment are of equal pathlength in a given section)
     3) Compartment by compartment, follow the points until the compartment pathlength is reached
 
 
-    Example for one section:
+    Example for one section::
 
-                   (1, 2) ------ (2, 2)
-                      |
-                      |
-                      |
-    (0, 0) ------- (1, 0)
+                       (1, 2) ------ (2, 2)
+                          |
+                          |
+                          |
+        (0, 0) ------- (1, 0)
 
 
-    If n_compartments == 3, three paths are returned:
-    [array([[0.        , 0.        , 0.        ],
-            [1.        , 0.        , 0.        ],
-            [1.        , 0.33333333, 0.        ]]),
+    If n_compartments == 3, three paths are returned::
 
-     array([[1.        , 0.33333333, 0.        ],
-            [1.        , 1.66666667, 0.        ]]),
+        [array([[0.        , 0.        , 0.        ],
+                [1.        , 0.        , 0.        ],
+                [1.        , 0.33333333, 0.        ]]),
 
-     array([[1.        , 1.66666667, 0.        ],
-            [1.        , 2.        , 0.        ],
-            [2.        , 2.        , 0.        ]])]
+         array([[1.        , 0.33333333, 0.        ],
+                [1.        , 1.66666667, 0.        ]]),
+
+         array([[1.        , 1.66666667, 0.        ],
+                [1.        , 2.        , 0.        ],
+                [2.        , 2.        , 0.        ]])]
     """
     NeuroM_cell = load_morphology(morph_path)
     NRN_neuron = get_NRN_cell(morph_path)
@@ -314,7 +314,7 @@ def isolate(func):
             return nrnhines.point_to_section_end(cell.icell.all, point)
 
         def _isolated(morph_data):
-            return nrnhines.isolate(_to_be_isolated)(*morph_data)
+            return nrnhines.isolate(_to_be_isolated)(\\*morph_data)
 
         with nrnhines.NestedPool(processes=n_workers) as pool:
             result = pool.imap_unordered(_isolated, data)

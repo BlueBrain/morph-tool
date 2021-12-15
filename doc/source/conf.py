@@ -27,6 +27,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    "sphinx.ext.intersphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -91,6 +92,14 @@ autosummary_generate = True
 autosummary_imported_members = False
 autosummary_mock_imports = ['neuron', 'plotly']
 autodoc_default_options = {'members': True}
+
+intersphinx_mapping = {
+    "neurom": ("https://neurom.readthedocs.io/en/stable", None),
+    "neuror": ("https://neuror.readthedocs.io/en/stable", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs", None),
+    "python": ("https://docs.python.org/3", None),
+}
 
 
 # -- Options for HTML output ---------------------------------------------------
