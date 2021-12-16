@@ -108,11 +108,11 @@ def _position_synapses(positions, synapses, neuron_node_id):
             pre_section, PRE_SECTION_POS] * dendrogram.height
 
         # jitter too close synapses
-        df = synapses[pre_section | post_section]
+        df = synapses.loc[pre_section | post_section]
         if len(df) > 1:
             # pylint: disable=cell-var-from-loop
             # group by Y coordinate and jitter by X coordinate
-            synapses[pre_section | post_section] = df \
+            synapses.loc[pre_section | post_section] = df \
                 .groupby(lambda idx: round(df.loc[idx, 'y'])) \
                 .apply(_jitter_x)
 
