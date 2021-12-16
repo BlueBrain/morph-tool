@@ -309,12 +309,14 @@ def isolate(func):
 
     Example:
 
+    .. code-block:: python
+
         def _to_be_isolated(morphology_path, point):
             cell = nrnhines.get_NRN_cell(morphology_path)
             return nrnhines.point_to_section_end(cell.icell.all, point)
 
         def _isolated(morph_data):
-            return nrnhines.isolate(_to_be_isolated)(\\*morph_data)
+            return nrnhines.isolate(_to_be_isolated)(*morph_data)
 
         with nrnhines.NestedPool(processes=n_workers) as pool:
             result = pool.imap_unordered(_isolated, data)
