@@ -170,7 +170,7 @@ def _get_principal_direction(points):
     """Return the principal direction of a point cloud.
 
     It is the eigen vector of the covariance matrix with the highest eigen value. Taken from
-    ``neuror.unravel``.
+    :mod:`neuror.unravel`.
     """
     X = np.copy(np.asarray(points))
     X -= np.mean(X, axis=0)

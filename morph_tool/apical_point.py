@@ -40,14 +40,14 @@ def apical_point_position(neuron, tuft_percent=20):
     The algorithm is a simplification of https://bbpcode.epfl.ch/source/xref/analysis/Pneumatk/
     pneumatk/__tools__/ Tree/methods/get_apical_point_index.py
 
-    Consider a neuron:
+    Consider a neuron::
 
-        |   /    | Tuft = 20%
-        |--/     |
-        |   /
-        |--/
-        |
-    ----.-----
+            |   /    | Tuft = 20%
+            |--/     |
+            |   /
+            |--/
+            |
+        ----.-----
 
     All endpoints in the top 'tuft_percent' are found, then their common
     branch segment, furthest from the soma, is identified.
@@ -55,13 +55,14 @@ def apical_point_position(neuron, tuft_percent=20):
     Using the release from 2012 as the base, apical points were compared from
     the annotated versions, and using this algorithm.  Of 239 morphologies that
     were annotated, 48 differed in the apical point choice by more than 1um
-    in the y component.  Many of the differences were morphologies that
+    in the y component. Many of the differences were morphologies that
     shoulnd't have had apical points in the first place (ie: weren't pyramidal
-    cells, ex: C050398B-I4.)
+    cells, ex: C050398B-I4).
 
     Args:
         neuron (morphio.Morphology): a neuron morphology
-        tuft_percent: percentage of the 'height' of the apical dendrite that would enclose the
+        tuft_percent:
+            percentage of the 'height' of the apical dendrite that would enclose the
             tuft, only leaves in this volume are considered as endpoints
 
     Returns:
