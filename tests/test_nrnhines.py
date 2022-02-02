@@ -54,6 +54,14 @@ def test_point_to_section_end():
                  3)
 
 
+def test_NeuroM_section_to_NRN_section():
+    mapping = tested.NeuroM_section_to_NRN_section(SIMPLE)
+    assert mapping == {5: 0, 6: 1, 7: 2, 0: 3, 1: 4, 2: 5, 3: 6, 4: 7}
+
+    mapping = tested.NeuroM_section_to_NRN_section(SIMPLE, neurite_type="basal_dendrite")
+    assert mapping == {0: 0, 1: 1, 2: 2, 3: 3, 4: 4}
+
+
 def _to_be_isolated(morphology_path, point):
     """Convert a point position to NEURON section index and return cell name and id.
 

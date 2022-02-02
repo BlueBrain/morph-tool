@@ -13,7 +13,7 @@ try:
     import neuron
 except ImportError as e:
     raise ImportError(
-        'morph-tool[nrn] is not installed. Please install: pip install morph-tool[nrn]'
+        "morph-tool[nrn] is not installed. Please install: pip install morph-tool[nrn]"
     ) from e
 
 L = logging.getLogger(__name__)
@@ -26,10 +26,11 @@ def get_NRN_cell(filename: Path):
         from bluepyopt import ephys
     except ImportError as e_:
         raise ImportError(
-            'bluepyopt not installed; please use `pip install morph-tool[nrn]`') from e_
+            "bluepyopt not installed; please use `pip install morph-tool[nrn]`"
+        ) from e_
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
-    cell = ephys.models.CellModel('test', morph=m, mechs=[])
+    cell = ephys.models.CellModel("test", morph=m, mechs=[])
     cell.instantiate(sim=sim)
     return cell
 
@@ -44,11 +45,19 @@ def _zero_length_section(section, epsilon=1e-8):
     return section.length < epsilon
 
 
-def _validate_section(nrn_neuron, nrm_neuron, nrm_idx, nrn_idx):
+def _validate_section(nrn_neuron, nrm_neuron, nrm_idx, nrn_idx, neurite_type):
     """Raise if the mapping NeuroM_section_to_NRN_section is not correct."""
-    NRN_sections = list(nrn_neuron.icell.all)
+    NRN_sections = list(getattr(nrn_neuron.icell, neurite_type.split("_")[0]))
 
-    nrm_s = nrm_neuron.sections[nrm_idx]
+    if neurite_type != "all":
+        i = 0  # counter as in NEURON section list
+        for nrm_s in iter_sections(nrm_neuron, neurite_order=NeuriteIter.NRN):
+            if _check_type(nrm_s, neurite_type):
+                if i == nrn_idx:
+                    break
+                i += 1
+    else:
+        nrm_s = nrm_neuron.sections[nrm_idx]
 
     if nrn_idx is None:
         # The only reason for the mapping not to exist is a zero length section
@@ -72,20 +81,37 @@ def _validate_section(nrn_neuron, nrm_neuron, nrm_idx, nrn_idx):
                         err_msg=err_msg)
 
 
-def _validate_section_mapping(NeuroM_cell, NRN_cell, mapping):
+def _validate_section_mapping(NeuroM_cell, NRN_cell, mapping, neurite_type):
     """Raise if the mapping NeuroM_section_to_NRN_section is not correct."""
     for nrm_idx, nrn_idx in mapping.items():
-        _validate_section(NRN_cell, NeuroM_cell, nrm_idx, nrn_idx)
+        _validate_section(NRN_cell, NeuroM_cell, nrm_idx, nrn_idx, neurite_type)
 
 
-def NeuroM_section_to_NRN_section(filename: Path):
-    """Returns a mapping from NeuroM section IDs to NRN ones."""
+def _check_type(section, neurite_type):
+    """Check NeuriteType of section."""
+    if neurite_type == "all":
+        return True
+    return section.type == getattr(NeuriteType, neurite_type)
+
+
+def NeuroM_section_to_NRN_section(filename: Path, neurite_type: str = "all"):
+    """Returns a mapping from NeuroM section IDs to NRN ones.
+
+    In NEURON, neurites are implicitely defined by lists of sections,
+    and the index of the sections in each list starts from 0. Thus the index
+    of a section  in the list of apical sections will differ from the same section
+    in the list of all sections. With the argument `neurite_type` one can match ids
+    of sections whithin each NEURON list of sections.
+
+    Args:
+        filename: path to morphology file
+        neurite_type: type of neurite to convert section ids (should be NeuriteType name)
+    """
+    assert hasattr(NeuriteType, neurite_type), f"{neurite_type} is not a valid NeuriteType"
+
     NeuroM_cell = load_morphology(filename)
     NRN_cell = get_NRN_cell(filename)
-
-    mapping = {}
-
-    NRN_sections = list(NRN_cell.icell.all)
+    NRN_sections = list(getattr(NRN_cell.icell, neurite_type.split("_")[0]))
 
     def is_soma(NRN_section):
         """Is the NRN section a soma section."""
@@ -94,36 +120,43 @@ def NeuroM_section_to_NRN_section(filename: Path):
     # Skip soma if exists
     counter = 1 if is_soma(NRN_sections[0]) else 0
 
+    mapping = dict()
     for NeuroM_section in iter_sections(NeuroM_cell, neurite_order=NeuriteIter.NRN):
-        if _zero_length_section(NeuroM_section):
-            mapping[NeuroM_section.id] = None
+        if _check_type(NeuroM_section, neurite_type):
+            if _zero_length_section(NeuroM_section):
+                mapping[NeuroM_section.id] = None
 
-            if not NeuroM_section.children:
-                L.debug('Zero length section without children (NeuroM section id: %s)',
-                        NeuroM_section.id)
-                continue
+                if not NeuroM_section.children:
+                    L.debug(
+                        "Zero length section without children (NeuroM section id: %s)",
+                        NeuroM_section.id,
+                    )
+                    continue
 
-            L.debug('Zero length section with children')
-            NRN_section = NRN_sections[counter]
-            counter -= 1
+                L.debug("Zero length section with children")
+                NRN_section = NRN_sections[counter]
+                counter -= 1
 
-        else:
-            mapping[NeuroM_section.id] = counter
-            NRN_section = NRN_sections[counter]
+            else:
+                mapping[NeuroM_section.id] = counter
+                NRN_section = NRN_sections[counter]
 
-        L.debug('NeuroM section (%s) has been mapped to NRN section (%s)',
-                NeuroM_section.id, mapping[NeuroM_section.id])
+            L.debug(
+                "NeuroM section (%s) has been mapped to NRN section (%s)",
+                NeuroM_section.id,
+                mapping[NeuroM_section.id],
+            )
 
-        # Skip single child NeuroM_section because they have already been
-        # merged in the NeuroM morphology
-        while _has_single_child(NRN_section):
-            L.debug('Skipping single child')
+            # Skip single child NeuroM_section because they have already been
+            # merged in the NeuroM morphology
+            while _has_single_child(NRN_section):
+                L.debug("Skipping single child")
+                counter += 1
+                NRN_section = NRN_section.children()[0]
+
             counter += 1
-            NRN_section = NRN_section.children()[0]
 
-        counter += 1
-
-    _validate_section_mapping(NeuroM_cell, NRN_cell, mapping)
+    _validate_section_mapping(NeuroM_cell, NRN_cell, mapping, neurite_type)
     return mapping
 
 
@@ -138,7 +171,8 @@ def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positio
     """
     compartment_points = []
     for i, (segment_id_start, position) in enumerate(
-            zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])):
+        zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])
+    ):
         compartment = [position]
         segment_id_end = boundaries_segment_ids[i + 1]
 
@@ -168,20 +202,20 @@ def _compartment_paths(points, n_compartments):
     segment_lengths = np.linalg.norm(segments_directions, axis=1)
     cumulative_pathlength = np.append(0, np.cumsum(segment_lengths))
     pathlengths_at_compartment_boundaries = [
-        i * cumulative_pathlength[-1] / float(n_compartments) for i in range(n_compartments)]
+        i * cumulative_pathlength[-1] / float(n_compartments) for i in range(n_compartments)
+    ]
 
     boundaries_segment_ids = (np.searchsorted(
         cumulative_pathlength, pathlengths_at_compartment_boundaries, side='right') - 1).tolist()
     boundaries_positions = []
     for segment_id, boundary_pathlength in zip(boundaries_segment_ids,
                                                pathlengths_at_compartment_boundaries):
-
         # The pathlength between the start of segment #segment_id and the boundary
         remaining_pathlength = boundary_pathlength - cumulative_pathlength[segment_id]
 
         # the boundary is somewhere in between point #segment_id and #segment_id+1
         # Here we compute its position in term of relative pathlength
-        segment_fraction = (remaining_pathlength / segment_lengths[segment_id])
+        segment_fraction = remaining_pathlength / segment_lengths[segment_id]
         position = points[segment_id] + segment_fraction * segments_directions[segment_id]
         boundaries_positions.append(position)
 
@@ -243,7 +277,8 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
         NRN_section = NRN_sections[mapping[section.id]]
 
         NeuroM_to_compartment_position_mapping[section.id] = _compartment_paths(
-            section.points[:, COLS.XYZ], NRN_section.nseg)
+            section.points[:, COLS.XYZ], NRN_section.nseg
+        )
 
     return NeuroM_to_compartment_position_mapping
 
@@ -267,9 +302,11 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
 
     for index, section in enumerate(sections):
         last_index = section.n3d() - 1
-        last_section_point = [section.x3d(last_index),
-                              section.y3d(last_index),
-                              section.z3d(last_index)]
+        last_section_point = [
+            section.x3d(last_index),
+            section.y3d(last_index),
+            section.z3d(last_index),
+        ]
 
         if np.isclose(point, last_section_point, atol=atol, rtol=rtol).all():
             return index
@@ -330,7 +367,9 @@ def isolate(func):
 
     Note: it does not work as decorator.
     """
+
     def func_isolated(*args, **kwargs):
         with NestedPool(1, maxtasksperchild=1) as pool:
             return pool.apply(func, args, kwargs)
+
     return func_isolated
