@@ -120,7 +120,7 @@ def NeuroM_section_to_NRN_section(filename: Path, neurite_type: str = "all"):
     # Skip soma if exists
     counter = 1 if is_soma(NRN_sections[0]) else 0
 
-    mapping = dict()
+    mapping = {}
     for NeuroM_section in iter_sections(NeuroM_cell, neurite_order=NeuriteIter.NRN):
         if _check_type(NeuroM_section, neurite_type):
             if _zero_length_section(NeuroM_section):
