@@ -147,7 +147,7 @@ def NeuroM_section_to_NRN_section(filename: Path, neurite_type: str = "all", rev
             nrn_section_counter += 1
 
     _validate_section_mapping(neurom_cell, nrn_cell, nrm_to_nrn_sections, neurite_type)
-    return {j: i for i, j in nrm_to_nrn_sections} if reverse else nrm_to_nrn_sections
+    return {j: i for i, j in nrm_to_nrn_sections.items()} if reverse else nrm_to_nrn_sections
 
 
 def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positions):
