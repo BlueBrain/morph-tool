@@ -2,7 +2,8 @@ from pathlib import Path
 from mock import Mock
 import numpy as np
 from numpy import testing as npt
-from morphio import Morphology
+from morphio import Morphology, SectionType
+from morphio.mut import Morphology as MutMorphology
 from morph_tool import resampling as tested
 
 
@@ -221,20 +222,20 @@ def _test_dispatch_section_function():
         tested._resample_astrocyte_section
     )
 
+
 def _assert_allclose_first_last(arr1, arr2):
     npt.assert_allclose(arr1[[0, -1]], arr2[[0, -1]])
 
 
-def test_resample_linear_density__astrocyte():
+def test_resample_linear_density__neuron():
     """Run the function and make sure that it doesn't mutate the input cell
     """
-    obj = Morphology(DATA_DIR / 'neuron.h5')
+    obj = Morphology(DATA_DIR / 'neuron.asc')
     new_obj = tested.resample_linear_density(obj, linear_density=0.).as_immutable()
 
     # densty 0 result to only first and last data points
     assert len(obj.points) > len(new_obj.points)
     assert len(obj.diameters) > len(new_obj.diameters)
-    assert len(obj.perimeters) > len(new_obj.perimeters)
 
     for s1, s2 in zip(obj.iter(), new_obj.iter()):
 
@@ -295,10 +296,20 @@ def test_resample_from_linear_density__numerical_innacurracy():
         [4.665114880, -25.744903564, 2.948777676]
     ])
 
-    total = np.linalg.norm(points[:1] - points[:-1], axis=1).sum()
-
     ids, fractions = tested._resample_from_linear_density(points, linear_density=1.)
 
     new_points = tested._parametric_values(points, ids, fractions)
 
     assert not np.allclose(new_points[-1], new_points[-2])
+
+
+def test_convert_segments_to_sections():
+    morphology = MutMorphology(DATA_DIR / 'neuron.asc')
+
+    new_morphology = tested.convert_segments_to_sections(morphology, SectionType.basal_dendrite)
+    expected_morphology = MutMorphology(DATA_DIR / 'resample_test_basal.asc')
+    assert len(new_morphology.sections) == len(expected_morphology.sections)
+
+    morphology = tested.convert_segments_to_sections(morphology)
+    expected_morphology = MutMorphology(DATA_DIR / 'resample_test_basal.asc')
+    assert len(new_morphology.sections) == len(expected_morphology.sections)

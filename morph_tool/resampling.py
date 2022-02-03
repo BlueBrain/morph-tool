@@ -202,7 +202,7 @@ def resample_linear_density(obj, linear_density):
     return obj
 
 
-def convert_segments_to_sections(morphology, neurite_type=None):
+def convert_segments_to_sections(morphology, section_type=None):
     """Convert segments (interval between two points) into sections.
 
     This function can be used for example to simulate electrical models and record in the middle
@@ -210,15 +210,16 @@ def convert_segments_to_sections(morphology, neurite_type=None):
 
     warning 1: this works with ascii format where unifurcations are allowed
     warning 2: if too many sections are created, NEURON will fail and one has to set -NFRAME
-                to larger values, so it is advised to use resample_linear above to control number
-                of created sections before applying this function.
+    to larger values, so it is advised to use resample_linear above to control number of created
+    sections before applying this function.
+
     Args:
         morphology (morphio.mut.Morphology): input morphology to convert
-        neurite_type (morphio.SectionType): section type to convert
+        section_type (morphio.SectionType): section type to convert
     """
     bif_mapping = {}
     for section in morphology.iter():
-        if neurite_type is not None and section.type == neurite_type:
+        if section_type is not None and section.type == section_type:
             points = section.points
             diameters = section.diameters
 
@@ -238,7 +239,7 @@ def convert_segments_to_sections(morphology, neurite_type=None):
 
     # here we remove original sections
     for root_section in morphology.root_sections:
-        if root_section.type == neurite_type:
+        if section_type is not None and root_section.type == section_type:
             # here we see if this is original neurite by checking that first 2 sections have
             # not len=2, which is highly unlikely in real morphologies. Something smarter could be
             # done probably.
