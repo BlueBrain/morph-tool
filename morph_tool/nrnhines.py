@@ -149,10 +149,10 @@ def NeuroM_section_to_NRN_section(filename: Path, neurite_type: str = "all"):
 
             # Skip single child NeuroM_section because they have already been
             # merged in the NeuroM morphology
-            while _has_single_child(NRN_section):
-                L.debug("Skipping single child")
-                counter += 1
-                NRN_section = NRN_section.children()[0]
+            #while _has_single_child(NRN_section):
+            #    L.debug("Skipping single child")
+            #    counter += 1
+            #    NRN_section = NRN_section.children()[0]
 
             counter += 1
 
