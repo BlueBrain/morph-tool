@@ -200,3 +200,48 @@ def resample_linear_density(obj, linear_density):
         resample_function(section, linear_density)
 
     return obj
+
+
+def convert_segments_to_sections(morphology, neurite_type=None):
+    """Convert segments (interval between two points) into sections.
+
+    This function can be used for example to simulate electrical models and record in the middle
+    of each section, to obtain more spatially detailed informations.
+
+    warning 1: this works with ascii format where unifurcations are allowed
+    warning 2: if too many sections are created, NEURON will fail and one has to set -NFRAME
+                to larger values, so it is advised to use resample_linear above to control number
+                of created sections before applying this function.
+    Args:
+        morphology (morphio.mut.Morphology): input morphology to convert
+        neurite_type (morphio.SectionType): section type to convert
+    """
+    bif_mapping = {}
+    for section in morphology.iter():
+        if neurite_type is not None and section.type == neurite_type:
+            points = section.points
+            diameters = section.diameters
+
+            new_section = morphio.PointLevel(points[:2], diameters[:2])
+            if section.is_root:
+                child_section = morphology.append_root_section(new_section, section.type)
+            else:
+                child_section = bif_mapping[section].append_section(new_section)
+
+            for i in range(len(points) - 2):
+                child_section = child_section.append_section(
+                    morphio.PointLevel(points[1 + i: 3 + i], diameters[1 + i: 3 + i])
+                )
+
+            for s in section.children:
+                bif_mapping[s] = child_section
+
+    # here we remove original sections
+    for root_section in morphology.root_sections:
+        if root_section.type == neurite_type:
+            # here we see if this is original neurite by checking that first 2 sections have
+            # not len=2, which is highly unlikely in real morphologies. Something smarter could be
+            # done probably.
+            if len(root_section.points) > 2 or len(root_section.children[0].points) > 2:
+                morphology.delete_section(root_section, recursive=True)
+    return morphology
