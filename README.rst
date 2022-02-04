@@ -1,3 +1,5 @@
+|banner|
+
 |docs|
 
 MorphTool
@@ -315,3 +317,6 @@ Copyright (c) 2018-2021 Blue Brain Project/EPFL
 .. |docs| image:: https://readthedocs.org/projects/morph-tool/badge/?version=latest
              :target: https://morph-tool.readthedocs.io/
              :alt: documentation status
+             
+.. substitutions
+.. |banner| image:: doc/source/logo/BBP-Morph-Tool.jpg
