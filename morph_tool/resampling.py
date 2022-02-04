@@ -217,9 +217,16 @@ def convert_segments_to_sections(morphology, section_type=None):
         morphology (morphio.mut.Morphology): input morphology to convert
         section_type (morphio.SectionType): section type to convert
     """
+    morphology = morphio.mut.Morphology(morphology)
+
+    def _is_type(section, section_type):
+        if section_type is None:
+            return True
+        return section.type == section_type
+
     bif_mapping = {}
     for section in morphology.iter():
-        if section_type is not None and section.type == section_type:
+        if _is_type(section, section_type):
             points = section.points
             diameters = section.diameters
 
@@ -239,7 +246,7 @@ def convert_segments_to_sections(morphology, section_type=None):
 
     # here we remove original sections
     for root_section in morphology.root_sections:
-        if section_type is not None and root_section.type == section_type:
+        if _is_type(root_section, section_type):
             # here we see if this is original neurite by checking that first 2 sections have
             # not len=2, which is highly unlikely in real morphologies. Something smarter could be
             # done probably.

@@ -305,11 +305,10 @@ def test_resample_from_linear_density__numerical_innacurracy():
 
 def test_convert_segments_to_sections():
     morphology = MutMorphology(DATA_DIR / 'neuron.asc')
+    converted_morphology = tested.convert_segments_to_sections(
+        morphology, SectionType.basal_dendrite
+    )
+    assert len(converted_morphology.sections) == 1795
 
-    new_morphology = tested.convert_segments_to_sections(morphology, SectionType.basal_dendrite)
-    expected_morphology = MutMorphology(DATA_DIR / 'resample_test_basal.asc')
-    assert len(new_morphology.sections) == len(expected_morphology.sections)
-
-    morphology = tested.convert_segments_to_sections(morphology)
-    expected_morphology = MutMorphology(DATA_DIR / 'resample_test_basal.asc')
-    assert len(new_morphology.sections) == len(expected_morphology.sections)
+    converted_morphology = tested.convert_segments_to_sections(morphology)
+    assert len(converted_morphology.sections) == 12459
