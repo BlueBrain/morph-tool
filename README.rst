@@ -1,4 +1,4 @@
-|banner|
+.. image:: doc/source/logo/BBP-Morph-Tool.jpg
 
 |docs|
 
@@ -318,5 +318,3 @@ Copyright (c) 2018-2021 Blue Brain Project/EPFL
              :target: https://morph-tool.readthedocs.io/
              :alt: documentation status
              
-.. substitutions
-.. |banner| image:: doc/source/logo/BBP-Morph-Tool.jpg
