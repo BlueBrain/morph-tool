@@ -41,9 +41,6 @@ def apical_point_section_segment(neuron, tuft_percent=20):
 def apical_point_position(neuron, tuft_percent=20):
     """Attempt to find the apical point in 'tufted' neurons.
 
-    The algorithm is a simplification of https://bbpcode.epfl.ch/source/xref/analysis/Pneumatk/
-    pneumatk/__tools__/ Tree/methods/get_apical_point_index.py
-
     Consider a neuron::
 
             |   /    | Tuft = 20%
