@@ -14,17 +14,21 @@ L = logging.getLogger(__name__)
 X, Y, Z = 0, 1, 2
 
 
-def apical_point_section_segment(neuron):
+def apical_point_section_segment(neuron, tuft_percent=20):
     """Find the apical point's section and segment.
 
     Args:
         neuron (morphio.Morphology): a morphology
+        tuft_percent:
+            percentage of the 'height' of the apical dendrite that would enclose the
+            tuft, only leaves in this volume are considered as endpoints
+            See apical_point_position for more details
 
     Returns:
         Tuple: (NeuroM/MorphIO section ID, point ID) of the apical point. Since NeuroM v2, section
         ids of NeuroM and MorphIO are the same excluding soma.
     """
-    point = apical_point_position(neuron)
+    point = apical_point_position(neuron, tuft_percent)
 
     if point is None:
         L.warning('Could not find apical point')
@@ -36,9 +40,6 @@ def apical_point_section_segment(neuron):
 
 def apical_point_position(neuron, tuft_percent=20):
     """Attempt to find the apical point in 'tufted' neurons.
-
-    The algorithm is a simplification of https://bbpcode.epfl.ch/source/xref/analysis/Pneumatk/
-    pneumatk/__tools__/ Tree/methods/get_apical_point_index.py
 
     Consider a neuron::
 
