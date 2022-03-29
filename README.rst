@@ -101,7 +101,7 @@ Morphologies are considered different if one or more of the following properties
 
 The soma are *not* taken into consideration
 
-The same functionality is also avalaible through the python API:
+The same functionality is also available through the python API:
 
 .. code:: python
 
@@ -317,4 +317,3 @@ Copyright (c) 2018-2021 Blue Brain Project/EPFL
 .. |docs| image:: https://readthedocs.org/projects/morph-tool/badge/?version=latest
              :target: https://morph-tool.readthedocs.io/
              :alt: documentation status
-             

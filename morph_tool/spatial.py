@@ -12,7 +12,7 @@ def point_to_section_segment(neuron, point, rtol=1e-05, atol=1e-08):
     Args:
         neuron (morphio.Morphology): neuron object
         point (point): value of the point to find in the h5 file
-        rtol, atol (floats): precission of np.isclose
+        rtol, atol (floats): precision of np.isclose
 
     Returns:
         Tuple: (NeuroM/MorphIO section ID, point ID) of the point the matches the input coordinates.

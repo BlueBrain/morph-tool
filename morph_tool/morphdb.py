@@ -4,8 +4,8 @@ The main use is to provide a neuronDB loader and a method to retrieve
 information as a dataframe.
 
 Example:
-old_release = MorphDB.from_neurondb(Path("/realease/one/neuronDB.xml"), label='old-release')
-new_release = MorphDB.from_neurondb(Path("/realease/two/neuronDB.xml"), label='new-release')
+old_release = MorphDB.from_neurondb(Path("/release/one/neuronDB.xml"), label='old-release')
+new_release = MorphDB.from_neurondb(Path("/release/two/neuronDB.xml"), label='new-release')
 total = old_release + new_release
 
 # neurondb information
@@ -284,7 +284,7 @@ class MorphDB:
                     f'Folder {morphology_folder} have multiple morphologies with the same '
                     'name but different extensions. This is not supported.\n'
                     f'Duplicate morphogies: {duplicates}\n\n'
-                    'Please provide the extension to use with the arguement: extension')
+                    'Please provide the extension to use with the argument: extension')
         paths = {path.stem: path for path in files}
         return MorphDB(MorphInfo(name, mtype, label=label, path=paths[name])
                        for name, mtype in mtypes)

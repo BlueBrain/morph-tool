@@ -209,7 +209,7 @@ def align_morphology(
         3x3 array with applied rotation matrix
     """
     if isinstance(method, str) and method not in AlignMethod.values():
-        raise NotImplementedError(f"Method {method} is not implementd")
+        raise NotImplementedError(f"Method {method} is not implemented")
 
     if direction is None:
         direction = [0.0, 1.0, 0.0]

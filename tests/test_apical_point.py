@@ -11,7 +11,7 @@ def test_get_apical_point():
     point = apical_point_position(morph)
     assert point[COLS.Y] == 25.0
 
-    # if we only take the very top, we only get one branch, whos common parents
+    # if we only take the very top, we only get one branch, whose common parents
     # is just itself
     point = apical_point_position(morph, tuft_percent=2)
     assert point[COLS.Y] == 30.0
