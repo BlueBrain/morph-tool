@@ -113,7 +113,7 @@ def grafting_position(neuron, axon_or_donor_neuron, rng=np.random):
 
     If the neuron to be grafted already has a neuron reuse its starting point.
     Otherwise try to mimic the position of the axon with respect to dendrites in
-    the donor axon. The position is choosen in order to
+    the donor axon. The position is chosen in order to
     preserve the direction between the axon initial segment direction
     and all other dendrites initial segments directions
 

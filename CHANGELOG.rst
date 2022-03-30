@@ -49,5 +49,5 @@ Version 2.4.0
 - Make MorphDB.df hashable (#53)
 - Improve feature (#55)
 - Fix resampling issue from numerical imprecision (#58)
-- automatic morphology alignement (#51)
+- automatic morphology alignment (#51)
 - Introduce installation extras to lighten the package as dependency by default (#57)

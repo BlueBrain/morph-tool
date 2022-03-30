@@ -1,7 +1,7 @@
 .. image:: logo/BBP-Morph-Tool.jpg
 
 .. include:: ../../README.rst
-    :start-line: 2 
+    :start-line: 2
 
 .. toctree::
    :hidden:

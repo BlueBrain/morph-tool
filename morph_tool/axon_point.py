@@ -20,7 +20,7 @@ def axon_point_section(morph, direction=None, bbox=None, ignore_axis=2):
 
     This point is defined as the point for which the sum of the angles with the direction vector
     is minimal. This corresponds to a main axon being a branch that follows best a straight line
-    in the given direction. More constraints can be added with bbox argument, if incorect axon is
+    in the given direction. More constraints can be added with bbox argument, if incorrect axon is
     detected.
 
     Args:
