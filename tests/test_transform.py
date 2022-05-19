@@ -196,9 +196,9 @@ class TestTransform:
         rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="whole")
         npt.assert_almost_equal(
             rotation_mat,
-            [[ 9.9992979e-01, -8.3787108e-03, -8.3790049e-03],
-             [-8.3787108e-03,  7.0207723e-05, -9.9996489e-01],
-             [ 8.3790049e-03,  9.9996489e-01,  0.0000000e+00]],
+            [[ 9.99998738e-01, -1.12359279e-03, -1.12359354e-03],
+             [-1.12359279e-03,  1.26246235e-06, -9.99999404e-01],
+             [ 1.12359354e-03,  9.99999404e-01,  2.22044605e-16]]
         )
 
         # Test with custom direction
