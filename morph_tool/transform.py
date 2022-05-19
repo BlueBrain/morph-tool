@@ -182,7 +182,6 @@ def _get_principal_direction(points):
     :mod:`neuror.unravel`.
     """
     X = np.copy(np.asarray(points))
-    X -= np.mean(X, axis=0)
     C = np.dot(X.T, X)
     w, v = np.linalg.eig(C)
     return v[:, w.argmax()]
