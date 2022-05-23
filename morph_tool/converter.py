@@ -126,27 +126,33 @@ def contour2centroid(mean, points):
     return points, diameters
 
 
-def _to_sphere(neuron):
-    """To a circular contour soma.
+def _create_contour(radius, point_count=20, line_width=0.25):
+    """Create a contour from an origin and radius.
 
-    Convert a 3-pts cylinder or a 1-pt sphere into a circular contour that represents the same
-    sphere.
+    Note: The contour is created in the xy plan.
+
+    within the corpus of ASC files, the mean is 0.21 for the diameter.
+    this diameter is used for displaying the width of the contour line in
+    Neurolucida, and 0.25 seems to be a nice display value
     """
-    radius = neuron.soma.diameters[0] / 2.
-    N = 20
-    points = np.zeros((N, 3))
-    phase = 2 * np.pi / (N - 1) * np.arange(N)
-    points[:, 0] = radius * np.cos(phase)
-    points[:, 1] = radius * np.sin(phase)
-    points += neuron.soma.points[0]
-    neuron.soma.points = points
-    neuron.soma.diameters = np.repeat(radius, N)
+    points = np.zeros((point_count, 3))
+    phase = 2 * np.pi / point_count * np.arange(point_count)
+    points[:, 0] = radius * np.sin(phase)
+    points[:, 1] = radius * np.cos(phase)
+    diameters = np.repeat(line_width, point_count)
+
+    return points, diameters
 
 
 def cylinder_to_cylindrical_contour(neuron):
     """We convert the cylinder into a circular contour that represents the same sphere."""
-    L.info('Converting 3 point soma to sperical soma with same surface')
-    _to_sphere(neuron)
+    L.info('Converting 3 point soma to spherical soma with same surface')
+    assert neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS
+    radius = neuron.soma.diameters[0] / 2.
+    points, diameters = _create_contour(radius)
+    origin = neuron.soma.points[0]
+    neuron.soma.points = points + origin
+    neuron.soma.diameters = diameters
 
 
 def single_point_sphere_to_circular_contour(neuron):
@@ -157,7 +163,12 @@ def single_point_sphere_to_circular_contour(neuron):
     """
     L.info('Converting 1-point soma (sperical soma) to circular contour '
            'representing the same sphere')
-    _to_sphere(neuron)
+    assert neuron.soma_type == SomaType.SOMA_SINGLE_POINT
+    radius = neuron.soma.diameters[0] / 2.
+    points, diameters = _create_contour(radius)
+    origin = neuron.soma.points[0]
+    neuron.soma.points = points + origin
+    neuron.soma.diameters = diameters
 
 
 def soma_to_single_point(soma):

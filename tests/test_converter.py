@@ -1,10 +1,12 @@
 from pathlib import Path
 import itertools as it
 import numpy as np
+import numpy.testing as npt
 
 import pytest
 
 import morphio
+from morph_tool import converter
 from morph_tool import diff
 from morph_tool.exceptions import MorphToolException
 from morph_tool.converter import convert
@@ -56,7 +58,7 @@ def test_convert_swc_contour_to_sphere(tmpdir):
     assert 1 == len(m.soma.diameters)
 
     #value dumped from NEURON: h.area(0.5, sec=icell.soma[0])
-    np.testing.assert_approx_equal(m.soma.surface, 476.0504050847511)
+    npt.assert_approx_equal(m.soma.surface, 476.0504050847511)
 
 
 def test_convert_sanitize(tmpdir):
@@ -69,3 +71,13 @@ def test_convert_sanitize(tmpdir):
     convert(simple, outname, single_point_soma=True, sanitize=True)
     m = morphio.Morphology(outname)
     assert len(m.sections) == 1
+
+
+def test__create_contour(tmpdir):
+    for point_count in range(3, 20):
+        points, diameters = converter._create_contour(radius=10, point_count=point_count, line_width=0.1)
+        assert len(points) == point_count
+        assert len(diameters) == point_count
+        npt.assert_allclose(points[:, 2], [0]*point_count)
+        npt.assert_allclose(diameters, [0.1]*point_count)
+        assert len(np.unique(np.around(points, decimals=4), axis=0)) == point_count
