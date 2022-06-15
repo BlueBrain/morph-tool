@@ -201,6 +201,19 @@ class TestTransform:
              [ 1.12359354e-03,  9.99999404e-01,  2.22044605e-16]]
         )
 
+        # Test with whole apical on non-centered morphology
+        morph = morphio.mut.Morphology(DATA / 'apical_test.h5')
+        shift = [1.0, 2.0, 3.0]
+        tested.translate(morph, shift)
+        rotation_mat = tested.align_morphology(morph, [0, 0, 1], method="whole")
+        npt.assert_almost_equal(
+            rotation_mat,
+            [[ 9.99998738e-01, -1.12359279e-03, -1.12359354e-03],
+             [-1.12359279e-03,  1.26246235e-06, -9.99999404e-01],
+             [ 1.12359354e-03,  9.99999404e-01,  2.22044605e-16]]
+        )
+
+
         # Test with custom direction
         morph = morphio.mut.Morphology(DATA / 'apical_test.h5')
         rotation_mat = tested.align_morphology(morph, [0, 0, 1], method=[0, 1, 0])
