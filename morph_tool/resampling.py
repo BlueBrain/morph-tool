@@ -225,6 +225,7 @@ def convert_segments_to_sections(morphology, section_type=None):
         return section.type == section_type
 
     bif_mapping = {}
+    to_delete = []
     for section in morphology.iter():
         if _is_type(section, section_type):
             points = section.points
@@ -232,6 +233,7 @@ def convert_segments_to_sections(morphology, section_type=None):
 
             new_section = morphio.PointLevel(points[:2], diameters[:2])
             if section.is_root:
+                to_delete.append(section.id)
                 child_section = morphology.append_root_section(new_section, section.type)
             else:
                 child_section = bif_mapping[section].append_section(new_section)
@@ -247,9 +249,6 @@ def convert_segments_to_sections(morphology, section_type=None):
     # here we remove original sections
     for root_section in morphology.root_sections:
         if _is_type(root_section, section_type):
-            # here we see if this is original neurite by checking that first 2 sections have
-            # not len=2, which is highly unlikely in real morphologies. Something smarter could be
-            # done probably.
-            if len(root_section.points) > 2 or len(root_section.children[0].points) > 2:
+            if root_section.id in to_delete:
                 morphology.delete_section(root_section, recursive=True)
     return morphology
