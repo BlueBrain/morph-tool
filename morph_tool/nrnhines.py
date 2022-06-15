@@ -13,7 +13,7 @@ try:
     import neuron
 except ImportError as e:
     raise ImportError(
-        "morph-tool[nrn] is not installed. Please install: pip install morph-tool[nrn]"
+        'morph-tool[nrn] is not installed. Please install: pip install morph-tool[nrn]'
     ) from e
 
 L = logging.getLogger(__name__)
@@ -26,11 +26,11 @@ def get_NRN_cell(filename: Path):
         from bluepyopt import ephys
     except ImportError as e_:
         raise ImportError(
-            "bluepyopt not installed; please use `pip install morph-tool[nrn]`"
+            'bluepyopt not installed; please use `pip install morph-tool[nrn]`'
         ) from e_
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
-    cell = ephys.models.CellModel("test", morph=m, mechs=[])
+    cell = ephys.models.CellModel('test', morph=m, mechs=[])
     cell.instantiate(sim=sim)
     return cell
 
@@ -70,14 +70,15 @@ def _validate_section(nrn_neuron, nrm_neuron, nrm_idx, nrn_idx, neurite_type):
     nrn_pts = [nrn_s.x3d(0), nrn_s.y3d(0), nrn_s.z3d(0)]
     nrm_pts = nrm_s.points[0, COLS.XYZ]
 
-    err_msg = (
-        f"ERROR Section mismatch: NRN ID ({nrn_idx}) != NeuroM ID ({nrm_idx})"
-        "NRN section:\n"
-        f"{nrn_pts}\n\n"
-        "NeuroM section:\n"
-        f"{nrm_pts}"
-    )
-    assert_almost_equal(nrn_pts, nrm_pts, decimal=2, err_msg=err_msg)
+    err_msg = (f'ERROR Section mismatch: NRN ID ({nrn_idx}) != NeuroM ID ({nrm_idx})'
+               'NRN section:\n'
+               f'{nrn_pts}\n\n'
+               'NeuroM section:\n'
+               f'{nrm_pts}')
+    assert_almost_equal(nrn_pts,
+                        nrm_pts,
+                        decimal=2,
+                        err_msg=err_msg)
 
 
 def _validate_section_mapping(neurom_cell, nrn_cell, mapping, neurite_type):
@@ -139,11 +140,8 @@ def NeuroM_section_to_NRN_section(filename: Path, neurite_type: str = "all", rev
             else:
                 nrm_to_nrn_sections[neurom_section.id] = nrn_section_counter
 
-            L.debug(
-                "NeuroM section (%s) has been mapped to NRN section (%s)",
-                neurom_section.id,
-                nrm_to_nrn_sections[neurom_section.id],
-            )
+            L.debug('NeuroM section (%s) has been mapped to NRN section (%s)',
+                    neurom_section.id, nrm_to_nrn_sections[neurom_section.id])
             nrn_section_counter += 1
 
     _validate_section_mapping(neurom_cell, nrn_cell, nrm_to_nrn_sections, neurite_type)
@@ -161,8 +159,7 @@ def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positio
     """
     compartment_points = []
     for i, (segment_id_start, position) in enumerate(
-        zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])
-    ):
+            zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])):
         compartment = [position]
         segment_id_end = boundaries_segment_ids[i + 1]
 
@@ -192,23 +189,19 @@ def _compartment_paths(points, n_compartments):
     segment_lengths = np.linalg.norm(segments_directions, axis=1)
     cumulative_pathlength = np.append(0, np.cumsum(segment_lengths))
     pathlengths_at_compartment_boundaries = [
-        i * cumulative_pathlength[-1] / float(n_compartments) for i in range(n_compartments)
-    ]
+        i * cumulative_pathlength[-1] / float(n_compartments) for i in range(n_compartments)]
 
-    boundaries_segment_ids = (
-        np.searchsorted(cumulative_pathlength, pathlengths_at_compartment_boundaries, side="right")
-        - 1
-    ).tolist()
+    boundaries_segment_ids = (np.searchsorted(
+        cumulative_pathlength, pathlengths_at_compartment_boundaries, side="right") - 1).tolist()
     boundaries_positions = []
-    for segment_id, boundary_pathlength in zip(
-        boundaries_segment_ids, pathlengths_at_compartment_boundaries
-    ):
+    for segment_id, boundary_pathlength in zip(boundaries_segment_ids,
+                                               pathlengths_at_compartment_boundaries):
         # The pathlength between the start of segment #segment_id and the boundary
         remaining_pathlength = boundary_pathlength - cumulative_pathlength[segment_id]
 
         # the boundary is somewhere in between point #segment_id and #segment_id+1
         # Here we compute its position in term of relative pathlength
-        segment_fraction = remaining_pathlength / segment_lengths[segment_id]
+        segment_fraction = (remaining_pathlength / segment_lengths[segment_id])
         position = points[segment_id] + segment_fraction * segments_directions[segment_id]
         boundaries_positions.append(position)
 
@@ -275,12 +268,10 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
     return neurom_to_compartment_position_mapping
 
 
-def point_to_section_end(
-    sections: Sequence[neuron.nrn.Section],  # pylint: disable=no-member
-    point: List[float],
-    atol: float = 1e-08,
-    rtol: float = 1e-05,
-) -> Union[None, int]:
+def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disable=no-member
+                         point: List[float],
+                         atol: float = 1e-08,
+                         rtol: float = 1e-05) -> Union[None, int]:
     """Returns the index of the first section whose end is close to ``point``.
 
     The distance between the end and ``point`` must be less than EPSILON from POINT. If no section
@@ -296,11 +287,9 @@ def point_to_section_end(
 
     for index, section in enumerate(sections):
         last_index = section.n3d() - 1
-        last_section_point = [
-            section.x3d(last_index),
-            section.y3d(last_index),
-            section.z3d(last_index),
-        ]
+        last_section_point = [section.x3d(last_index),
+                              section.y3d(last_index),
+                              section.z3d(last_index)]
 
         if np.isclose(point, last_section_point, atol=atol, rtol=rtol).all():
             return index
@@ -361,9 +350,7 @@ def isolate(func):
 
     Note: it does not work as decorator.
     """
-
     def func_isolated(*args, **kwargs):
         with NestedPool(1, maxtasksperchild=1) as pool:
             return pool.apply(func, args, kwargs)
-
     return func_isolated
