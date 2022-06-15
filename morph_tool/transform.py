@@ -182,7 +182,6 @@ def _get_principal_direction(points):
     :mod:`neuror.unravel`.
     """
     X = np.copy(np.asarray(points))
-    X -= np.mean(X, axis=0)
     C = np.dot(X.T, X)
     w, v = np.linalg.eig(C)
     return v[:, w.argmax()]
@@ -194,7 +193,7 @@ def align_morphology(
     """In-place alignment of a morphology towards a 'direction'.
 
     The base algorithm is based on eigenvalue decomposition of the correlation matrix obtained
-    from points in specified neurites, giving the principal axis of the neurite.
+    from points in specified neurites, giving the principal axis of the neurite, centered at soma.
     Currently, five algorithms are implemented, differing in the choice of points:
 
     1) with method='whole': All the points in the apical dendrite are used.
@@ -215,7 +214,7 @@ def align_morphology(
             if None and neurite_type='apical', it will be estimated
 
     Returns:
-        3x3 array with applied rotation matrix
+        3x3 array with applied rotation matrix, 3 array with center of rotation
     """
     if isinstance(method, str) and method not in AlignMethod.values():
         raise NotImplementedError(f"Method {method} is not implemented")
@@ -234,10 +233,12 @@ def align_morphology(
         L.info('We did not find an apical point to align the morphology')
         return np.eye(3)
 
-    principal_direction = _get_principal_direction(points)
+    center = np.mean(morph.soma.points, axis=0)
+
+    principal_direction = _get_principal_direction(points - center)
     principal_direction *= np.sign(points.dot(principal_direction).sum())
 
     rotation_matrix = rotation_matrix_from_vectors(principal_direction, direction)
-    rotate(morph, rotation_matrix)
+    rotate(morph, rotation_matrix, origin=center)
 
     return rotation_matrix
