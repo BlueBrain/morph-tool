@@ -233,7 +233,9 @@ def align_morphology(
         L.info('We did not find an apical point to align the morphology')
         return np.eye(3)
 
-    principal_direction = _get_principal_direction(points-np.linalg.norm(morph.soma.points, axis=0))
+    principal_direction = _get_principal_direction(
+        points - np.linalg.mean(morph.soma.points, axis=0)
+    )
     principal_direction *= np.sign(points.dot(principal_direction).sum())
 
     rotation_matrix = rotation_matrix_from_vectors(principal_direction, direction)
