@@ -1,7 +1,7 @@
 """Module to set sub section types, such as oblique for apicals, or collaterals for axons."""
 from morphio import SectionType
-from neurom import iter_sections
 from morphio.mut import Morphology
+from neurom import iter_sections
 
 from morph_tool.apical_point import apical_point_section_segment
 from morph_tool.axon_point import axon_point_section
@@ -29,7 +29,7 @@ REV_AXON_SUBTYPE_MAP = {j: i for i, j in AXON_SUBTYPE_MAP.items()}
 
 def apical_subtype(neuron, apical_section=None, tuft_percent=20):
     """Return a dict of extended apical subtypes (trunk, oblique, tuft)."""
-    extended_types = dict()
+    extended_types = {}
 
     apical_section = neuron.sections[
         apical_point_section_segment(neuron, tuft_percent=tuft_percent)[0]
@@ -60,10 +60,10 @@ def apical_subtype(neuron, apical_section=None, tuft_percent=20):
 
 def axon_subtype(neuron, axonal_section=None, direction=None, bbox=None, ignore_axis=2):
     """Return a dict of extended axonal subtypes (main, collaterals)."""
-    extended_types = dict()
+    extended_types = {}
     if axonal_section is None:
         axonal_section = neuron.sections[
-            axon_point_section(neuron, direction=direction, ignore_axis=ignore_axis)
+            axon_point_section(neuron, direction=direction, bbox=bbox, ignore_axis=ignore_axis)
         ]
         for section in iter_sections(neuron):
             if section.type == SectionType.axon:
