@@ -193,7 +193,7 @@ def align_morphology(
     """In-place alignment of a morphology towards a 'direction'.
 
     The base algorithm is based on eigenvalue decomposition of the correlation matrix obtained
-    from points in specified neurites, giving the principal axis of the neurite.
+    from points in specified neurites, giving the principal axis of the neurite, centered at soma.
     Currently, five algorithms are implemented, differing in the choice of points:
 
     1) with method='whole': All the points in the apical dendrite are used.
@@ -233,7 +233,7 @@ def align_morphology(
         L.info('We did not find an apical point to align the morphology')
         return np.eye(3)
 
-    principal_direction = _get_principal_direction(points)
+    principal_direction = _get_principal_direction(points-np.linalg.norm(morph.soma.points, axis=0))
     principal_direction *= np.sign(points.dot(principal_direction).sum())
 
     rotation_matrix = rotation_matrix_from_vectors(principal_direction, direction)
