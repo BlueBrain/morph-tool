@@ -26,8 +26,7 @@ def get_NRN_cell(filename: Path):
         from bluepyopt import ephys
     except ImportError as e_:
         raise ImportError(
-            'bluepyopt not installed; please use `pip install morph-tool[nrn]`'
-        ) from e_
+            'bluepyopt not installed; please use `pip install morph-tool[nrn]`') from e_
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
     cell = ephys.models.CellModel('test', morph=m, mechs=[])
