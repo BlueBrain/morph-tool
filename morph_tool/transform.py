@@ -214,7 +214,7 @@ def align_morphology(
             if None and neurite_type='apical', it will be estimated
 
     Returns:
-        3x3 array with applied rotation matrix
+        3x3 array with applied rotation matrix, 3 array with center of rotation
     """
     if isinstance(method, str) and method not in AlignMethod.values():
         raise NotImplementedError(f"Method {method} is not implemented")
@@ -233,12 +233,14 @@ def align_morphology(
         L.info('We did not find an apical point to align the morphology')
         return np.eye(3)
 
-    principal_direction = _get_principal_direction(
-        points - np.linalg.mean(morph.soma.points, axis=0)
-    )
+    center = np.linalg.mean(morph.soma.points, axis=0)
+
+    principal_direction = _get_principal_direction(points - center)
     principal_direction *= np.sign(points.dot(principal_direction).sum())
 
     rotation_matrix = rotation_matrix_from_vectors(principal_direction, direction)
+    translate(morph, -center)
     rotate(morph, rotation_matrix)
+    translate(morph, center)
 
-    return rotation_matrix
+    return rotation_matrix, center
