@@ -58,7 +58,7 @@ def apical_subtype(neuron, apical_section=None, tuft_percent=20):
     return extended_types
 
 
-def axonal_subtype(neuron, axonal_section=None, direction=None, bbox=None, ignore_axis=2):
+def axon_subtype(neuron, axonal_section=None, direction=None, bbox=None, ignore_axis=2):
     """Return a dict of extended axonal subtypes (main, collaterals)."""
 
     extended_types = dict()
@@ -85,22 +85,31 @@ def axonal_subtype(neuron, axonal_section=None, direction=None, bbox=None, ignor
     return extended_types
 
 
-def set_subtypes(neuron, subtype_map):
-    """Set subtypes to a morphology.
-
-    Args:
-        subtype_map (dict): dict to convert str to custom section types.
+def set_apical_subtypes(neuron, tuft_percent=20):
+    """Set apical subtypes to a morphology.
 
     WARNING: cannot save it to .asc file, use unset_subtype to revert
     """
-    subtypes = apical_subtype(neuron)
+    subtypes = apical_subtype(neuron, tuft_percent=tuft_percent)
     sections = neuron.sections
     for secid, subtype in subtypes.items():
-        sections[secid].morphio_section.type = subtype_map[subtype]
+        sections[secid].morphio_section.type = APICAL_SUBTYPE_MAP[subtype]
     return neuron
 
 
-def unset_subtypes(neuron, base_type):
+def set_axon_subtypes(neuron, **kwargs):
+    """Set subtypes to a morphology.
+
+    WARNING: cannot save it to .asc file, use unset_subtype to revert
+    """
+    subtypes = axon_subtype(neuron, **kwargs)
+    sections = neuron.sections
+    for secid, subtype in subtypes.items():
+        sections[secid].morphio_section.type = AXON_SUBTYPE_MAP[subtype]
+    return neuron
+
+
+def _unset_subtypes(neuron, base_type):
     """Unset subtypes to a morphology.
 
     Args:
@@ -118,21 +127,11 @@ def unset_subtypes(neuron, base_type):
     return neuron
 
 
-def set_apical_subtypes(neuron):
-    """Set apical subtypes to a morphology."""
-    return set_subtypes(neuron, subtype_map=APICAL_SUBTYPE_MAP)
-
-
 def unset_apical_subtypes(neuron):
     """Unset apical subtypes to a morphology."""
-    return unset_subtypes(neuron, subtype_map=SectionType.apical_dendrite)
-
-
-def set_axon_subtypes(neuron):
-    """Set axon subtypes to a morphology."""
-    return set_subtypes(neuron, subtype_map=AXON_SUBTYPE_MAP)
+    return _unset_subtypes(neuron, SectionType.apical_dendrite)
 
 
 def unset_axon_subtypes(neuron):
     """Unset axon subtypes to a morphology."""
-    return unset_subtypes(neuron, subtype_map=SectionType.axon)
+    return _unset_subtypes(neuron, SectionType.axon)
