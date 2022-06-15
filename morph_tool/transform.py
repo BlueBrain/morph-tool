@@ -36,7 +36,10 @@ def transform(obj, A):
     if A.shape != (4, 4):
         raise ValueError(f"`A` should be 4 x 4 matrix (got: {A.shape})")
     A = A.transpose()
-    func = lambda p: np.dot(np.column_stack((p, np.ones(len(p)))), A)[:, :3]
+
+    def func(p):
+        return np.dot(np.column_stack((p, np.ones(len(p)))), A)[:, :3]
+
     _apply_recursively(func, obj)
 
 
@@ -54,7 +57,10 @@ def rotate(obj, A, origin=(0, 0, 0)):
     if A.shape != (3, 3):
         raise ValueError(f"`A` should be 3 x 3 matrix (got: {A.shape})")
     A = A.transpose()
-    func = lambda p: np.dot(p, A)
+
+    def func(p):
+        return np.dot(p, A)
+
     _apply_recursively(func, obj, origin)
 
 
@@ -72,7 +78,10 @@ def translate(obj, shift):
         raise ValueError(
             f"`shift` should be vector of shape (3,) (got: {shift.shape})"
         )
-    func = lambda p: p + shift
+
+    def func(p):
+        return p + shift
+
     _apply_recursively(func, obj)
 
 
