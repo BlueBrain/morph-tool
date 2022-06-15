@@ -60,7 +60,6 @@ def apical_subtype(neuron, apical_section=None, tuft_percent=20):
 
 def axon_subtype(neuron, axonal_section=None, direction=None, bbox=None, ignore_axis=2):
     """Return a dict of extended axonal subtypes (main, collaterals)."""
-
     extended_types = dict()
     if axonal_section is None:
         axonal_section = neuron.sections[
@@ -113,6 +112,7 @@ def _unset_subtypes(neuron, base_type):
     """Unset subtypes to a morphology.
 
     Args:
+        neuron (neurom/morphio): morphology to consider
         base_type (SectionType): section type to reset all custom types.
 
     """
