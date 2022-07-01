@@ -127,7 +127,7 @@ def grafting_position(neuron, axon_or_donor_neuron, rng=np.random):
         axon_direction = _random_direction(axis=_dendrites_mean_direction(neuron),
                                            angle=_axon_dendrites_angle(axon_or_donor_neuron),
                                            rng=rng)
-        soma_center = np.mean(neuron.soma.points, axis=0)
+        soma_center = neuron.soma.center
         axon_start = soma_center + _soma_mean_radius(neuron, soma_center) * axon_direction
         return axon_start
 
