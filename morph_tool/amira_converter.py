@@ -9,16 +9,24 @@ from morphio.mut import Morphology
 
 def get_section_data(lines):
     """Read file and extract data per section into a dict of lists."""
-    _converter = {"@3": "edge", "@4": "n_points", "@5": "label", "@6": "point", "@7": " radius"}
+    _converter = {
+        "@1": "node_points",
+        "@2": "node_label",
+        "@3": "edge",
+        "@4": "n_points",
+        "@5": "label",
+        "@6": "point",
+        "@7": "radius",
+    }
     sections = defaultdict(list)
     current_section = ""
     for line in lines:
         if "@" in line:
-            current_section = _converter[line]
+            current_section = line
         elif not line:
             current_section = ""
         elif current_section:
-            sections[current_section].append(line)
+            sections[_converter[current_section]].append(line)
     return sections
 
 
@@ -57,21 +65,14 @@ def get_labels(lines, level=0):
         line_id += 1
 
 
-def load_amira(filename):
-    """Load amira morphology file."""
-    with open(filename) as f:
-        lines = [line.rstrip() for line in f.readlines() if "&" not in line]
-
-    sections = get_section_data(lines)
-    all_labels = get_labels(lines)[0]
-
-    morph = Morphology()
+def create_dfs(sections, labels):
+    """Create dataframe with morphology data."""
     point_id = 0
     df = pd.DataFrame(columns=["u", "v", "label", "points", "diameters"])
 
     us = []
     vs = []
-    labels = []
+    _labels = []
     points = []
     diameters = []
     for edge, n_points, label_id in zip(sections["edge"], sections["n_points"], sections["label"]):
@@ -82,22 +83,25 @@ def load_amira(filename):
             point.append(np.fromstring(sections["point"][point_id], dtype=float, sep=" "))
             diameter.append(2 * float(sections["radius"][point_id]))
             point_id += 1
-        label = all_labels[int(label_id)]
         us.append(u)
         vs.append(v)
-        labels.append(label)
+        _labels.append(labels[int(label_id)])
         points.append([list(p) for p in point])
         diameters.append(diameter)
     df["u"] = us
     df["v"] = vs
-    df["label"] = labels
+    df["label"] = _labels
     df["points"] = points
     df["diameters"] = diameters
-
     dfs = {}
     for label, _df in df.groupby("label"):
         dfs[label] = _df.sort_values(by="u")
 
+    return dfs
+
+
+def make_soma(dfs, morph):
+    """Make a soma."""
     if "Soma" in dfs:
         soma_points = []
         soma_diameters = []
@@ -110,12 +114,19 @@ def load_amira(filename):
         del dfs["Soma"]
     else:
         raise Exception("No Soma found")
+    return soma_ids
 
+
+def make_morph(dfs):
+    """Make morphology."""
     _convert = {
         "Axon": SectionType.axon,
         "BasalDendrite": SectionType.basal_dendrite,
         "ApicalDendrite": SectionType.apical_dendrite,
     }
+
+    morph = Morphology()
+    soma_ids = make_soma(dfs, morph)
     for label, _df in dfs.items():
         section_type = _convert[label]
         _df["id"] = -1
@@ -131,4 +142,16 @@ def load_amira(filename):
                 _id = int(_df.loc[_df["v"] == _df.loc[gid, "u"], "id"])
                 sec = morph.sections[_id].append_section(pts)
                 _df.loc[gid, "id"] = sec.id
+    return morph
+
+
+def load_amira(filename):
+    """Load amira morphology file into morphio.mut.Morphology object."""
+    with open(filename) as f:
+        lines = [line.rstrip() for line in f.readlines() if "&" not in line]
+
+    sections = get_section_data(lines)
+    labels = get_labels(lines)[0]
+    dfs = create_dfs(sections, labels)
+    morph = make_morph(dfs)
     return morph
