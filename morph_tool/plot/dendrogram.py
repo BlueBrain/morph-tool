@@ -111,7 +111,6 @@ def _position_synapses(positions, synapses, neuron_node_id):
 
         # jitter too close synapses
         df = synapses.loc[pre_section | post_section]
-        group_func = lambda idx: round(df.loc[idx, 'y'])
         if len(df) > 1:
             # group by Y coordinate and jitter by X coordinate
             groups = df.groupby(partial(group_y, df=df), group_keys=False)
