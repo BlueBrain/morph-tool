@@ -1,4 +1,6 @@
 """Module for drawing dendrograms with synapses."""
+from functools import partial
+
 import numpy as np
 from neurom import NeuriteType
 from neurom.core import Neurite, Morphology
@@ -50,10 +52,7 @@ def _draw_line(start, end, color):
     return graph_objects.layout.Shape(
         type="line", xref="x", yref="y", x0=start[0], y0=start[1], x1=end[0], y1=end[1],
         opacity=0.4,
-        line=dict(
-            color=color,
-            width=2,
-        ),
+        line={"color": color, "width": 2},
     )
 
 
@@ -95,6 +94,8 @@ def _position_synapses(positions, synapses, neuron_node_id):
             grp.loc[:, 'x'] = jittered_x
         return grp
 
+    def group_y(idx, df):
+        return round(df.loc[idx, 'y'])
 
     for dendrogram, position in positions.items():
         post_section = ((synapses[POST_SECTION_ID] == dendrogram.section_id)
@@ -110,10 +111,9 @@ def _position_synapses(positions, synapses, neuron_node_id):
 
         # jitter too close synapses
         df = synapses.loc[pre_section | post_section]
-        group_func = lambda idx: round(df.loc[idx, 'y'])
         if len(df) > 1:
             # group by Y coordinate and jitter by X coordinate
-            groups = df.groupby(group_func, group_keys=False)
+            groups = df.groupby(partial(group_y, df=df), group_keys=False)
             jittered_df = groups.apply(jitter_x)
             synapses.loc[pre_section | post_section] = jittered_df
 
