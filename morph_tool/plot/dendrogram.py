@@ -88,12 +88,13 @@ def _position_synapses(positions, synapses, neuron_node_id):
         neuron_node_id: neuron's node id from which dendrogram has been built
     """
 
-    def _jitter_x(grp):
+    def jitter_x(grp):
         if len(grp) > 1:
             min_x = grp['x'].min()
             jittered_x = np.arange(0, len(grp), 1) + min_x
             grp.loc[:, 'x'] = jittered_x
         return grp
+
 
     for dendrogram, position in positions.items():
         post_section = ((synapses[POST_SECTION_ID] == dendrogram.section_id)
@@ -109,12 +110,12 @@ def _position_synapses(positions, synapses, neuron_node_id):
 
         # jitter too close synapses
         df = synapses.loc[pre_section | post_section]
+        group_func = lambda idx: round(df.loc[idx, 'y'])
         if len(df) > 1:
-            # pylint: disable=cell-var-from-loop
             # group by Y coordinate and jitter by X coordinate
-            synapses.loc[pre_section | post_section] = df \
-                .groupby(lambda idx: round(df.loc[idx, 'y'])) \
-                .apply(_jitter_x)
+            groups = df.groupby(group_func, group_keys=False)
+            jittered_df = groups.apply(jitter_x)
+            synapses.loc[pre_section | post_section] = jittered_df
 
 
 def _add_neurite_legend(fig, dendrogram):
