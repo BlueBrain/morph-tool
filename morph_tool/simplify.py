@@ -1,59 +1,114 @@
-'''Simplify all neurites using the Ramer-Douglas-Peucker, on a per section basis'''
+"""Simplify all neurites using the Ramer-Douglas-Peucker, on a per section basis."""
+
+import collections
 import logging
 
 import numpy as np
+import morphio.mut
 
-from morphio.mut import Morphology, Section
 
-L = logging.getLogger('morph_tool')
+L = logging.getLogger("morph_tool")
 
-def _dist_line2point(x0, start, end):
-    '''distance of x0 from line defined by start, to end
-        http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-    '''
-    diff_start_end = end - start
-    return np.divide(np.linalg.norm(np.cross(diff_start_end, start - x0)),
-                     np.linalg.norm(diff_start_end))
+
+def _squared_distance_points_to_line(points, line_start, line_end):
+    """Calculate squared distance of point to line using vector projections.
+
+    The vector projections of the points to the line are calculated and subtracted from the point
+    vectors to get the vector rejections, the squared norm of which corresponds to the distance
+    squared from the points to the line.
+
+    See: https://en.wikipedia.org/wiki/Vector_projection
+    """
+    vectors = points - line_start
+    line_vector = line_end - line_start
+
+    inv_sq_norm_line = 1.0 / line_vector.dot(line_vector)
+    vector_projections = (
+        line_vector * vectors.dot(line_vector)[:, np.newaxis] * inv_sq_norm_line
+    )
+
+    # get the rejection vectors perpendicular of the projections and get their squared norm
+    return np.square(vector_projections - vectors).sum(axis=1)
+
 
 def _ramer_douglas_peucker(points, epsilon):
-    ''''''
-    max_dist = 0.0
-    index = -1
 
-    for i in range(1, len(points)):
-        dist = _dist_line2point(points[i], start=points[0], end=points[-1])
-        if max_dist < dist:
-            index = i
-            max_dist = dist
+    # keep all points if epsilon is zero
+    if np.isclose(epsilon, 0.0):
+        return np.ones(len(points), dtype=bool)
 
-    if epsilon < max_dist:
-        r1 = _ramer_douglas_peucker(points[:index + 1, :], epsilon)
-        r2 = _ramer_douglas_peucker(points[index:, :], epsilon)
-        return np.vstack((r1[:-1], r2))
+    keep_mask = np.zeros(len(points), dtype=bool)
 
-    return np.vstack((points[0], points[-1]))
+    # first and last points always kept
+    keep_mask[[0, -1]] = True
+
+    squared_epsilon = epsilon**2
+
+    beg_index = 0
+    end_index = len(points) - 1
+
+    stack = collections.deque([(beg_index, end_index)])
+
+    while stack:
+
+        # start and end index of the current line
+        beg_index, end_index = stack.pop()
+
+        # cannot further simplify
+        if end_index - beg_index < 3:
+            continue
+
+        # calculate the squared distances of all points to the current line
+        # the first and last points are not included in the calc because they are always kept
+        squared_distances = _squared_distance_points_to_line(
+            points=points[beg_index + 1: end_index],
+            line_start=points[beg_index],
+            line_end=points[end_index],
+        )
+
+        # furthest point from current line
+        index = np.argmax(squared_distances)
+
+        if squared_distances[index] > squared_epsilon:
+
+            # +1 to account for that first point we didn't include in the distance calculation
+            global_index = beg_index + index + 1
+
+            keep_mask[global_index] = True
+
+            # divide the line into two lines and repeat
+            stack.append((global_index, end_index))
+            stack.append((beg_index, global_index))
+
+    return keep_mask
 
 
-def _points_simplify(points, epsilon):
-    '''use Ramer-Douglas-Peucker to simplify the points in a section'''
-    simplified = _ramer_douglas_peucker(points, epsilon)
+def simplify_morphology(morph, epsilon):
+    """Simplify the sections of a morphology.
 
-    if np.all(points[0] != simplified[0]):
-        L.warning('start points mismatch: %s != %s', points[0], simplified[0])
+    Args:
+        morph: Morphology object, mutable or immutable
+        obj: Morphology object, mutable or immutable
+        epsilon (float): distance tolerance in microns
 
-    if np.all(points[-1] != simplified[-1]):
-        L.warning('end points mismatch: %s != %s', points[-1], simplified[-1])
-
-    return simplified
-
-
-def simplify_neuron(morph, epsilon):
-    morph = morph.as_mutable()
+    Returns:
+        morphio.mut.Morphology: Simplified morphology copy
+    """
+    morph = morphio.mut.Morphology(morph)
 
     for section in morph.iter():
-        section.points = _points_simplify(section.points, epsilon)
-        #hack - need to return mask of which points used
-        section.diameters = section.diameters[:len(section.points)]
-        section.perimeters = section.perimeters[:len(section.points)]
+
+        points = section.points
+
+        if len(points) == 2:
+            continue
+
+        keep_mask = _ramer_douglas_peucker(points, epsilon)
+
+        section.points = points[keep_mask]
+        section.diameters = section.diameters[keep_mask]
+
+        if section.perimeters:
+            section.perimeters = section.perimeters[keep_mask]
 
     return morph
