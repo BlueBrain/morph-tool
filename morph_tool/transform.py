@@ -160,7 +160,7 @@ def _get_points(morph, method, neurite_type, target_point):
                 elif neurite_type == 'apical':
                     target_secid = apical_point_section_segment(morph)[0]
                 else:
-                    raise Exception(f"We don't know how to get target point for {neurite_type}.")
+                    raise RuntimeError(f"We don't know how to get target point for {neurite_type}.")
 
                 return np.vstack(
                     [section.points

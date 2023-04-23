@@ -94,7 +94,7 @@ def contour2centroid(mean, points):
     # find the major axis of the ellipsoid that best fits the shape
     # assuming (falsely in general) that the center is the mean
 
-    points = (points - mean)
+    points = points - mean
     eigen_values, eigen_vectors = eig(np.dot(points.T, points))
 
     # To be consistent with NEURON eigen vector directions
@@ -210,7 +210,7 @@ def from_swc(neuron, output_ext):
         if output_ext == 'asc':
             single_point_sphere_to_circular_contour(neuron)
     else:
-        raise Exception(
+        raise MorphToolException(
             f'A SWC morphology is not supposed to have a soma of type: {neuron.soma_type}')
 
     return neuron
@@ -258,10 +258,10 @@ def convert(input_file,
     output_ext = Path(outputfile).suffix
 
     if single_point_soma and output_ext.lower() != '.swc':
-        raise Exception('Single point soma is only applicable for swc output')
+        raise MorphToolException('Single point soma is only applicable for swc output')
 
     if output_ext.lower() not in ('.swc', '.asc', '.h5', ):
-        raise Exception('Output file format should be one swc, asc or h5')
+        raise MorphToolException('Output file format should be one swc, asc or h5')
 
     output_ext = output_ext[1:]  # Remove the dot
 
@@ -271,7 +271,7 @@ def convert(input_file,
                      'h5': from_h5_or_asc,
                      }[neuron.version[0]]
     except KeyError as e:
-        raise Exception(
+        raise MorphToolException(
             f'No converter for morphology type: {neuron.version}') from e
 
     L.info('Original soma type: %s', neuron.soma_type)

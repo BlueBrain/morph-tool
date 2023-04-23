@@ -181,7 +181,7 @@ def _compartment_paths(points, n_compartments):
 
         # the boundary is somewhere in between point #segment_id and #segment_id+1
         # Here we compute its position in term of relative pathlength
-        segment_fraction = (remaining_pathlength / segment_lengths[segment_id])
+        segment_fraction = remaining_pathlength / segment_lengths[segment_id]
         position = points[segment_id] + segment_fraction * segments_directions[segment_id]
         boundaries_positions.append(position)
 
