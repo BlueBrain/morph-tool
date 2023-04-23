@@ -173,9 +173,10 @@ def diff(morph1, morph2, rtol, atol, quiet):
 @click.argument('output_file')
 @click.option('--epsilon', type=float)
 def simplify(input_file, output_file, epsilon):
-    '''Simplify the sections of a morphology'''
+    """Simplify the sections of a morphology."""
+    # pylint: disable=import-outside-toplevel
     import morphio
-    from morph_tool import simplify
+    from morph_tool.simplify import simplify_morphology
     morph = morphio.Morphology(input_file)
-    simplified = simplify.simplify_neuron(morph, epsilon)
+    simplified = simplify_morphology(morph, epsilon)
     simplified.write(output_file)
