@@ -103,10 +103,6 @@ def test_simplify_morphology():
 
     obj = Morphology(DATA_DIR / "neuron.asc")
 
-    f, ax = plt.subplots()
-
-    ax.scatter(obj.points[:, 0], obj.points[:, 1])
-
     result = test_module.simplify_morphology(obj, 10.0).as_immutable()
 
     assert len(obj.points) > len(result.points)
