@@ -32,7 +32,16 @@ def _squared_distance_points_to_line(points, line_start, line_end):
 
 
 def _ramer_douglas_peucker(points, epsilon):
+    """Simplify polyline determined by 'points' using the Ramer-Douglas-Peucker algorithm.
 
+    Args:
+        points (np.ndarray): A sequence of points representing a polyline to be simplified.
+        epsilon (float): Distance threshold that determines the max distance between a line segment
+            and the original curve.
+
+    Returns:
+        A boolean mask corresponding tot the points to keep.
+    """
     # keep all points if epsilon is zero
     if np.isclose(epsilon, 0.0):
         return np.ones(len(points), dtype=bool)
