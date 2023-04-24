@@ -102,6 +102,9 @@ def simplify_morphology(morph, epsilon):
 
     Returns:
         morphio.mut.Morphology: Simplified morphology copy
+
+    Note:
+        This is an experimental algorithm.
     """
     morph = morphio.mut.Morphology(morph)
 
