@@ -100,7 +100,7 @@ def simplify_morphology(morph, epsilon):
     The algorithm starts from the first and last points of a curve represented as a list of points
     and recursively divides them into smaller segments.
 
-    At each step it finds the furthest point from the segment. If the point is within a certain
+    At each step it finds the furthest point from the segment. If the point is not within a certain
     threshold distance 'epsilon' from the segment then the segment is split into two smaller ones
     passing through that point. The algorithm is then applied recursively to each new segment.
 
