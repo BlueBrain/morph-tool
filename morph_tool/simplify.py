@@ -101,8 +101,10 @@ def simplify_morphology(morph, epsilon):
     and recursively divides them into smaller segments.
 
     At each step it finds the furthest point from the segment. If the point is not within a certain
-    threshold distance 'epsilon' from the segment then this point can not be simplified and the segment is split into two smaller ones
-    passing through that point, else all the intermediate points of this segment are discarded. The algorithm is then applied recursively to each new segment.
+    threshold distance 'epsilon' from the segment then this point can not be simplified and the
+    segment is split into two smaller ones passing through that point, else all the intermediate
+    points of this segment are discarded. The algorithm is then applied recursively to each new
+    segment.
 
     The result is a simplified curve that approximates the original with a fewer number of points.
     The distance threshold controls the simplification strength. Higher epsilon values result in
