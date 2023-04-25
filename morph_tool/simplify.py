@@ -1,4 +1,4 @@
-"""Simplify all neurites using the Ramer-Douglas-Peucker, on a per section basis."""
+
 
 import collections
 import logging
@@ -95,16 +95,31 @@ def _ramer_douglas_peucker(points, epsilon):
 def simplify_morphology(morph, epsilon):
     """Simplify the sections of a morphology.
 
+    Each section in the morphology is siplified using the Ramer-Douglas-Peucker algorithm.
+
+    The algorithm starts from the first and last points of a curve represented as a list of points
+    and recursively divides them into smaller segments.
+
+    At each step it finds the furthest point from the segment. If the point is within a certain
+    threshold distance 'epsilon' from the segment then the segment is split into two smaller ones
+    passing through that point. The algorithm is then applied recursively to each new segment.
+
+    The result is a simplified curve that approximates the original with a fewer number of points.
+    The distance threshold controls the simplification strength. Higher epsilon values result in
+    simpler and less accurate curves with less inflection points (turns). A zero epsilon will result
+    in a copy of the initial morphology, whereas a large epsilon will only keep the start and end
+    points of each section.
+
     Args:
         morph: Morphology object, mutable or immutable
-        obj: Morphology object, mutable or immutable
         epsilon (float): distance tolerance in microns
 
     Returns:
         morphio.mut.Morphology: Simplified morphology copy
 
     Note:
-        This is an experimental algorithm.
+        This algorithm simplifies morphologies, therefore it will change morphometrics such as the
+        tortuosity and the path length.
     """
     morph = morphio.mut.Morphology(morph)
 
