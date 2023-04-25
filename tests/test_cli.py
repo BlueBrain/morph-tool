@@ -37,3 +37,14 @@ def test_convert_folder(tmpdir):
     n_converted_files = len(list(Path(tmpdir).rglob('**/*.swc')))
 
     assert n_converted_files == 2
+
+
+def test_simplify(tmpdir):
+    runner = CliRunner()
+    input_file = Path(DATA, 'neuron.asc')
+    output_file = Path(tmpdir, "simplified.asc")
+    result = runner.invoke(cli, ['simplify', str(input_file), str(output_file), "--epsilon", 100.])
+    assert result.exit_code == 0, result.exc_info
+    assert output_file.exists()
+
+    assert input_file.stat().st_size > output_file.stat().st_size

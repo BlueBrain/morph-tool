@@ -22,6 +22,7 @@ API Documentation
    morph_tool.neuron_surface
    morph_tool.nrnhines
    morph_tool.resampling
+   morph_tool.simplify
    morph_tool.spatial
    morph_tool.transform
    morph_tool.utils
