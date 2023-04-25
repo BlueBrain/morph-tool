@@ -1,4 +1,4 @@
-
+"""Module for morphology simplification."""
 
 import collections
 import logging
