@@ -95,7 +95,7 @@ def _ramer_douglas_peucker(points, epsilon):
 def simplify_morphology(morph, epsilon):
     """Simplify the sections of a morphology.
 
-    Each section in the morphology is siplified using the Ramer-Douglas-Peucker algorithm.
+    Each section in the morphology is simplified using the Ramer-Douglas-Peucker algorithm.
 
     The algorithm starts from the first and last points of a curve represented as a list of points
     and recursively divides them into smaller segments.
