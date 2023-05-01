@@ -20,7 +20,7 @@ If you want to work with old NeuroM v1 and MorphIO v2, use the version 2.4.7 of 
 Documentation
 -------------
 
-MorphIO documentation is built and hosted on `readthedocs <https://morph-tool.readthedocs.org/>`__.
+morph-tool documentation is built and hosted on `readthedocs <https://morph-tool.readthedocs.org/>`__.
 
 * `latest snapshot <https://morph-tool.readthedocs.org/en/latest/>`_
 * `latest release <https://morph-tool.readthedocs.org/en/stable/>`_
@@ -114,7 +114,6 @@ The same functionality is also available through the python API:
    # And also contains information about how morphologies differ
    result = diff(filename1, filename2)
    print(result.info)
-
 
 
 Converter
@@ -292,6 +291,40 @@ Morphology
 Draw NeuroM morphology with synapses on it. Synapses must be represented as a DataFrame. See
 `morphology <https://morph-tool.readthedocs.io/en/latest/morph_tool.plot.morphology.html>`__.
 
+Simplification
+~~~~~~~~~~~~~~
+
+Using the `Ramer–Douglas–Peucker algorithm <https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm>`__, one can simplify morphologies like:
+
+.. code:: bash
+
+   morph-tool simplify --epsilon .5 C010306C.h5 C010306C-simple.h5
+
+This will reduce the number of segments the morphology:
+
+.. code:: bash
+
+    $ h5ls -r C010306C.h5
+    /                        Group
+    /metadata                Group
+    /points                  Dataset {2820, 4}
+    /structure               Dataset {107, 3}
+
+    $ h5ls -r C010306C-simple.h5
+    /                        Group
+    /metadata                Group
+    /points                  Dataset {627, 4}
+    /structure               Dataset {107, 3}
+
+An image difference shows that all the sections have changed:
+
+.. image:: examples/simplify-diff.png
+
+
+But the difference isn't extremely obvious by the human eye:
+
+
+.. image:: examples/simplify-diff.gif
 
 Contributing
 ------------
