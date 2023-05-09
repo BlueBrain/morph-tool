@@ -8,5 +8,6 @@
 
    Home <self>
    morphdb
+   simplify
    api
    changelog

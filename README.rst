@@ -20,7 +20,7 @@ If you want to work with old NeuroM v1 and MorphIO v2, use the version 2.4.7 of 
 Documentation
 -------------
 
-MorphIO documentation is built and hosted on `readthedocs <https://morph-tool.readthedocs.org/>`__.
+morph-tool documentation is built and hosted on `readthedocs <https://morph-tool.readthedocs.org/>`__.
 
 * `latest snapshot <https://morph-tool.readthedocs.org/en/latest/>`_
 * `latest release <https://morph-tool.readthedocs.org/en/stable/>`_
@@ -114,7 +114,6 @@ The same functionality is also available through the python API:
    # And also contains information about how morphologies differ
    result = diff(filename1, filename2)
    print(result.info)
-
 
 
 Converter
@@ -291,6 +290,12 @@ Morphology
 
 Draw NeuroM morphology with synapses on it. Synapses must be represented as a DataFrame. See
 `morphology <https://morph-tool.readthedocs.io/en/latest/morph_tool.plot.morphology.html>`__.
+
+Simplification
+~~~~~~~~~~~~~~
+
+MorphTool can also be use to "simplify" morphologies.
+See `morphology <https://morph-tool.readthedocs.io/en/latest/simplify.html>`__.
 
 
 Contributing
