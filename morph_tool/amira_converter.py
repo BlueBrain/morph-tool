@@ -1,10 +1,21 @@
-"""Amira morphology format converter."""
+"""Amira morphology format loader.
+
+This package is adaped from
+
+https://github.com/zibneuro/udvary-et-al-2022/blob/master/structural_model/util_amira.py
+
+to only load amira files into a MorphIO morphology.
+
+WARNING: this is not an official amira loader, it may contain bugs or unsupported features.
+"""
 from collections import defaultdict
 import numpy as np
 import pandas as pd
 
 from morphio import PointLevel, SectionType
 from morphio.mut import Morphology
+
+# pylint: disable=too-many-locals
 
 
 def get_section_data(lines):
@@ -44,7 +55,7 @@ def get_labels(lines, level=0):
             label = line.strip().split(" ")[0]
 
         if "{" in line and "{" in lines[line_id + 1] and not retry:
-            _labels, n_lines = get_labels(lines[line_id + 1:], level + 1)
+            _labels, n_lines = get_labels(lines[line_id + 1 :], level + 1)
             labels.update(_labels)
             line_id += n_lines
             retry = True
@@ -53,6 +64,7 @@ def get_labels(lines, level=0):
             labels.update(_labels)
             line_id += n_lines - 1
             retry = True
+
         if "Id" in line:
             if line.endswith(","):
                 line = line[:-1]
@@ -61,8 +73,11 @@ def get_labels(lines, level=0):
         if "}" in line:
             if _id is not None:
                 labels[_id] = label
-            return labels, line_id + 1
+            break
+
         line_id += 1
+
+    return labels, line_id + 1
 
 
 def create_dfs(sections, labels):
@@ -113,7 +128,7 @@ def make_soma(dfs, morph):
         soma_ids = dfs["Soma"]["v"].to_list()
         del dfs["Soma"]
     else:
-        raise Exception("No Soma found")
+        raise ValueError("No Soma found")
     return soma_ids
 
 
@@ -147,7 +162,7 @@ def make_morph(dfs):
 
 def load_amira(filename):
     """Load amira morphology file into morphio.mut.Morphology object."""
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         lines = [line.rstrip() for line in f.readlines() if "&" not in line]
 
     sections = get_section_data(lines)
