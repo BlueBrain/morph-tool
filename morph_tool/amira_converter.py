@@ -18,7 +18,7 @@ from morphio.mut import Morphology
 # pylint: disable=too-many-locals
 
 
-def get_section_data(lines):
+def _get_section_data(lines):
     """Read file and extract data per section into a dict of lists."""
     _converter = {
         "@1": "node_points",
@@ -41,12 +41,12 @@ def get_section_data(lines):
     return sections
 
 
-def get_labels(lines, level=0):
+def _get_labels(lines, level=0):
     """Get label mapping."""
     label = None
     line_id = 0
     retry = False
-    _id = None
+    section_id = None
     labels = {}
     while line_id <= len(lines):
         line = lines[line_id]
@@ -55,12 +55,12 @@ def get_labels(lines, level=0):
             label = line.strip().split(" ")[0]
 
         if "{" in line and "{" in lines[line_id + 1] and not retry:
-            _labels, n_lines = get_labels(lines[line_id + 1:], level + 1)
+            _labels, n_lines = _get_labels(lines[line_id + 1 :], level + 1)
             labels.update(_labels)
             line_id += n_lines
             retry = True
         elif retry and "{" in line:
-            _labels, n_lines = get_labels(lines[line_id:], level + 1)
+            _labels, n_lines = _get_labels(lines[line_id:], level + 1)
             labels.update(_labels)
             line_id += n_lines - 1
             retry = True
@@ -68,11 +68,11 @@ def get_labels(lines, level=0):
         if "Id" in line:
             if line.endswith(","):
                 line = line[:-1]
-            _id = int(line.split(" ")[-1])
+            section_id = int(line.split(" ")[-1])
 
         if "}" in line:
-            if _id is not None:
-                labels[_id] = label
+            if section_id is not None:
+                labels[section_id] = label
             break
 
         line_id += 1
@@ -80,8 +80,8 @@ def get_labels(lines, level=0):
     return labels, line_id + 1
 
 
-def create_dfs(sections, labels):
-    """Create dataframe with morphology data."""
+def _create_dfs(sections, labels):
+    """Create a dictionary of dataframes with morphology data, grouped by labels."""
     point_id = 0
     df = pd.DataFrame(columns=["u", "v", "label", "points", "diameters"])
 
@@ -115,7 +115,7 @@ def create_dfs(sections, labels):
     return dfs
 
 
-def make_soma(dfs, morph):
+def _make_soma(dfs, morph):
     """Make a soma."""
     if "Soma" in dfs:
         soma_points = []
@@ -126,13 +126,12 @@ def make_soma(dfs, morph):
         morph.soma.points = soma_points
         morph.soma.diameters = soma_diameters
         soma_ids = dfs["Soma"]["v"].to_list()
-        del dfs["Soma"]
     else:
         raise ValueError("No Soma found")
     return soma_ids
 
 
-def make_morph(dfs):
+def _make_morph(dfs):
     """Make morphology."""
     _convert = {
         "Axon": SectionType.axon,
@@ -141,8 +140,10 @@ def make_morph(dfs):
     }
 
     morph = Morphology()
-    soma_ids = make_soma(dfs, morph)
+    soma_ids = _make_soma(dfs, morph)
     for label, _df in dfs.items():
+        if label == "Soma":
+            continue
         section_type = _convert[label]
         _df["id"] = -1
         root_gids = _df[_df.u.isin(soma_ids)].index
@@ -165,8 +166,7 @@ def load_amira(filename):
     with open(filename, encoding="utf-8") as f:
         lines = [line.rstrip() for line in f.readlines() if "&" not in line]
 
-    sections = get_section_data(lines)
-    labels = get_labels(lines)[0]
-    dfs = create_dfs(sections, labels)
-    morph = make_morph(dfs)
-    return morph
+    sections = _get_section_data(lines)
+    labels = _get_labels(lines)[0]
+    dfs = _create_dfs(sections, labels)
+    return _make_morph(dfs)
