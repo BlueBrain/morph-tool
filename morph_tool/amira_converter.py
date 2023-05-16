@@ -32,13 +32,13 @@ def _get_section_data(lines):
     sections = defaultdict(list)
     current_section = ""
     for line in lines:
-        if "@" in line:
+        if line.startswith("@"):
             current_section = line
         elif not line:
             current_section = ""
         elif current_section:
             sections[_converter[current_section]].append(line)
-    return sections
+    return dict(sections)
 
 
 def _get_labels(lines, level=0):
