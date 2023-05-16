@@ -38,7 +38,7 @@ def get_section_data(lines):
             current_section = ""
         elif current_section:
             sections[_converter[current_section]].append(line)
-    return sections
+    return dict(sections)
 
 
 def get_labels(lines, level=0):
