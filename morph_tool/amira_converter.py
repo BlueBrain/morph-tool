@@ -55,7 +55,7 @@ def _get_labels(lines, level=0):
             label = line.strip().split(" ")[0]
 
         if "{" in line and "{" in lines[line_id + 1] and not retry:
-            _labels, n_lines = _get_labels(lines[line_id + 1 :], level + 1)
+            _labels, n_lines = _get_labels(lines[line_id + 1:], level + 1)
             labels.update(_labels)
             line_id += n_lines
             retry = True
