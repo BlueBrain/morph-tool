@@ -9,6 +9,7 @@ to only load amira files into a MorphIO morphology.
 WARNING: this is not an official amira loader, it may contain bugs or unsupported features.
 """
 from collections import defaultdict
+import re
 import numpy as np
 import pandas as pd
 
@@ -44,40 +45,40 @@ def _get_section_data(lines):
 def _get_labels(lines, level=0):
     """Get label mapping."""
     label = None
-    line_id = 0
+    line_pos_id = 0
     retry = False
     section_id = None
     labels = {}
-    while line_id <= len(lines):
-        line = lines[line_id]
+    while line_pos_id <= len(lines):
+        line = lines[line_pos_id]
 
         if "{" in line and not retry:
-            label = line.strip().split(" ")[0]
+            label = re.search(r"\S+", line).group()
 
-        if "{" in line and "{" in lines[line_id + 1] and not retry:
-            _labels, n_lines = _get_labels(lines[line_id + 1:], level + 1)
+        if "{" in line and "{" in lines[line_pos_id + 1] and not retry:
+            _labels, n_lines = _get_labels(lines[line_pos_id + 1:], level + 1)
             labels.update(_labels)
-            line_id += n_lines
+            line_pos_id += n_lines
             retry = True
         elif retry and "{" in line:
-            _labels, n_lines = _get_labels(lines[line_id:], level + 1)
+            _labels, n_lines = _get_labels(lines[line_pos_id:], level + 1)
             labels.update(_labels)
-            line_id += n_lines - 1
+            line_pos_id += n_lines - 1
             retry = True
 
         if "Id" in line:
             if line.endswith(","):
                 line = line[:-1]
-            section_id = int(line.split(" ")[-1])
+            section_id = int(re.search(r"\d+", line).group())
 
         if "}" in line:
             if section_id is not None:
                 labels[section_id] = label
             break
 
-        line_id += 1
+        line_pos_id += 1
 
-    return labels, line_id + 1
+    return labels, line_pos_id + 1
 
 
 def _create_dfs(sections, labels):
