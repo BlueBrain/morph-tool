@@ -68,7 +68,6 @@ def _get_labels(lines, level=0):
 
         if "Id" in line:
             if line.endswith(","):
-                line = line[:-1]
             section_id = int(re.search(r"\d+", line).group())
 
         if "}" in line:
