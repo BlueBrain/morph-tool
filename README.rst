@@ -74,7 +74,7 @@ Currently the three sub-command are:
 
 .. code:: bash
 
-    morph-tool convert input_file output_file
+    morph-tool convert file input_file output_file
     morph-tool diff morph1 morph2
     morph-tool soma-surface input_file
 
