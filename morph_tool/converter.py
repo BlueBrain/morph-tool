@@ -190,8 +190,7 @@ def from_swc(neuron, output_ext):
     if neuron.soma_type == SomaType.SOMA_CYLINDERS:
         L.info('Converting soma stack of cylinders into a contour in the XY plane')
 
-        direction = neuron.soma.points[-1] - neuron.soma.points[0]
-
+        direction = neuron.soma.points[int(len(neuron.soma.points)/2)] - neuron.soma.points[0]
         # 90 degree rotation along Z axis
         orthogonal = np.array([direction[1], -direction[0], 0])
         orthogonal /= np.linalg.norm(orthogonal)
