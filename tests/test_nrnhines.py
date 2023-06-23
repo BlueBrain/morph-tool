@@ -4,54 +4,45 @@ from numpy.testing import assert_array_almost_equal
 
 import morph_tool.nrnhines as tested
 
-DATA = Path(__file__).parent / 'data'
-SIMPLE = DATA / 'simple2.asc'
+DATA = Path(__file__).parent / "data"
+SIMPLE = DATA / "simple2.asc"
+
+
+def test_get_segment_resistance_distances():
+    dists = tested.get_segment_resistance_distances(DATA / "neuron.asc")
+    assert_array_almost_equal(dists[0][:2], [0.0, 0.0013397])
+    assert_array_almost_equal(dists[1][:2], [0.03909698, 0.04153088])
+
+
+def test_get_section_resistance_distance_matrix():
+    conds = tested.get_section_resistance_distance_matrix(DATA / "neuron.asc")
+    assert_array_almost_equal(conds[0, :2], [0.0, 0.03909698])
 
 
 def test_interpolate_compartments():
-    points = np.array([[0, 0, 0],
-                       [1, 0, 0],
-                       [1, 2, 0],
-                       [2, 2, 0]])
+    points = np.array([[0, 0, 0], [1, 0, 0], [1, 2, 0], [2, 2, 0]])
     paths = tested._compartment_paths(points, 3)
     assert len(paths) == 3
 
-    assert_array_almost_equal(paths[0],
-                              [[0., 0., 0.],
-                               [1., 0., 0.],
-                               [1., 0.33333333, 0.]])
+    assert_array_almost_equal(paths[0], [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.33333333, 0.0]])
 
-    assert_array_almost_equal(paths[1],
-                              [[1., 0.33333333, 0.],
-                               [1., 1.66666667, 0.]])
+    assert_array_almost_equal(paths[1], [[1.0, 0.33333333, 0.0], [1.0, 1.66666667, 0.0]])
 
-    assert_array_almost_equal(paths[2],
-                              [[1., 1.66666667, 0.],
-                               [1., 2., 0.],
-                               [2., 2., 0.]])
+    assert_array_almost_equal(paths[2], [[1.0, 1.66666667, 0.0], [1.0, 2.0, 0.0], [2.0, 2.0, 0.0]])
 
 
 def test_NeuroM_section_to_NRN_compartment_paths():
     mapping = tested.NeuroM_section_to_NRN_compartment_paths(SIMPLE)
 
-    assert_array_almost_equal(mapping[0], [[[0., 0., 0.],
-                                            [0., 5., 0.]]])
-    assert_array_almost_equal(mapping[1], [[[0., 5., 0.],
-                                            [-5., 5., 0.],
-                                            [-6., 5., 0.]]])
+    assert_array_almost_equal(mapping[0], [[[0.0, 0.0, 0.0], [0.0, 5.0, 0.0]]])
+    assert_array_almost_equal(mapping[1], [[[0.0, 5.0, 0.0], [-5.0, 5.0, 0.0], [-6.0, 5.0, 0.0]]])
 
 
 def test_point_to_section_end():
     cell = tested.get_NRN_cell(SIMPLE)
-    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 0]) ==
-                 6)
-
-    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 2]) ==
-                 None)
-
-    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 2],
-                                             atol=10) ==
-                 3)
+    assert tested.point_to_section_end(cell.icell.all, [-8, 10, 0]) == 6
+    assert tested.point_to_section_end(cell.icell.all, [-8, 10, 2]) is None
+    assert tested.point_to_section_end(cell.icell.all, [-8, 10, 2], atol=10) == 3
 
 
 def _to_be_isolated(morphology_path, point):

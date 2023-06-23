@@ -6,6 +6,7 @@ from typing import List, Sequence, Union
 
 import numpy as np
 from neurom import COLS, NeuriteType, iter_sections, load_morphology
+from neurom import morphmath
 from neurom.core.types import NeuriteIter
 from numpy.testing import assert_almost_equal
 
@@ -13,10 +14,54 @@ try:
     import neuron
 except ImportError as e:
     raise ImportError(
-        'morph-tool[nrn] is not installed. Please install: pip install morph-tool[nrn]'
+        "morph-tool[nrn] is not installed. Please install: pip install morph-tool[nrn]"
     ) from e
 
 L = logging.getLogger(__name__)
+
+
+def get_segment_resistance_distances(filename):
+    """Compute resistance distance between soma and NeuroM segments.
+
+    This is done via linear interpolation on sections.
+    """
+
+    effective_resistance = get_section_resistance_distance_matrix(filename)
+    sec_eff_dists = effective_resistance[0]
+    seg_eff_dists = {}
+    morph = load_morphology(filename)
+    for section in morph.iter():
+        eff_orig = sec_eff_dists[section.parent.id + 1] if not section.is_root else 0
+        eff_term = sec_eff_dists[section.id + 1]
+        dists = morphmath.interval_lengths(section.points, prepend_zero=True).cumsum()
+        seg_eff_dists[section.id] = np.interp(dists, [0, dists[-1]], [eff_orig, eff_term])[1:]
+    return seg_eff_dists
+
+
+def get_section_resistance_distance_matrix(filename):
+    """Compute resistance distnace matrix between NeuroM sections."""
+    cell = get_NRN_cell(filename)
+    morph = load_morphology(filename)
+    m = NeuroM_section_to_NRN_section(filename)
+    NRN_sections = list(cell.icell.all)
+
+    conductances = []
+    for section in morph.iter():
+        sec = NRN_sections[m[section.id]]
+        conductances.append(sum(1.0 / seg.ri() for seg in sec.allseg()))
+    adjacency = np.zeros([len(conductances) + 1, len(conductances) + 1])
+    for i, adj in morph.connectivity.items():
+        for j in adj:
+            adjacency[i + 1, j + 1] = conductances[j]
+            adjacency[j + 1, i + 1] = conductances[j]
+
+    laplacian = np.diag(adjacency.sum(1)) - adjacency
+    linv = np.linalg.pinv(laplacian)
+    effective_resistance = np.zeros(shape=np.shape(laplacian))
+    for i in range(len(effective_resistance)):
+        for j in range(len(effective_resistance)):
+            effective_resistance[i, j] = linv[i, i] + linv[j, j] - 2 * linv[i, j]
+    return effective_resistance
 
 
 def get_NRN_cell(filename: Path):
@@ -26,10 +71,11 @@ def get_NRN_cell(filename: Path):
         from bluepyopt import ephys
     except ImportError as e_:
         raise ImportError(
-            'bluepyopt not installed; please use `pip install morph-tool[nrn]`') from e_
+            "bluepyopt not installed; please use `pip install morph-tool[nrn]`"
+        ) from e_
     m = ephys.morphologies.NrnFileMorphology(str(filename))
     sim = ephys.simulators.NrnSimulator()
-    cell = ephys.models.CellModel('test', morph=m, mechs=[])
+    cell = ephys.models.CellModel("test", morph=m, mechs=[])
     cell.instantiate(sim=sim)
     return cell
 
@@ -99,11 +145,13 @@ def NeuroM_section_to_NRN_section(filename: Path):
             mapping[NeuroM_section.id] = None
 
             if not NeuroM_section.children:
-                L.debug('Zero length section without children (NeuroM section id: %s)',
-                        NeuroM_section.id)
+                L.debug(
+                    "Zero length section without children (NeuroM section id: %s)",
+                    NeuroM_section.id,
+                )
                 continue
 
-            L.debug('Zero length section with children')
+            L.debug("Zero length section with children")
             NRN_section = NRN_sections[counter]
             counter -= 1
 
@@ -111,13 +159,16 @@ def NeuroM_section_to_NRN_section(filename: Path):
             mapping[NeuroM_section.id] = counter
             NRN_section = NRN_sections[counter]
 
-        L.debug('NeuroM section (%s) has been mapped to NRN section (%s)',
-                NeuroM_section.id, mapping[NeuroM_section.id])
+        L.debug(
+            "NeuroM section (%s) has been mapped to NRN section (%s)",
+            NeuroM_section.id,
+            mapping[NeuroM_section.id],
+        )
 
         # Skip single child NeuroM_section because they have already been
         # merged in the NeuroM morphology
         while _has_single_child(NRN_section):
-            L.debug('Skipping single child')
+            L.debug("Skipping single child")
             counter += 1
             NRN_section = NRN_section.children()[0]
 
@@ -138,7 +189,8 @@ def _interpolate_compartments(points, boundaries_segment_ids, boundaries_positio
     """
     compartment_points = []
     for i, (segment_id_start, position) in enumerate(
-            zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])):
+        zip(boundaries_segment_ids[:-1], boundaries_positions[:-1])
+    ):
         compartment = [position]
         segment_id_end = boundaries_segment_ids[i + 1]
 
@@ -168,7 +220,8 @@ def _compartment_paths(points, n_compartments):
     segment_lengths = np.linalg.norm(segments_directions, axis=1)
     cumulative_pathlength = np.append(0, np.cumsum(segment_lengths))
     pathlengths_at_compartment_boundaries = [
-        i * cumulative_pathlength[-1] / float(n_compartments) for i in range(n_compartments)]
+        i * cumulative_pathlength[-1] / float(n_compartments) for i in range(n_compartments)
+    ]
 
     boundaries_segment_ids = (np.searchsorted(
         cumulative_pathlength, pathlengths_at_compartment_boundaries, side='right') - 1).tolist()
@@ -243,7 +296,8 @@ def NeuroM_section_to_NRN_compartment_paths(morph_path: Path):
         NRN_section = NRN_sections[mapping[section.id]]
 
         NeuroM_to_compartment_position_mapping[section.id] = _compartment_paths(
-            section.points[:, COLS.XYZ], NRN_section.nseg)
+            section.points[:, COLS.XYZ], NRN_section.nseg
+        )
 
     return NeuroM_to_compartment_position_mapping
 
@@ -267,9 +321,11 @@ def point_to_section_end(sections: Sequence[neuron.nrn.Section],  # pylint: disa
 
     for index, section in enumerate(sections):
         last_index = section.n3d() - 1
-        last_section_point = [section.x3d(last_index),
-                              section.y3d(last_index),
-                              section.z3d(last_index)]
+        last_section_point = [
+            section.x3d(last_index),
+            section.y3d(last_index),
+            section.z3d(last_index),
+        ]
 
         if np.isclose(point, last_section_point, atol=atol, rtol=rtol).all():
             return index
@@ -330,7 +386,9 @@ def isolate(func):
 
     Note: it does not work as decorator.
     """
+
     def func_isolated(*args, **kwargs):
         with NestedPool(1, maxtasksperchild=1) as pool:
             return pool.apply(func, args, kwargs)
+
     return func_isolated
