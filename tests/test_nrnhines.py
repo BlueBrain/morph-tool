@@ -54,6 +54,29 @@ def test_point_to_section_end():
                  3)
 
 
+def test_NeuroM_section_to_NRN_section():
+    # default use case
+    mapping = tested.NeuroM_section_to_NRN_section(SIMPLE)
+    assert mapping == {5: 0, 6: 1, 7: 2, 0: 3, 1: 4, 2: 5, 3: 6, 4: 7}
+
+    # return reverse mapping
+    mapping = tested.NeuroM_section_to_NRN_section(SIMPLE, reverse=True)
+    assert mapping == {0: 5, 1: 6, 2: 7, 3: 0, 4: 1, 5: 2, 6: 3, 7: 4}
+
+    # mapping with specific neurite type
+    mapping = tested.NeuroM_section_to_NRN_section(SIMPLE, neurite_type="basal_dendrite")
+    assert mapping == {0: 0, 1: 1, 2: 2, 3: 3, 4: 4}
+
+    # check we have a None for a zero len section
+    mapping = tested.NeuroM_section_to_NRN_section(DATA / 'simple2_zero_len.asc')
+    assert mapping == {5: 0, 6: 1, 7: 2, 0: 3, 1: None, 2: 4, 3: 5, 4: 6}
+
+    # check if we have a soma, the sections id are correct
+    mapping = tested.NeuroM_section_to_NRN_section(DATA / 'neuron.asc')
+    assert mapping[79] == 1
+    assert mapping[80] == 2
+
+
 def _to_be_isolated(morphology_path, point):
     """Convert a point position to NEURON section index and return cell name and id.
 
