@@ -109,7 +109,7 @@ def _create_dfs(sections, labels):
     df["diameters"] = diameters
     dfs = {}
     for label, _df in df.groupby("label"):
-        dfs[label] = _df.sort_values(by="u")
+        dfs[label] = _df.sort_values(by="u", kind='stable')
 
     return dfs
 
