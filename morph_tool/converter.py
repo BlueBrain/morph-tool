@@ -153,6 +153,7 @@ def cylinder_to_cylindrical_contour(neuron):
     origin = neuron.soma.points[0]
     neuron.soma.points = points + origin
     neuron.soma.diameters = diameters
+    neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
 
 
 def single_point_sphere_to_circular_contour(neuron):
@@ -169,6 +170,7 @@ def single_point_sphere_to_circular_contour(neuron):
     origin = neuron.soma.points[0]
     neuron.soma.points = points + origin
     neuron.soma.diameters = diameters
+    neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
 
 
 def soma_to_single_point(soma):
@@ -180,6 +182,7 @@ def soma_to_single_point(soma):
 
     soma.points = np.mean(soma.points, axis=0)[None, :]
     soma.diameters = [float((surface_area / np.pi) ** 0.5)]
+    soma.type = SomaType.SOMA_SINGLE_POINT
 
 
 def from_swc(neuron, output_ext):
@@ -203,6 +206,7 @@ def from_swc(neuron, output_ext):
 
         neuron.soma.points = np.vstack((contour_side1, contour_side2))
         neuron.soma.diameters = [0] * len(neuron.soma.points)
+        neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
 
     elif neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
         cylinder_to_cylindrical_contour(neuron)
@@ -226,6 +230,7 @@ def from_h5_or_asc(neuron, output_ext):
             mean, new_xyz = contourcenter(neuron.soma.points)
             neuron.soma.points, neuron.soma.diameters = contour2centroid(
                 mean, new_xyz)
+            neuron.soma.type = SomaType.SOMA_CYLINDERS
 
     return neuron
 
