@@ -197,7 +197,13 @@ def from_swc(neuron, output_ext):
 
         # 90 degree rotation along Z axis
         orthogonal = np.array([direction[1], -direction[0], 0])
-        orthogonal /= np.linalg.norm(orthogonal)
+        norm = np.linalg.norm(orthogonal)
+        if abs(norm) < 1e-10:
+            # if we can't rotate along Z, we do along X
+            orthogonal = np.array([0, direction[2], -direction[1]])
+            norm = np.linalg.norm(orthogonal)
+
+        orthogonal /= norm
         orthogonal = np.repeat(
             orthogonal[np.newaxis, :], len(neuron.soma.points), axis=0)
         contour_side1 = neuron.soma.points + (orthogonal.T * neuron.soma.diameters / 2.).T
