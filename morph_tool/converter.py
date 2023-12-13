@@ -216,8 +216,7 @@ def from_swc(neuron, output_ext):
     elif neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
         cylinder_to_cylindrical_contour(neuron)
     elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
-        if output_ext == 'asc':
-            single_point_sphere_to_circular_contour(neuron)
+        single_point_sphere_to_circular_contour(neuron)
     else:
         raise MorphToolException(
             f'A SWC morphology is not supposed to have a soma of type: {neuron.soma_type}')
