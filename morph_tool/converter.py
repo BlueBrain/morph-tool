@@ -7,7 +7,6 @@ from morphio import Option, SomaType
 from morphio._morphio import WriterError  # pylint: disable=no-name-in-module
 from morphio.mut import Morphology
 from neurom import morphmath
-from numpy.linalg import eig, norm
 
 from morph_tool import transform
 from morph_tool.exceptions import MorphToolException
@@ -24,7 +23,7 @@ def contourcenter(xyz):
     POINTS = 101
 
     points = np.vstack((np.diff(xyz[:, [X, Y]], axis=0), xyz[0, [X, Y]]))
-    perim = np.cumsum(np.hstack(((0, ), norm(points, axis=1))))[:-1]
+    perim = np.cumsum(np.hstack(((0, ), np.linalg.norm(points, axis=1))))[:-1]
 
     d = np.linspace(0, perim[-1], POINTS)
     new_xyz = np.zeros((POINTS, 3))
@@ -95,7 +94,7 @@ def contour2centroid(mean, points):
     # assuming (falsely in general) that the center is the mean
 
     points = points - mean
-    eigen_values, eigen_vectors = eig(np.dot(points.T, points))
+    eigen_values, eigen_vectors = np.linalg.eig(np.dot(points.T, points))
 
     # To be consistent with NEURON eigen vector directions
     eigen_vectors *= -1
@@ -197,7 +196,13 @@ def from_swc(neuron, output_ext):
 
         # 90 degree rotation along Z axis
         orthogonal = np.array([direction[1], -direction[0], 0])
-        orthogonal /= np.linalg.norm(orthogonal)
+        norm = np.linalg.norm(orthogonal)
+        if abs(norm) < 1e-10:
+            # if we can't rotate along Z, we do along X
+            orthogonal = np.array([0, direction[2], -direction[1]])
+            norm = np.linalg.norm(orthogonal)
+
+        orthogonal /= norm
         orthogonal = np.repeat(
             orthogonal[np.newaxis, :], len(neuron.soma.points), axis=0)
         contour_side1 = neuron.soma.points + (orthogonal.T * neuron.soma.diameters / 2.).T
