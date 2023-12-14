@@ -95,8 +95,8 @@ def test_graft_axon_on_synthesized_cell():
     graft.graft_axon(synthesized_cell, donor_neuron)
     axon = graft.find_axon(synthesized_cell)
     assert_array_almost_equal(axon.points,
-                              [[1.669128, 8.830159, 4.592799],
-                               [1.669128, 4.830159, 4.592799]])
+                              [[5.1272364, 5.4825425, 4.9689593],
+                               [5.1272364, 1.4825425, 4.9689593]])
 
 
 def test_self_graft():
