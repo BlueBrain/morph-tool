@@ -30,7 +30,7 @@ def test_convert_file(tmpdir):
 
 def test_convert_folder(tmpdir):
     runner = CliRunner()
-    result = runner.invoke(cli, ['convert', 'folder', '-ext', 'swc',
+    result = runner.invoke(cli, ['convert', 'folder', '--single-point-soma', '-ext', 'swc',
                                  str(DATA / 'input-convert'), str(tmpdir)])
     assert result.exit_code == 0, result.exc_info
 

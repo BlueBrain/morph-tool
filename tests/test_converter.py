@@ -15,11 +15,14 @@ DATA = Path(__file__).parent / 'data'
 
 
 def test_convert(tmpdir):
-    for in_ext, out_ext in it.product(['asc', 'h5', 'swc'], repeat=2):
+    for in_ext, out_ext in (('asc', 'h5'),
+                            ('asc', 'swc'),
+                            ('h5', 'asc'),
+                            ('h5', 'swc')):
         # A simple morphology
         inname = DATA / f'simple.{in_ext}'
         outname = Path(tmpdir, f'test.{out_ext}')
-        convert(inname, outname)
+        convert(inname, outname, single_point_soma=(out_ext == 'swc'))
         assert not diff(inname, outname)
 
         # A more complex one

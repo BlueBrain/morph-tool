@@ -98,6 +98,7 @@ def test_graft_axon_on_synthesized_cell():
                               [[5.1272364, 5.4825425, 4.9689593],
                                [5.1272364, 1.4825425, 4.9689593]])
 
+
 def test_self_graft():
     '''Grafting a neuron with its own neuron'''
     filename = DATA / 'neuron.asc'

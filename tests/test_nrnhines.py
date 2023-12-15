@@ -5,7 +5,7 @@ from numpy.testing import assert_array_almost_equal
 import morph_tool.nrnhines as tested
 
 DATA = Path(__file__).parent / 'data'
-SIMPLE = DATA / 'simple2.asc'
+SIMPLE = DATA / 'nrnhines.asc'
 
 
 def test_interpolate_compartments():
@@ -46,11 +46,11 @@ def test_point_to_section_end():
     assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 0]) ==
                  6)
 
-    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 2]) ==
+    assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 2]) is
                  None)
 
     assert (tested.point_to_section_end(cell.icell.all, [-8, 10, 2],
-                                             atol=10) ==
+                                             atol=8) ==
                  3)
 
 
