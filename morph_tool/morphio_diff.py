@@ -28,7 +28,7 @@ class DiffResult:
         return self.__bool__()
 
 
-def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
+def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8, *, skip_perimeters=False):
     """Returns a DiffResult object that is equivalent to True when morphologies differ.
 
     Additional information about why they differ is stored in DiffResult.info
@@ -47,6 +47,7 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
         morph2 (str|morphio.Morphology|morphio.mut.Morphology): a morphology
         rtol (float): the relative tolerance used for comparing points (see numpy.isclose help)
         atol (float): the absolute tolerance used for comparing points (see numpy.isclose help)
+        skip_perimeters (bool): do not check the perimeters if set to True
     """
     if not isinstance(morph1, Morphology):
         morph1 = Morphology(morph1)
@@ -57,8 +58,12 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8):
         return DiffResult(True,
                           'Both morphologies have a different number of root sections')
 
+    attr_list = ['points', 'diameters']
+    if not skip_perimeters:
+        attr_list.append('perimeters')
+
     for section1, section2 in zip(morph1.iter(), morph2.iter()):
-        for attrib in ['points', 'diameters', 'perimeters']:
+        for attrib in attr_list:
             val1, val2 = getattr(section1, attrib), getattr(section2, attrib)
             if val1.shape != val2.shape:
                 return DiffResult(True,
