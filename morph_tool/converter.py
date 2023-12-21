@@ -236,11 +236,15 @@ def from_h5_or_asc(neuron, output_ext):
                 mean, new_xyz)
             neuron.soma.type = SomaType.SOMA_CYLINDERS
 
+    if output_ext != "h5":
+        for sec in neuron.iter():
+            sec.perimeters = []
+
     return neuron
 
 
 def convert(input_file,
-            outputfile,
+            output_file,
             recenter=False,
             nrn_order=False,
             single_point_soma=False,
@@ -249,7 +253,7 @@ def convert(input_file,
 
     Args:
         input_file(str): path to input file
-        outputfile(str): path to output file
+        output_file(str): path to output file
         recenter(bool): whether to recenter the morphology based on the
         center of gravity of the soma
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
@@ -264,12 +268,12 @@ def convert(input_file,
     if sanitize:
         neuron.remove_unifurcations()
 
-    output_ext = Path(outputfile).suffix
+    output_ext = Path(output_file).suffix.lower()
 
-    if single_point_soma and output_ext.lower() != '.swc':
+    if single_point_soma and output_ext != '.swc':
         raise MorphToolException('Single point soma is only applicable for swc output')
 
-    if output_ext.lower() not in ('.swc', '.asc', '.h5', ):
+    if output_ext not in ('.swc', '.asc', '.h5', ):
         raise MorphToolException('Output file format should be one swc, asc or h5')
 
     output_ext = output_ext[1:]  # Remove the dot
@@ -293,7 +297,7 @@ def convert(input_file,
         transform.translate(new, -1 * new.soma.center)
 
     try:
-        new.write(outputfile)
+        new.write(output_file)
     except WriterError as e:
         raise MorphToolException('Use `sanitize` option for converting') from e
 
@@ -304,7 +308,7 @@ def convert(input_file,
                'before conversion: %s\n'
                'after conversion: %s',
                get_NEURON_surface(input_file),
-               get_NEURON_surface(outputfile))
+               get_NEURON_surface(output_file))
     except:  # noqa pylint: disable=bare-except
         L.info('Final NEURON soma surface check was skipped probably because BluePyOpt'
                ' or NEURON is not installed')

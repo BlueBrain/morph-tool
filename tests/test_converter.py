@@ -23,7 +23,7 @@ def test_convert(tmpdir):
         inname = DATA / f'simple.{in_ext}'
         outname = Path(tmpdir, f'test.{out_ext}')
         convert(inname, outname, single_point_soma=(out_ext == 'swc'))
-        assert not diff(inname, outname)
+        assert not diff(inname, outname, skip_perimeters=in_ext == 'h5')
 
         # A more complex one
         inname = DATA / f'tkb061126a4_ch0_cc2_h_zk_60x_1.{in_ext}'
