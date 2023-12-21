@@ -236,6 +236,10 @@ def from_h5_or_asc(neuron, output_ext):
                 mean, new_xyz)
             neuron.soma.type = SomaType.SOMA_CYLINDERS
 
+    if output_ext != "h5":
+        for sec in neuron.iter():
+            sec.perimeters = []
+
     return neuron
 
 
@@ -285,10 +289,6 @@ def convert(input_file,
 
     L.info('Original soma type: %s', neuron.soma_type)
     new = converter(neuron, output_ext)
-
-    if output_ext in ("asc", "swc"):
-        for sec in new.iter():
-            sec.perimeters = []
 
     if single_point_soma:
         soma_to_single_point(new.soma)
