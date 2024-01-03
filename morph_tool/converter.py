@@ -193,6 +193,13 @@ def from_swc(neuron, output_ext):
         L.info('Converting soma stack of cylinders into a contour in the XY plane')
 
         direction = neuron.soma.points[-1] - neuron.soma.points[0]
+        i = 2
+        while np.isclose(direction, 0).all():
+            if i > len(neuron.soma.points):
+                msg = "Can not convert SOMA_CYLINDERS if all points are equal"
+                raise MorphToolException(msg)
+            direction = neuron.soma.points[-i] - neuron.soma.points[0]
+            i = i + 1
 
         # 90 degree rotation along Z axis
         orthogonal = np.array([direction[1], -direction[0], 0])

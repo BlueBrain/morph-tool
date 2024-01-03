@@ -64,6 +64,54 @@ def test_convert_swc_contour_to_sphere(tmpdir):
     npt.assert_approx_equal(m.soma.surface, 476.0504050847511)
 
 
+def test_convert_swc_cylinder_to_contour(tmpdir):
+    # needs to have a complex contour soma
+    in_morph = morphio.Morphology("""
+      1 1  0  0 0 1. -1
+      2 1  -1  0 0 1. 1
+      3 1  -1  0 0 1. 2
+      4 1  0  0 0 1. 3
+      5 3  0  0 0 1.  1
+      6 3  0  5 0 1.  5
+      7 3 -5  5 0 1.5 6
+      8 3  6  5 0 1.5 6
+      9 2  0  0 0 1.  1
+     10 2  0 -4 0 1.  9
+     11 2  6 -4 0 2.  10
+     12 2 -5 -4 0 2.  10""", "swc")
+    inname = Path(tmpdir, 'test.swc')
+    in_morph.as_mutable().write(inname)
+    outname = Path(tmpdir, 'test.asc')
+    convert(inname, outname)
+
+    m = morphio.Morphology(outname)
+    assert 8 == len(m.soma.points)
+    assert 8 == len(m.soma.diameters)
+
+    # Test with all equal points
+    in_morph = morphio.Morphology("""
+      1 1  0  0 0 1. -1
+      2 1  0  0 0 1. 1
+      3 1  0  0 0 1. 2
+      4 1  0  0 0 1. 3
+      5 3  0  0 0 1.  1
+      6 3  0  5 0 1.  5
+      7 3 -5  5 0 1.5 6
+      8 3  6  5 0 1.5 6
+      9 2  0  0 0 1.  1
+     10 2  0 -4 0 1.  9
+     11 2  6 -4 0 2.  10
+     12 2 -5 -4 0 2.  10""", "swc")
+    inname = Path(tmpdir, 'test_all_equal.swc')
+    in_morph.as_mutable().write(inname)
+    outname = Path(tmpdir, 'test_all_equal.asc')
+    with pytest.raises(
+        MorphToolException,
+        match="Can not convert SOMA_CYLINDERS if all points are equal",
+    ):
+        convert(inname, outname)
+
+
 def test_convert_sanitize(tmpdir):
     # needs to have a complex contour soma
     simple = DATA / 'single_child.asc'
