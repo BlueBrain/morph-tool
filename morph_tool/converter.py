@@ -23,7 +23,7 @@ def contourcenter(xyz):
     POINTS = 101
 
     points = np.vstack((np.diff(xyz[:, [X, Y]], axis=0), xyz[0, [X, Y]]))
-    perim = np.cumsum(np.hstack(((0, ), np.linalg.norm(points, axis=1))))[:-1]
+    perim = np.cumsum(np.hstack(((0,), np.linalg.norm(points, axis=1))))[:-1]
 
     d = np.linspace(0, perim[-1], POINTS)
     new_xyz = np.zeros((POINTS, 3))
@@ -45,8 +45,7 @@ def get_sides(points, major, minor):
 
     imax = np.argmax(major_coord)
     # pylint: disable=invalid-unary-operand-type
-    major_coord, minor_coord = (np.roll(major_coord, -imax),
-                                np.roll(minor_coord, -imax))
+    major_coord, minor_coord = (np.roll(major_coord, -imax), np.roll(minor_coord, -imax))
 
     imin = np.argmin(major_coord)
 
@@ -57,6 +56,7 @@ def get_sides(points, major, minor):
 
 def make_convex(sides, rads):
     """Keep only points that make path convex."""
+
     def convex_idx(m):
         """Return index to elements of m that make it convex.
 
@@ -88,7 +88,7 @@ def contour2centroid(mean, points):
     Most of the comments are from there, so if you want to follow along, it should
     break up the function the same way.
     """
-    L.info('Converting soma contour into a stack of cylinders')
+    L.info("Converting soma contour into a stack of cylinders")
 
     # find the major axis of the ellipsoid that best fits the shape
     # assuming (falsely in general) that the center is the mean
@@ -145,9 +145,9 @@ def _create_contour(radius, point_count=20, line_width=0.25):
 
 def cylinder_to_cylindrical_contour(neuron):
     """We convert the cylinder into a circular contour that represents the same sphere."""
-    L.info('Converting 3 point soma to spherical soma with same surface')
+    L.info("Converting 3 point soma to spherical soma with same surface")
     assert neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS
-    radius = neuron.soma.diameters[0] / 2.
+    radius = neuron.soma.diameters[0] / 2.0
     points, diameters = _create_contour(radius)
     origin = neuron.soma.points[0]
     neuron.soma.points = points + origin
@@ -155,29 +155,53 @@ def cylinder_to_cylindrical_contour(neuron):
     neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
 
 
-def single_point_sphere_to_circular_contour(neuron):
+def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=True):
     """Single point soma to contour soma.
 
     Transform a single point soma that represents a sphere into a circular contour that represents
     the same sphere.
     """
-    L.info('Converting 1-point soma (spherical soma) to circular contour '
-           'representing the same sphere')
+    L.info(
+        "Converting 1-point soma (spherical soma) to circular contour "
+        "representing the same sphere"
+    )
     assert neuron.soma_type == SomaType.SOMA_SINGLE_POINT
-    radius = neuron.soma.diameters[0] / 2.
-    points, diameters = _create_contour(radius)
-    origin = neuron.soma.points[0]
-    neuron.soma.points = points + origin
-    neuron.soma.diameters = diameters
-    neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
+
+    swc_radius = neuron.soma.diameters[0] / 2.0
+
+    def make_soma(radius):
+        points, diameters = _create_contour(radius)
+        origin = neuron.soma.points[0]
+        neuron.soma.points = points + origin
+        neuron.soma.diameters = diameters
+        neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
+
+    make_soma(swc_radius)
+
+    if ensure_NRN_area:
+        surf = 4.0 * np.pi * swc_radius**2
+
+        from morph_tool.neuron_surface import get_NEURON_surface
+        from scipy.optimize import minimize_scalar
+
+        def cost(radius):
+            make_soma(radius)
+            neuron.write("tmp.asc")
+            return abs(surf - get_NEURON_surface("tmp.asc"))
+
+        radius = minimize_scalar(
+            cost, bounds=(0.8 * swc_radius, 1.2 * swc_radius), options={"xatol": 1e-2}
+        ).x
+        make_soma(radius)
 
 
 def soma_to_single_point(soma):
     """Surface preserving cylindrical soma to a single point sphere."""
-    L.info('Converting soma to a single point sphere, while preserving the surface')
+    L.info("Converting soma to a single point sphere, while preserving the surface")
     neurom_points = np.hstack((soma.points, 0.5 * soma.diameters[:, None]))
-    surface_area = sum(morphmath.segment_area(seg)
-                       for seg in zip(neurom_points[1:], neurom_points[:-1]))
+    surface_area = sum(
+        morphmath.segment_area(seg) for seg in zip(neurom_points[1:], neurom_points[:-1])
+    )
 
     soma.points = np.mean(soma.points, axis=0)[None, :]
     soma.diameters = [float((surface_area / np.pi) ** 0.5)]
@@ -186,11 +210,11 @@ def soma_to_single_point(soma):
 
 def from_swc(neuron, output_ext):
     """Convert to SWC."""
-    if output_ext == 'swc':
+    if output_ext == "swc":
         return neuron
 
     if neuron.soma_type == SomaType.SOMA_CYLINDERS:
-        L.info('Converting soma stack of cylinders into a contour in the XY plane')
+        L.info("Converting soma stack of cylinders into a contour in the XY plane")
 
         direction = neuron.soma.points[-1] - neuron.soma.points[0]
         i = 2
@@ -210,10 +234,9 @@ def from_swc(neuron, output_ext):
             norm = np.linalg.norm(orthogonal)
 
         orthogonal /= norm
-        orthogonal = np.repeat(
-            orthogonal[np.newaxis, :], len(neuron.soma.points), axis=0)
-        contour_side1 = neuron.soma.points + (orthogonal.T * neuron.soma.diameters / 2.).T
-        contour_side2 = neuron.soma.points - (orthogonal.T * neuron.soma.diameters / 2.).T
+        orthogonal = np.repeat(orthogonal[np.newaxis, :], len(neuron.soma.points), axis=0)
+        contour_side1 = neuron.soma.points + (orthogonal.T * neuron.soma.diameters / 2.0).T
+        contour_side2 = neuron.soma.points - (orthogonal.T * neuron.soma.diameters / 2.0).T
         contour_side2 = contour_side2[::-1]
 
         neuron.soma.points = np.vstack((contour_side1, contour_side2))
@@ -226,7 +249,8 @@ def from_swc(neuron, output_ext):
         single_point_sphere_to_circular_contour(neuron)
     else:
         raise MorphToolException(
-            f'A SWC morphology is not supposed to have a soma of type: {neuron.soma_type}')
+            f"A SWC morphology is not supposed to have a soma of type: {neuron.soma_type}"
+        )
 
     return neuron
 
@@ -234,13 +258,12 @@ def from_swc(neuron, output_ext):
 def from_h5_or_asc(neuron, output_ext):
     """Convert from ASC/H5."""
     if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
-        if output_ext == 'asc':
+        if output_ext == "asc":
             single_point_sphere_to_circular_contour(neuron)
     elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
-        if output_ext == 'swc':
+        if output_ext == "swc":
             mean, new_xyz = contourcenter(neuron.soma.points)
-            neuron.soma.points, neuron.soma.diameters = contour2centroid(
-                mean, new_xyz)
+            neuron.soma.points, neuron.soma.diameters = contour2centroid(mean, new_xyz)
             neuron.soma.type = SomaType.SOMA_CYLINDERS
 
     if output_ext != "h5":
@@ -250,12 +273,14 @@ def from_h5_or_asc(neuron, output_ext):
     return neuron
 
 
-def convert(input_file,
-            output_file,
-            recenter=False,
-            nrn_order=False,
-            single_point_soma=False,
-            sanitize=False):
+def convert(
+    input_file,
+    output_file,
+    recenter=False,
+    nrn_order=False,
+    single_point_soma=False,
+    sanitize=False,
+):
     """Run the appropriate converter.
 
     Args:
@@ -269,7 +294,7 @@ def convert(input_file,
     """
     kwargs = {}
     if nrn_order:
-        kwargs['options'] = Option.nrn_order
+        kwargs["options"] = Option.nrn_order
 
     neuron = Morphology(input_file, **kwargs)
     if sanitize:
@@ -277,24 +302,28 @@ def convert(input_file,
 
     output_ext = Path(output_file).suffix.lower()
 
-    if single_point_soma and output_ext != '.swc':
-        raise MorphToolException('Single point soma is only applicable for swc output')
+    if single_point_soma and output_ext != ".swc":
+        raise MorphToolException("Single point soma is only applicable for swc output")
 
-    if output_ext not in ('.swc', '.asc', '.h5', ):
-        raise MorphToolException('Output file format should be one swc, asc or h5')
+    if output_ext not in (
+        ".swc",
+        ".asc",
+        ".h5",
+    ):
+        raise MorphToolException("Output file format should be one swc, asc or h5")
 
     output_ext = output_ext[1:]  # Remove the dot
 
     try:
-        converter = {'swc': from_swc,
-                     'asc': from_h5_or_asc,
-                     'h5': from_h5_or_asc,
-                     }[neuron.version[0]]
+        converter = {
+            "swc": from_swc,
+            "asc": from_h5_or_asc,
+            "h5": from_h5_or_asc,
+        }[neuron.version[0]]
     except KeyError as e:
-        raise MorphToolException(
-            f'No converter for morphology type: {neuron.version}') from e
+        raise MorphToolException(f"No converter for morphology type: {neuron.version}") from e
 
-    L.info('Original soma type: %s', neuron.soma_type)
+    L.info("Original soma type: %s", neuron.soma_type)
     new = converter(neuron, output_ext)
 
     if single_point_soma:
@@ -306,16 +335,21 @@ def convert(input_file,
     try:
         new.write(output_file)
     except WriterError as e:
-        raise MorphToolException('Use `sanitize` option for converting') from e
+        raise MorphToolException("Use `sanitize` option for converting") from e
 
     try:
         # pylint: disable=import-outside-toplevel
         from morph_tool.neuron_surface import get_NEURON_surface
-        L.info('Soma surface as computed by NEURON:\n'
-               'before conversion: %s\n'
-               'after conversion: %s',
-               get_NEURON_surface(input_file),
-               get_NEURON_surface(output_file))
+
+        L.info(
+            "Soma surface as computed by NEURON:\n"
+            "before conversion: %s\n"
+            "after conversion: %s",
+            get_NEURON_surface(input_file),
+            get_NEURON_surface(output_file),
+        )
     except:  # noqa pylint: disable=bare-except
-        L.info('Final NEURON soma surface check was skipped probably because BluePyOpt'
-               ' or NEURON is not installed')
+        L.info(
+            "Final NEURON soma surface check was skipped probably because BluePyOpt"
+            " or NEURON is not installed"
+        )
