@@ -183,6 +183,7 @@ def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=True):
 
         from morph_tool.neuron_surface import get_NEURON_surface
         from scipy.optimize import minimize_scalar
+        import shutil
 
         def cost(radius):
             make_soma(radius)
@@ -193,6 +194,7 @@ def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=True):
             cost, bounds=(0.8 * swc_radius, 1.2 * swc_radius), options={"xatol": 1e-2}
         ).x
         make_soma(radius)
+        shutil.remove("tmp.asc")
 
 
 def soma_to_single_point(soma):
