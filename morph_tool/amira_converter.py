@@ -1,6 +1,6 @@
 """Amira morphology format loader.
 
-This package is adaped from
+This package is adapted from
 
 https://github.com/zibneuro/udvary-et-al-2022/blob/master/structural_model/util_amira.py
 

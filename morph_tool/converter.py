@@ -161,7 +161,7 @@ def single_point_sphere_to_circular_contour(neuron):
     Transform a single point soma that represents a sphere into a circular contour that represents
     the same sphere.
     """
-    L.info('Converting 1-point soma (sperical soma) to circular contour '
+    L.info('Converting 1-point soma (spherical soma) to circular contour '
            'representing the same sphere')
     assert neuron.soma_type == SomaType.SOMA_SINGLE_POINT
     radius = neuron.soma.diameters[0] / 2.
