@@ -49,7 +49,7 @@ def _resample_from_linear_density(points, linear_density):
 
     The reason of returning the ids and fractions instead of new points is because
     if instead of points a property is used, such as diameter, it will result to its
-    iterpolation on the polyline. Therefore, the result of this function can be used
+    interpolation on the polyline. Therefore, the result of this function can be used
     to interpolate both points and point properties on a polyline.
 
     Args:
