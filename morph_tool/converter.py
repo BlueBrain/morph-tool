@@ -13,7 +13,6 @@ from neurom import morphmath
 
 from morph_tool import transform
 from morph_tool.exceptions import MorphToolException
-from morph_tool.neuron_surface import get_NEURON_surface
 
 L = logging.getLogger(__name__)
 
@@ -184,6 +183,10 @@ def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=False):
     make_soma(swc_radius)
 
     if ensure_NRN_area:
+
+        # pylint: disable=import-outside-toplevel
+        from morph_tool.neuron_surface import get_NEURON_surface
+
         surf = 4.0 * np.pi * swc_radius**2
         filename = f"{str(uuid.uuid4())}.asc"
 
@@ -197,7 +200,7 @@ def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=False):
                 cost, bounds=(0.8 * swc_radius, 1.2 * swc_radius), options={"xatol": 1e-2}
             ).x
             make_soma(radius)
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             L.warning("Could not find a suitable radius, we use the original radius")
             make_soma(swc_radius)
         finally:
@@ -299,6 +302,7 @@ def convert(input_file,
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
         single_point_soma(bool): For SWC only
         sanitize(bool): whether to sanitize the morphology
+        ensure_NRN_area(bool): to ensure area is preserved in NEURON from swc point soma
     """
     kwargs = {}
     if nrn_order:

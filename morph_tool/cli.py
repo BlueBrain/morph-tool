@@ -72,18 +72,18 @@ def file(input_file,
          nrn_order,
          single_point_soma,
          sanitize,
-         ensure_NRN_area):
+         ensure_nrn_area):
     """Convert a single morphology from/to the following formats: ASC, SWC, H5."""
     if quiet:
         L.setLevel(logging.WARNING)
 
     converter.convert(
-        input_file, output_file, recenter, nrn_order, single_point_soma, sanitize, ensure_NRN_area
+        input_file, output_file, recenter, nrn_order, single_point_soma, sanitize, ensure_nrn_area
     )
 
 
 def _attempt_convert(
-    path, output_dir, extension, recenter, nrn_order, single_point_soma, sanitize, ensure_NRN_area
+    path, output_dir, extension, recenter, nrn_order, single_point_soma, sanitize, ensure_nrn_area
 ):
     """Function to be passed to dask.bag.map.
 
@@ -91,7 +91,7 @@ def _attempt_convert(
     """
     try:
         converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
-                          recenter, nrn_order, single_point_soma, sanitize, ensure_NRN_area)
+                          recenter, nrn_order, single_point_soma, sanitize, ensure_nrn_area)
         return None
     except:  # noqa, pylint: disable=bare-except
         return str(path)
@@ -121,7 +121,7 @@ def folder(input_dir,  # pylint: disable=too-many-arguments
            nrn_order,
            single_point_soma,
            sanitize,
-           ensure_NRN_area,
+           ensure_nrn_area,
            ncores):
     """Convert all morphologies in the folder and its subfolders."""
     # pylint: disable=import-outside-toplevel
@@ -144,7 +144,7 @@ def folder(input_dir,  # pylint: disable=too-many-arguments
         nrn_order=nrn_order,
         single_point_soma=single_point_soma,
         sanitize=sanitize,
-        ensure_NRN_area=ensure_NRN_area)
+        ensure_nrn_area=ensure_nrn_area)
     failed_conversions = list(filter(None, failed_conversions))
 
     if failed_conversions:
