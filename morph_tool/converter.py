@@ -159,7 +159,7 @@ def cylinder_to_cylindrical_contour(neuron):
     neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
 
 
-def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=True):
+def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=False):
     """Single point soma to contour soma.
 
     Transform a single point soma that represents a sphere into a circular contour that represents
@@ -216,7 +216,7 @@ def soma_to_single_point(soma):
     soma.type = SomaType.SOMA_SINGLE_POINT
 
 
-def from_swc(neuron, output_ext):
+def from_swc(neuron, output_ext, ensure_NRN_area=False):
     """Convert to SWC."""
     if output_ext == 'swc':
         return neuron
@@ -255,7 +255,7 @@ def from_swc(neuron, output_ext):
     elif neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
         cylinder_to_cylindrical_contour(neuron)
     elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
-        single_point_sphere_to_circular_contour(neuron)
+        single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
     else:
         raise MorphToolException(
             f'A SWC morphology is not supposed to have a soma of type: {neuron.soma_type}')
@@ -263,11 +263,11 @@ def from_swc(neuron, output_ext):
     return neuron
 
 
-def from_h5_or_asc(neuron, output_ext):
+def from_h5_or_asc(neuron, output_ext, ensure_NRN_area=False):
     """Convert from ASC/H5."""
     if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
         if output_ext == 'asc':
-            single_point_sphere_to_circular_contour(neuron)
+            single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
     elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
         if output_ext == 'swc':
             mean, new_xyz = contourcenter(neuron.soma.points)
@@ -287,7 +287,8 @@ def convert(input_file,
             recenter=False,
             nrn_order=False,
             single_point_soma=False,
-            sanitize=False):
+            sanitize=False,
+            ensure_NRN_area=False):
     """Run the appropriate converter.
 
     Args:
@@ -327,7 +328,7 @@ def convert(input_file,
             f'No converter for morphology type: {neuron.version}') from e
 
     L.info('Original soma type: %s', neuron.soma_type)
-    new = converter(neuron, output_ext)
+    new = converter(neuron, output_ext, ensure_NRN_area=ensure_NRN_area)
 
     if single_point_soma:
         soma_to_single_point(new.soma)
