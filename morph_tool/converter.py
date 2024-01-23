@@ -1,8 +1,12 @@
 """A morphology converter that tries to keep the soma surface equal."""
 import logging
 from pathlib import Path
+import os
+import uuid
 
+from scipy.optimize import minimize_scalar
 import numpy as np
+
 from morphio import Option, SomaType
 from morphio._morphio import WriterError  # pylint: disable=no-name-in-module
 from morphio.mut import Morphology
@@ -10,6 +14,7 @@ from neurom import morphmath
 
 from morph_tool import transform
 from morph_tool.exceptions import MorphToolException
+from morph_tool.neuron_surface import get_NEURON_surface
 
 L = logging.getLogger(__name__)
 
@@ -180,21 +185,23 @@ def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=True):
 
     if ensure_NRN_area:
         surf = 4.0 * np.pi * swc_radius**2
-
-        from morph_tool.neuron_surface import get_NEURON_surface
-        from scipy.optimize import minimize_scalar
-        import shutil
+        filename = f"{str(uuid.uuid4())}.asc"
 
         def cost(radius):
             make_soma(radius)
-            neuron.write("tmp.asc")
-            return abs(surf - get_NEURON_surface("tmp.asc"))
+            neuron.write(filename)
+            return abs(surf - get_NEURON_surface(filename))
 
-        radius = minimize_scalar(
-            cost, bounds=(0.8 * swc_radius, 1.2 * swc_radius), options={"xatol": 1e-2}
-        ).x
-        make_soma(radius)
-        shutil.remove("tmp.asc")
+        try:
+            radius = minimize_scalar(
+                cost, bounds=(0.8 * swc_radius, 1.2 * swc_radius), options={"xatol": 1e-2}
+            ).x
+            make_soma(radius)
+        except Exception:
+            L.warning("Could not find a suitable radius, we use the original radius")
+            make_soma(swc_radius)
+        finally:
+            os.remove(filename)
 
 
 def soma_to_single_point(soma):
@@ -339,19 +346,20 @@ def convert(
     except WriterError as e:
         raise MorphToolException("Use `sanitize` option for converting") from e
 
-    try:
-        # pylint: disable=import-outside-toplevel
-        from morph_tool.neuron_surface import get_NEURON_surface
+    if output_ext != "h5":
+        try:
+            # pylint: disable=import-outside-toplevel
+            from morph_tool.neuron_surface import get_NEURON_surface
 
-        L.info(
-            "Soma surface as computed by NEURON:\n"
-            "before conversion: %s\n"
-            "after conversion: %s",
-            get_NEURON_surface(input_file),
-            get_NEURON_surface(output_file),
-        )
-    except:  # noqa pylint: disable=bare-except
-        L.info(
-            "Final NEURON soma surface check was skipped probably because BluePyOpt"
-            " or NEURON is not installed"
-        )
+            L.info(
+                "Soma surface as computed by NEURON:\n"
+                "before conversion: %s\n"
+                "after conversion: %s",
+                get_NEURON_surface(input_file),
+                get_NEURON_surface(output_file),
+            )
+        except:  # noqa pylint: disable=bare-except
+            L.info(
+                "Final NEURON soma surface check was skipped probably because BluePyOpt"
+                " or NEURON is not installed"
+            )
