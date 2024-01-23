@@ -63,22 +63,35 @@ def convert():
               help='whether to traverse the neuron in the NEURON fashion')
 @click.option('--single-point-soma', is_flag=True, help='For SWC files only')
 @click.option('--sanitize', is_flag=True, help='whether to sanitize the morphology')
-def file(input_file, output_file, quiet, recenter, nrn_order, single_point_soma, sanitize):
+@click.option('--ensure-NRN-area', is_flag=True,
+              help='whether to ensure area is preserved in NEURON from swc point soma')
+def file(input_file,
+         output_file,
+         quiet,
+         recenter,
+         nrn_order,
+         single_point_soma,
+         sanitize,
+         ensure_NRN_area):
     """Convert a single morphology from/to the following formats: ASC, SWC, H5."""
     if quiet:
         L.setLevel(logging.WARNING)
 
-    converter.convert(input_file, output_file, recenter, nrn_order, single_point_soma, sanitize)
+    converter.convert(
+        input_file, output_file, recenter, nrn_order, single_point_soma, sanitize, ensure_NRN_area
+    )
 
 
-def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_point_soma, sanitize):
+def _attempt_convert(
+    path, output_dir, extension, recenter, nrn_order, single_point_soma, sanitize, ensure_NRN_area
+):
     """Function to be passed to dask.bag.map.
 
     Attempts a conversion and returns the path if it failed
     """
     try:
         converter.convert(path, Path(output_dir) / (path.stem + '.' + extension),
-                          recenter, nrn_order, single_point_soma, sanitize)
+                          recenter, nrn_order, single_point_soma, sanitize, ensure_NRN_area)
         return None
     except:  # noqa, pylint: disable=bare-except
         return str(path)
@@ -97,6 +110,8 @@ def _attempt_convert(path, output_dir, extension, recenter, nrn_order, single_po
 @click.option('--single-point-soma', is_flag=True,
               help='For SWC files only')
 @click.option('--sanitize', is_flag=True, help='whether to sanitize the morphologies')
+@click.option('--ensure-NRN-area', is_flag=True,
+              help='whether to ensure area is preserved in NEURON from swc point soma')
 @click.option('--ncores', help='The number of cores', default=None, type=int)
 def folder(input_dir,  # pylint: disable=too-many-arguments
            output_dir,
@@ -106,6 +121,7 @@ def folder(input_dir,  # pylint: disable=too-many-arguments
            nrn_order,
            single_point_soma,
            sanitize,
+           ensure_NRN_area,
            ncores):
     """Convert all morphologies in the folder and its subfolders."""
     # pylint: disable=import-outside-toplevel
@@ -127,7 +143,8 @@ def folder(input_dir,  # pylint: disable=too-many-arguments
         recenter=recenter,
         nrn_order=nrn_order,
         single_point_soma=single_point_soma,
-        sanitize=sanitize)
+        sanitize=sanitize,
+        ensure_NRN_area=ensure_NRN_area)
     failed_conversions = list(filter(None, failed_conversions))
 
     if failed_conversions:
