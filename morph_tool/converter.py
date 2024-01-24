@@ -1,8 +1,7 @@
 """A morphology converter that tries to keep the soma surface equal."""
 import logging
 from pathlib import Path
-import os
-import uuid
+import tempfile
 
 import numpy as np
 from scipy.optimize import minimize_scalar
@@ -183,28 +182,22 @@ def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=False):
     make_soma(swc_radius)
 
     if ensure_NRN_area:
+        surf = 4.0 * np.pi * swc_radius**2
 
         # pylint: disable=import-outside-toplevel
         from morph_tool.neuron_surface import get_NEURON_surface
 
-        surf = 4.0 * np.pi * swc_radius**2
-        filename = f"{str(uuid.uuid4())}.asc"
+        with tempfile.NamedTemporaryFile(suffix='.asc') as fp:
 
-        def cost(radius):
-            make_soma(radius)
-            neuron.write(filename)
-            return abs(surf - get_NEURON_surface(filename))
+            def cost(radius):
+                make_soma(radius)
+                neuron.write(fp.name)
+                return abs(surf - get_NEURON_surface(fp.name))
 
-        try:
             radius = minimize_scalar(
                 cost, bounds=(0.8 * swc_radius, 1.2 * swc_radius), options={"xatol": 1e-2}
             ).x
             make_soma(radius)
-        except Exception:  # pylint: disable=broad-exception-caught
-            L.warning("Could not find a suitable radius, we use the original radius")
-            make_soma(swc_radius)
-        finally:
-            os.remove(filename)
 
 
 def soma_to_single_point(soma):
