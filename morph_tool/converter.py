@@ -1,8 +1,10 @@
 """A morphology converter that tries to keep the soma surface equal."""
 import logging
 from pathlib import Path
+import tempfile
 
 import numpy as np
+from scipy.optimize import minimize_scalar
 from morphio import Option, SomaType
 from morphio._morphio import WriterError  # pylint: disable=no-name-in-module
 from morphio.mut import Morphology
@@ -155,21 +157,47 @@ def cylinder_to_cylindrical_contour(neuron):
     neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
 
 
-def single_point_sphere_to_circular_contour(neuron):
+def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=False):
     """Single point soma to contour soma.
 
     Transform a single point soma that represents a sphere into a circular contour that represents
     the same sphere.
+
+    With ensure_NRN_area=True, we perform a search on radius to ensure an equivalent
+    soma surface area, as measured by NEURON with morph_tool.neuron_surface.get_NEURON_surface.
     """
     L.info('Converting 1-point soma (spherical soma) to circular contour '
            'representing the same sphere')
     assert neuron.soma_type == SomaType.SOMA_SINGLE_POINT
-    radius = neuron.soma.diameters[0] / 2.
-    points, diameters = _create_contour(radius)
-    origin = neuron.soma.points[0]
-    neuron.soma.points = points + origin
-    neuron.soma.diameters = diameters
-    neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
+
+    swc_radius = neuron.soma.diameters[0] / 2.0
+
+    def make_soma(radius):
+        points, diameters = _create_contour(radius)
+        origin = neuron.soma.points[0]
+        neuron.soma.points = points + origin
+        neuron.soma.diameters = diameters
+        neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
+
+    make_soma(swc_radius)
+
+    if ensure_NRN_area:
+        surf = 4.0 * np.pi * swc_radius**2
+
+        # pylint: disable=import-outside-toplevel
+        from morph_tool.neuron_surface import get_NEURON_surface
+
+        with tempfile.NamedTemporaryFile(suffix='.asc') as fp:
+
+            def cost(radius):
+                make_soma(radius)
+                neuron.write(fp.name)
+                return abs(surf - get_NEURON_surface(fp.name))
+
+            radius = minimize_scalar(
+                cost, bounds=(0.8 * swc_radius, 1.2 * swc_radius), options={"xatol": 1e-2}
+            ).x
+            make_soma(radius)
 
 
 def soma_to_single_point(soma):
@@ -184,7 +212,7 @@ def soma_to_single_point(soma):
     soma.type = SomaType.SOMA_SINGLE_POINT
 
 
-def from_swc(neuron, output_ext):
+def from_swc(neuron, output_ext, ensure_NRN_area=False):
     """Convert to SWC."""
     if output_ext == 'swc':
         return neuron
@@ -223,7 +251,7 @@ def from_swc(neuron, output_ext):
     elif neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
         cylinder_to_cylindrical_contour(neuron)
     elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
-        single_point_sphere_to_circular_contour(neuron)
+        single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
     else:
         raise MorphToolException(
             f'A SWC morphology is not supposed to have a soma of type: {neuron.soma_type}')
@@ -231,11 +259,11 @@ def from_swc(neuron, output_ext):
     return neuron
 
 
-def from_h5_or_asc(neuron, output_ext):
+def from_h5_or_asc(neuron, output_ext, ensure_NRN_area=False):
     """Convert from ASC/H5."""
     if neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
         if output_ext == 'asc':
-            single_point_sphere_to_circular_contour(neuron)
+            single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
     elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
         if output_ext == 'swc':
             mean, new_xyz = contourcenter(neuron.soma.points)
@@ -255,7 +283,8 @@ def convert(input_file,
             recenter=False,
             nrn_order=False,
             single_point_soma=False,
-            sanitize=False):
+            sanitize=False,
+            ensure_NRN_area=False):
     """Run the appropriate converter.
 
     Args:
@@ -266,6 +295,7 @@ def convert(input_file,
         nrn_order(bool): whether to traverse the neuron in the NEURON fashion
         single_point_soma(bool): For SWC only
         sanitize(bool): whether to sanitize the morphology
+        ensure_NRN_area(bool): to ensure area is preserved in NEURON from swc point soma
     """
     kwargs = {}
     if nrn_order:
@@ -295,7 +325,7 @@ def convert(input_file,
             f'No converter for morphology type: {neuron.version}') from e
 
     L.info('Original soma type: %s', neuron.soma_type)
-    new = converter(neuron, output_ext)
+    new = converter(neuron, output_ext, ensure_NRN_area=ensure_NRN_area)
 
     if single_point_soma:
         soma_to_single_point(new.soma)

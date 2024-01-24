@@ -18,6 +18,7 @@ base_extras = [
     'numpy>=1.14',
     'pandas>=1.0.3',
     'xmltodict>=0.12.0',
+    'scipy>=1.2.0',
 ]
 plot_extras = ['plotly>=4.1.0']
 parallel_extras = ['dask[bag]>=2.19.0']

@@ -10,6 +10,7 @@ from morph_tool import converter
 from morph_tool import diff
 from morph_tool.exceptions import MorphToolException
 from morph_tool.converter import convert
+from morph_tool.neuron_surface import get_NEURON_surface
 
 DATA = Path(__file__).parent / 'data'
 
@@ -31,6 +32,18 @@ def test_convert(tmpdir):
         convert(inname, outname)
         diff_result = diff(inname, outname, rtol=1e-5, atol=1e-5)
         assert not bool(diff_result), diff_result.info
+
+
+def test_convert_ensure_NRN_area(tmpdir):
+    simple = DATA / 'simple.swc'
+    outname = Path(tmpdir, 'test.asc')
+    convert(simple, outname, ensure_NRN_area=False)
+
+    npt.assert_almost_equal(get_NEURON_surface(simple), 12.5663, decimal=4)
+    npt.assert_almost_equal(get_NEURON_surface(outname), 11.9835, decimal=4)
+
+    convert(simple, outname, ensure_NRN_area=True)
+    npt.assert_almost_equal(get_NEURON_surface(outname), 12.59102, decimal=4)
 
 
 def test_convert_recenter(tmpdir):
