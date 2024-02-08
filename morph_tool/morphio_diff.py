@@ -50,6 +50,9 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8, *, skip_perimeters=False, all_d
         skip_perimeters (bool): do not check the perimeters if set to True
         all_diffs (bool): return all differences if set to True
     """
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-return-statements
     if not isinstance(morph1, Morphology):
         morph1 = Morphology(morph1)
     if not isinstance(morph2, Morphology):
@@ -107,5 +110,4 @@ def diff(morph1, morph2, rtol=1.e-5, atol=1.e-8, *, skip_perimeters=False, all_d
 
     if all_diffs and len(diffs) > 0:
         return DiffResult(True, "\n\n".join(diffs))
-    else:
-        return DiffResult(False)
+    return DiffResult(False)
