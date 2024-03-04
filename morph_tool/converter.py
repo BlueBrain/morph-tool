@@ -157,6 +157,40 @@ def cylinder_to_cylindrical_contour(neuron):
     neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
 
 
+def cylinder_stack_to_cylindrical_contour(neuron):
+    """Convert the cylinder into a simple contour that represents the same sphere."""
+    L.info('Converting soma stack of cylinders into a contour in the XY plane')
+    assert neuron.soma_type == SomaType.SOMA_CYLINDERS
+
+    direction = neuron.soma.points[-1] - neuron.soma.points[0]
+    i = 2
+    while np.isclose(direction, 0).all():
+        if i > len(neuron.soma.points):
+            msg = "Can not convert SOMA_CYLINDERS if all points are equal"
+            raise MorphToolException(msg)
+        direction = neuron.soma.points[-i] - neuron.soma.points[0]
+        i = i + 1
+
+    # 90 degree rotation along Z axis
+    orthogonal = np.array([direction[1], -direction[0], 0])
+    norm = np.linalg.norm(orthogonal)
+    if abs(norm) < 1e-10:
+        # if we can't rotate along Z, we do along X
+        orthogonal = np.array([0, direction[2], -direction[1]])
+        norm = np.linalg.norm(orthogonal)
+
+    orthogonal /= norm
+    orthogonal = np.repeat(
+        orthogonal[np.newaxis, :], len(neuron.soma.points), axis=0)
+    contour_side1 = neuron.soma.points + (orthogonal.T * neuron.soma.diameters / 2.).T
+    contour_side2 = neuron.soma.points - (orthogonal.T * neuron.soma.diameters / 2.).T
+    contour_side2 = contour_side2[::-1]
+
+    neuron.soma.points = np.vstack((contour_side1, contour_side2))
+    neuron.soma.diameters = [0] * len(neuron.soma.points)
+    neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
+
+
 def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=False):
     """Single point soma to contour soma.
 
@@ -200,6 +234,14 @@ def single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=False):
             make_soma(radius)
 
 
+def contour_to_cylinders(neuron):
+    """Convert the simple contour into a cylinder."""
+    mean, new_xyz = contourcenter(neuron.soma.points)
+    neuron.soma.points, neuron.soma.diameters = contour2centroid(
+        mean, new_xyz)
+    neuron.soma.type = SomaType.SOMA_CYLINDERS
+
+
 def soma_to_single_point(soma):
     """Surface preserving cylindrical soma to a single point sphere."""
     L.info('Converting soma to a single point sphere, while preserving the surface')
@@ -218,36 +260,7 @@ def from_swc(neuron, output_ext, ensure_NRN_area=False):
         return neuron
 
     if neuron.soma_type == SomaType.SOMA_CYLINDERS:
-        L.info('Converting soma stack of cylinders into a contour in the XY plane')
-
-        direction = neuron.soma.points[-1] - neuron.soma.points[0]
-        i = 2
-        while np.isclose(direction, 0).all():
-            if i > len(neuron.soma.points):
-                msg = "Can not convert SOMA_CYLINDERS if all points are equal"
-                raise MorphToolException(msg)
-            direction = neuron.soma.points[-i] - neuron.soma.points[0]
-            i = i + 1
-
-        # 90 degree rotation along Z axis
-        orthogonal = np.array([direction[1], -direction[0], 0])
-        norm = np.linalg.norm(orthogonal)
-        if abs(norm) < 1e-10:
-            # if we can't rotate along Z, we do along X
-            orthogonal = np.array([0, direction[2], -direction[1]])
-            norm = np.linalg.norm(orthogonal)
-
-        orthogonal /= norm
-        orthogonal = np.repeat(
-            orthogonal[np.newaxis, :], len(neuron.soma.points), axis=0)
-        contour_side1 = neuron.soma.points + (orthogonal.T * neuron.soma.diameters / 2.).T
-        contour_side2 = neuron.soma.points - (orthogonal.T * neuron.soma.diameters / 2.).T
-        contour_side2 = contour_side2[::-1]
-
-        neuron.soma.points = np.vstack((contour_side1, contour_side2))
-        neuron.soma.diameters = [0] * len(neuron.soma.points)
-        neuron.soma.type = SomaType.SOMA_SIMPLE_CONTOUR
-
+        cylinder_stack_to_cylindrical_contour(neuron)
     elif neuron.soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
         cylinder_to_cylindrical_contour(neuron)
     elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
@@ -266,10 +279,7 @@ def from_h5_or_asc(neuron, output_ext, ensure_NRN_area=False):
             single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
     elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
         if output_ext == 'swc':
-            mean, new_xyz = contourcenter(neuron.soma.points)
-            neuron.soma.points, neuron.soma.diameters = contour2centroid(
-                mean, new_xyz)
-            neuron.soma.type = SomaType.SOMA_CYLINDERS
+            contour_to_cylinders(neuron)
 
     if output_ext != "h5":
         for sec in neuron.iter():
@@ -307,34 +317,57 @@ def convert(input_file,
 
     output_ext = Path(output_file).suffix.lower()
 
-    if single_point_soma and output_ext != '.swc':
-        raise MorphToolException('Single point soma is only applicable for swc output')
-
     if output_ext not in ('.swc', '.asc', '.h5', ):
         raise MorphToolException('Output file format should be one swc, asc or h5')
 
     output_ext = output_ext[1:]  # Remove the dot
 
-    try:
-        converter = {'swc': from_swc,
-                     'asc': from_h5_or_asc,
-                     'h5': from_h5_or_asc,
-                     }[neuron.version[0]]
-    except KeyError as e:
-        raise MorphToolException(
-            f'No converter for morphology type: {neuron.version}') from e
+    if output_ext in ["asc", "h5"]:
+        target_type = SomaType.SOMA_SIMPLE_CONTOUR
+    elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
+        target_type = SomaType.SOMA_SINGLE_POINT
+    elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
+        target_type = SomaType.SOMA_CYLINDERS
+    else:
+        target_type = None
 
-    L.info('Original soma type: %s', neuron.soma_type)
-    new = converter(neuron, output_ext, ensure_NRN_area=ensure_NRN_area)
+    current_type = neuron.soma_type
+    L.info('Original soma type: %s', current_type)
+
+    if target_type is not None and current_type != target_type:
+        if target_type == SomaType.SOMA_SINGLE_POINT:
+            soma_to_single_point(neuron.soma)
+        elif target_type == SomaType.SOMA_CYLINDERS:
+            contour_to_cylinders(neuron)
+        elif target_type == SomaType.SOMA_SIMPLE_CONTOUR:
+            if current_type == SomaType.SOMA_SINGLE_POINT:
+                single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
+            elif current_type == SomaType.SOMA_CYLINDERS:
+                cylinder_stack_to_cylindrical_contour(neuron)
+            elif current_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
+                cylinder_to_cylindrical_contour(neuron)
+            elif current_type == SomaType.SOMA_SIMPLE_CONTOUR:
+                # Do nothing
+                pass
+            elif current_type == SomaType.SOMA_UNDEFINED:
+                # Do nothing
+                pass
+        else:
+            # Do nothing
+            pass
 
     if single_point_soma:
-        soma_to_single_point(new.soma)
+        soma_to_single_point(neuron.soma)
+
+    if output_ext != "h5":
+        for sec in neuron.iter():
+            sec.perimeters = []
 
     if recenter:
-        transform.translate(new, -1 * new.soma.center)
+        transform.translate(neuron, -1 * neuron.soma.center)
 
     try:
-        new.write(output_file)
+        neuron.write(output_file)
     except WriterError as e:
         raise MorphToolException('Use `sanitize` option for converting') from e
 
@@ -349,3 +382,5 @@ def convert(input_file,
     except:  # noqa pylint: disable=bare-except
         L.info('Final NEURON soma surface check was skipped probably because BluePyOpt'
                ' or NEURON is not installed')
+
+    return neuron

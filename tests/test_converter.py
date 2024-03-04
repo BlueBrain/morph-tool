@@ -6,6 +6,9 @@ import numpy.testing as npt
 import pytest
 
 import morphio
+from morphio import SomaType
+from morphio.mut import Morphology
+
 from morph_tool import converter
 from morph_tool import diff
 from morph_tool.exceptions import MorphToolException
@@ -145,3 +148,49 @@ def test__create_contour(tmpdir):
         npt.assert_allclose(points[:, 2], [0]*point_count)
         npt.assert_allclose(diameters, [0.1]*point_count)
         assert len(np.unique(np.around(points, decimals=4), axis=0)) == point_count
+
+
+def test_all_combinations(tmp_path):
+    """Test all conversion combinations."""
+    soma_types = [getattr(SomaType, i) for i in dir(SomaType) if not i.startswith("_") and i not in ["name", "value"]]
+
+    # Checking valid types for each extension
+    errors = []
+
+    for ext in [".asc", ".h5", ".swc"]:
+        for soma_type in soma_types:
+            if soma_type == SomaType.SOMA_SINGLE_POINT:
+                morph = morphio.Morphology("1 1  0  0 0 1. -1", "swc").as_mutable()
+                morph.soma.points = [[0, 0, 0]]
+                morph.soma.diameters = [1]
+                morph.soma.type = soma_type
+            elif soma_type == SomaType.SOMA_CYLINDERS:
+                morph = morphio.Morphology("1 1  0  0 0 1. -1", "swc").as_mutable()
+                morph.soma.points = [[0, 0, 0], [0, 1, 0]]
+                morph.soma.diameters = [1] * len(morph.soma.points)
+                morph.soma.type = soma_type
+            elif soma_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
+                morph = morphio.Morphology("1 1  0  0 0 1. -1", "swc").as_mutable()
+                morph.soma.points = [[0, 0, 0], [0, 1, 0], [0, -1, 0]]
+                morph.soma.diameters = [2] * len(morph.soma.points)
+                morph.soma.type = soma_type
+            elif soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
+                morph = morphio.Morphology("((Dendrite))", "asc").as_mutable()
+                morph.soma.points = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0]]
+                morph.soma.diameters = [0] * len(morph.soma.points)
+                morph.soma.type = soma_type
+            elif soma_type == SomaType.SOMA_UNDEFINED:
+                morph = morphio.Morphology("((Dendrite))", "asc").as_mutable()
+                morph.soma.points = [[0, 0, 0], [0, 1, 0]]
+                morph.soma.diameters = [1] * len(morph.soma.points)
+                morph.soma.type = soma_type
+            else:
+                raise ValueError(f"Unknown soma type: {soma_type}")
+
+            output_file = tmp_path / f"morph_{soma_type.name}{ext}"
+
+            # Convert the morphology
+            convert(morph, output_file)
+
+            # Check that the morphology can be read
+            Morphology(output_file)
