@@ -288,6 +288,39 @@ def from_h5_or_asc(neuron, output_ext, ensure_NRN_area=False):
     return neuron
 
 
+def choose_target_soma_type(neuron, output_ext):
+    """Choose a target type base on the output extension."""
+    if output_ext in ["asc", "h5"]:
+        target_type = SomaType.SOMA_SIMPLE_CONTOUR
+    elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
+        target_type = SomaType.SOMA_SINGLE_POINT
+    elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
+        target_type = SomaType.SOMA_CYLINDERS
+    else:
+        target_type = None
+    return target_type
+
+
+def convert_soma(neuron, output_ext, ensure_NRN_area=False):
+    """Convert the soma a the given neuron to the required soma type."""
+    current_type = neuron.soma_type
+    target_type = choose_target_soma_type(neuron, output_ext)
+    L.info('Original soma type: %s', current_type)
+
+    if target_type is not None and current_type != target_type:
+        if target_type == SomaType.SOMA_SINGLE_POINT:
+            soma_to_single_point(neuron.soma)
+        elif target_type == SomaType.SOMA_CYLINDERS:
+            contour_to_cylinders(neuron)
+        elif target_type == SomaType.SOMA_SIMPLE_CONTOUR:
+            if current_type == SomaType.SOMA_SINGLE_POINT:
+                single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
+            elif current_type == SomaType.SOMA_CYLINDERS:
+                cylinder_stack_to_cylindrical_contour(neuron)
+            elif current_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
+                cylinder_to_cylindrical_contour(neuron)
+
+
 def convert(input_file,
             output_file,
             recenter=False,
@@ -322,39 +355,7 @@ def convert(input_file,
 
     output_ext = output_ext[1:]  # Remove the dot
 
-    if output_ext in ["asc", "h5"]:
-        target_type = SomaType.SOMA_SIMPLE_CONTOUR
-    elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
-        target_type = SomaType.SOMA_SINGLE_POINT
-    elif neuron.soma_type == SomaType.SOMA_SIMPLE_CONTOUR:
-        target_type = SomaType.SOMA_CYLINDERS
-    else:
-        target_type = None
-
-    current_type = neuron.soma_type
-    L.info('Original soma type: %s', current_type)
-
-    if target_type is not None and current_type != target_type:
-        if target_type == SomaType.SOMA_SINGLE_POINT:
-            soma_to_single_point(neuron.soma)
-        elif target_type == SomaType.SOMA_CYLINDERS:
-            contour_to_cylinders(neuron)
-        elif target_type == SomaType.SOMA_SIMPLE_CONTOUR:
-            if current_type == SomaType.SOMA_SINGLE_POINT:
-                single_point_sphere_to_circular_contour(neuron, ensure_NRN_area=ensure_NRN_area)
-            elif current_type == SomaType.SOMA_CYLINDERS:
-                cylinder_stack_to_cylindrical_contour(neuron)
-            elif current_type == SomaType.SOMA_NEUROMORPHO_THREE_POINT_CYLINDERS:
-                cylinder_to_cylindrical_contour(neuron)
-            elif current_type == SomaType.SOMA_SIMPLE_CONTOUR:
-                # Do nothing
-                pass
-            elif current_type == SomaType.SOMA_UNDEFINED:
-                # Do nothing
-                pass
-        else:
-            # Do nothing
-            pass
+    convert_soma(neuron, output_ext, ensure_NRN_area=ensure_NRN_area)
 
     if single_point_soma:
         soma_to_single_point(neuron.soma)
