@@ -289,7 +289,7 @@ def from_h5_or_asc(neuron, output_ext, ensure_NRN_area=False):
 
 
 def choose_target_soma_type(neuron, output_ext):
-    """Choose a target type base on the output extension."""
+    """Choose a target soma type based on the given output extension."""
     if output_ext in ["asc", "h5"]:
         target_type = SomaType.SOMA_SIMPLE_CONTOUR
     elif neuron.soma_type == SomaType.SOMA_SINGLE_POINT:
@@ -302,7 +302,7 @@ def choose_target_soma_type(neuron, output_ext):
 
 
 def convert_soma(neuron, output_ext, ensure_NRN_area=False):
-    """Convert the soma a the given neuron to the required soma type."""
+    """Convert the soma of the given neuron to the required soma type."""
     current_type = neuron.soma_type
     target_type = choose_target_soma_type(neuron, output_ext)
     L.info('Original soma type: %s', current_type)
