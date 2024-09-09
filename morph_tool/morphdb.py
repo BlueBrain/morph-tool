@@ -373,7 +373,7 @@ class MorphDB:
     def __iadd__(self, other):
         """Overloaded method."""
         if isinstance(other, MorphDB):
-            self.df = pd.concat([self.df, other.df]).drop_duplicates()
+            self.df = pd.concat([self.df, other.df]).drop_duplicates(["name", "mtype", "layer"])
             MorphDB._sanitize_df_types(self.df)
         else:
             raise TypeError(f'Must be MorphDB or a sequence of MorphInfo, not {type(other)}')
