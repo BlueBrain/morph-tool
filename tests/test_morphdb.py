@@ -11,8 +11,7 @@ DATA_DIR = Path(__file__).parent / 'data'
 
 def test_MorphInfo():
     morph = tested.MorphInfo(name='a', mtype='b', layer='c')
-    assert (str(morph) ==
-                 """MorphInfo(name='a', mtype='b', layer='c', label=None)""")
+    assert (str(morph) == """MorphInfo(name='a', mtype='b', layer='c', label=None)""")
 
 
 def test_from_folder():
@@ -75,7 +74,7 @@ def test_write_neurondb_dat(tmpdir):
     morphology_folder = DATA_DIR / 'morphdb/from_neurondb/'
     original = tested.MorphDB.from_neurondb(morphology_folder / 'neurondb-msubtype.xml')
 
-    path = Path(tmpdir, f'neurondb.dat')
+    path = Path(tmpdir, 'neurondb.dat')
     original.write(path)
 
     new = tested.MorphDB.from_neurondb(path, morphology_folder=morphology_folder)
@@ -93,8 +92,9 @@ def test_add():
                                        'tomato', 'elon'])
 
     total = original + original
-    assert_array_equal(total.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
-                                       'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
+    assert_array_equal(
+        total.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3']
+    )
 
     with pytest.raises(TypeError):
         original.__add__(None)
@@ -115,8 +115,9 @@ def test_iadd():
     original = tested.MorphDB.from_neurondb(
         DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
     original += original
-    assert_array_equal(original.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
-                                          'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
+    assert_array_equal(
+        original.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3']
+    )
 
     with pytest.raises(TypeError):
         original.__iadd__(None)
