@@ -264,7 +264,7 @@ class MorphDB:
         Args:
             morphology_folder: a folder containing morphologies
             mtypes: a sequence of 2-tuples (morphology name, mtype)
-            label: (optional) a group label to be used to identify the morphlogies from this folder
+            label: (optional) a group label to be used to identify the morphologies from this folder
             extension: Specify the morphology format to consider, if the folder contains multiple
                 formats
 
@@ -373,7 +373,10 @@ class MorphDB:
     def __iadd__(self, other):
         """Overloaded method."""
         if isinstance(other, MorphDB):
-            self.df = pd.concat([self.df, other.df]).drop_duplicates(["name", "mtype", "layer"])
+            self.df = pd.concat(
+                [self.df, other.df],
+                ignore_index=True,
+            ).drop_duplicates(["name", "mtype", "layer"])
             MorphDB._sanitize_df_types(self.df)
         else:
             raise TypeError(f'Must be MorphDB or a sequence of MorphInfo, not {type(other)}')
