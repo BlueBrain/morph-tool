@@ -115,8 +115,9 @@ def test_iadd():
     original = tested.MorphDB.from_neurondb(
         DATA_DIR / 'morphdb/from_neurondb/neurondb-msubtype.xml')
     original += original
-    assert_array_equal(original.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3',
-                                          'tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3'])
+    assert_array_equal(
+        original.df.name, ['tkb061126a4_ch0_cc2_h_zk_60x_1', 'missing-morph', 'simple3']
+    )
 
     with pytest.raises(TypeError):
         original.__iadd__(None)
