@@ -1,3 +1,4 @@
-graft tests
-
+prune tests/
+prune doc/
+prune functional_tests/
 global-exclude *.py[co] .DS_Store
