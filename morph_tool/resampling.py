@@ -200,3 +200,55 @@ def resample_linear_density(obj, linear_density):
         resample_function(section, linear_density)
 
     return obj
+
+
+def convert_segments_to_sections(morphology, section_type=None):
+    """Convert segments (interval between two points) into sections.
+
+    This function can be used for example to simulate electrical models and record in the middle
+    of each section, to obtain more spatially detailed informations.
+
+    warning 1: this works with ascii format where unifurcations are allowed
+    warning 2: if too many sections are created, NEURON will fail and one has to set -NFRAME
+    to larger values, so it is advised to use resample_linear above to control number of created
+    sections before applying this function.
+
+    Args:
+        morphology (morphio.mut.Morphology): input morphology to convert
+        section_type (morphio.SectionType): section type to convert
+    """
+    morphology = morphio.mut.Morphology(morphology)
+
+    def _is_type(section, section_type):
+        if section_type is None:
+            return True
+        return section.type == section_type
+
+    bif_mapping = {}
+    to_delete = []
+    for section in morphology.iter():
+        if _is_type(section, section_type):
+            points = section.points
+            diameters = section.diameters
+
+            new_section = morphio.PointLevel(points[:2], diameters[:2])
+            if section.is_root:
+                to_delete.append(section.id)
+                child_section = morphology.append_root_section(new_section, section.type)
+            else:
+                child_section = bif_mapping[section].append_section(new_section)
+
+            for i in range(len(points) - 2):
+                child_section = child_section.append_section(
+                    morphio.PointLevel(points[1 + i: 3 + i], diameters[1 + i: 3 + i])
+                )
+
+            for s in section.children:
+                bif_mapping[s] = child_section
+
+    # here we remove original sections
+    for root_section in morphology.root_sections:
+        if _is_type(root_section, section_type):
+            if root_section.id in to_delete:
+                morphology.delete_section(root_section, recursive=True)
+    return morphology
